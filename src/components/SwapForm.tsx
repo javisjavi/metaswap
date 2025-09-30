@@ -465,8 +465,7 @@ const SwapForm = () => {
         <div>
           <h1 className={styles.title}>MetaSwap</h1>
           <p className={styles.subtitle}>
-            Intercambia tokens en la red de Solana que prefieras con la seguridad de
-            Solflare.
+            Fast. Secure. Swaps made simple.
           </p>
         </div>
         <div className={styles.headerActions}>
