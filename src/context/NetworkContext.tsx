@@ -16,7 +16,7 @@ interface NetworkProviderProps {
 }
 
 export const NetworkProvider = ({ children }: NetworkProviderProps) => {
-  const [network, setNetwork] = useState<NetworkCluster>("devnet");
+  const [network, setNetwork] = useState<NetworkCluster>("mainnet-beta");
 
   const value = useMemo(() => ({ network, setNetwork }), [network]);
 

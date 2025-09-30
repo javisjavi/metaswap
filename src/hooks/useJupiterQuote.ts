@@ -56,7 +56,7 @@ export const useJupiterQuote = ({
     }
 
     const query = new URLSearchParams({
-      cluster: "devnet",
+      cluster: params.cluster,
       inputMint: params.inputMint,
       outputMint: params.outputMint,
       amount: params.amount,

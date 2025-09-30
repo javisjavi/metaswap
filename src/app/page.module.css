@@ -9,61 +9,289 @@
 
 .appShell {
   width: 100%;
-  max-width: 960px;
+  max-width: 1120px;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 28px;
+  padding: 24px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.45);
+  position: sticky;
+  top: 48px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.menuItem:hover,
+.menuItem:focus-visible {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.32);
+  outline: none;
+  transform: translateX(2px);
+}
+
+.menuItemActive {
+  background: linear-gradient(135deg, #6366f1, #22d3ee);
+  border-color: transparent;
+  box-shadow: 0 16px 40px rgba(99, 102, 241, 0.35);
+}
+
+.menuIconBadge {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.menuItem:hover .menuIconBadge,
+.menuItem:focus-visible .menuIconBadge {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.menuItemActive .menuIconBadge {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transform: translateX(2px);
+}
+
+.menuIconGraphic {
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.95;
+}
+
+.menuItemActive .menuIconGraphic {
+  color: rgba(255, 255, 255, 0.96);
+  opacity: 1;
+}
+
+.menuText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menuLabel {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.menuDescription {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.menuItemActive .menuLabel {
+  color: #0f172a;
+}
+
+.menuItemActive .menuDescription {
+  color: rgba(15, 23, 42, 0.7);
+}
+
+.contentArea {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 32px;
+  padding: 32px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.5);
+}
+
+.infoSection {
   display: flex;
   flex-direction: column;
   gap: 32px;
-}
-
-.topNav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  align-self: center;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 999px;
-  padding: 6px;
-  backdrop-filter: blur(14px);
-}
-
-.navButton {
-  background: transparent;
-  border: none;
-  color: #e2e8f0;
-  font-weight: 600;
-  padding: 10px 24px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.95rem;
-}
-
-.navButton:hover {
-  background: rgba(148, 163, 184, 0.18);
   color: #f8fafc;
 }
 
-.navButton:focus-visible {
-  outline: 2px solid rgba(99, 102, 241, 0.6);
-  outline-offset: 2px;
+.infoHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.navButtonActive {
-  background: linear-gradient(135deg, #6366f1, #22d3ee);
-  color: #0f172a;
-  box-shadow: 0 12px 30px rgba(34, 211, 238, 0.35);
+.infoTitle {
+  font-size: 2.4rem;
+  font-weight: 700;
 }
 
-.viewContainer {
-  width: 100%;
+.infoSubtitle {
+  color: #cbd5f5;
+  font-size: 1rem;
+  max-width: 48ch;
+}
+
+.infoGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.infoCard {
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 16px 38px rgba(2, 6, 23, 0.45);
+}
+
+.infoCardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.infoCardText {
+  color: #cbd5f5;
+  font-size: 0.95rem;
+}
+
+.infoList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #e2e8f0;
+}
+
+.infoList li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.95rem;
+}
+
+.infoList li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #6366f1;
+}
+
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quickActions button {
+  background: rgba(96, 165, 250, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: #e0f2fe;
+  font-weight: 600;
+  text-align: left;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.quickActions button:hover,
+.quickActions button:focus-visible {
+  background: rgba(96, 165, 250, 0.28);
+  transform: translateX(4px);
+  outline: none;
+}
+
+.reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reminders > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.reminderLabel {
+  font-weight: 600;
+}
+
+.reminderStatus {
+  font-size: 0.85rem;
+  color: #22d3ee;
+  font-weight: 600;
+}
+
+.supportChannels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.supportChannels > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+}
+
+.channelLabel {
+  font-weight: 600;
+}
+
+.channelDetail {
+  font-size: 0.85rem;
+  color: #cbd5f5;
+}
+
+.statusBadge {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #bbf7d0;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .swapSection {
   width: 100%;
-  max-width: 960px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -82,24 +310,6 @@
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.marketButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 14px;
-  background: rgba(96, 165, 250, 0.14);
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  color: #e0f2fe;
-  font-weight: 600;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.marketButton:hover {
-  background: rgba(96, 165, 250, 0.24);
-  transform: translateY(-1px);
 }
 
 .networkSelector {
@@ -280,6 +490,31 @@
   border-radius: 12px;
   font-size: 1.25rem;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: 6px;
+}
+
+.switchIconHorizontal {
+  display: inline;
+}
+
+.switchIconVertical {
+  display: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .switchButton:hover {
@@ -409,79 +644,6 @@
   gap: 16px;
 }
 
-.marketModal {
-  width: min(760px, 100%);
-  gap: 20px;
-}
-
-.marketSource {
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.marketStatus {
-  padding: 32px 0;
-  text-align: center;
-  color: #e2e8f0;
-}
-
-.marketTableWrapper {
-  overflow-x: auto;
-  border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(15, 23, 42, 0.6);
-}
-
-.marketTable {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.marketTable th,
-.marketTable td {
-  padding: 12px 16px;
-  text-align: left;
-}
-
-.marketTable thead {
-  background: rgba(30, 41, 59, 0.75);
-}
-
-.marketTable tbody tr:nth-child(even) {
-  background: rgba(30, 41, 59, 0.35);
-}
-
-.marketTable tbody tr:hover {
-  background: rgba(96, 165, 250, 0.16);
-}
-
-.marketNameCell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.marketSymbol {
-  font-weight: 600;
-  color: #f8fafc;
-  text-transform: uppercase;
-}
-
-.marketName {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.marketPositive {
-  color: #4ade80;
-  font-weight: 600;
-}
-
-.marketNegative {
-  color: #f87171;
-  font-weight: 600;
-}
 
 .modalHeader {
   display: flex;
@@ -567,6 +729,20 @@
   padding: 24px 0;
 }
 
+.searchStatus {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  padding: 16px 0;
+}
+
+.searchError {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #fca5a5;
+  padding: 16px 0 0;
+}
+
 .previewPanel {
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(148, 163, 184, 0.2);
@@ -615,99 +791,27 @@
   box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
 }
 
-.rankingHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
 
-.refreshBadge {
-  background: rgba(96, 165, 250, 0.18);
-  border: 1px solid rgba(96, 165, 250, 0.45);
-  color: #bfdbfe;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
+@media (max-width: 1080px) {
+  .appShell {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-.tableWrapper {
-  overflow-x: auto;
-}
+  .menu {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 16px;
+    gap: 12px;
+  }
 
-.rankingTable {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 520px;
-}
+  .menuItem {
+    min-width: 220px;
+  }
 
-.rankingTable th {
-  text-align: left;
-  font-size: 0.8rem;
-  color: #cbd5f5;
-  padding: 12px 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-}
-
-.rankingTable td {
-  padding: 16px;
-  font-size: 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-}
-
-.rankingTable tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.rankName {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.rankIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.7);
-  object-fit: cover;
-}
-
-.rankCoinName {
-  font-weight: 600;
-  display: block;
-}
-
-.rankCoinSymbol {
-  display: block;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-.pricePositive {
-  color: #86efac;
-  font-weight: 600;
-}
-
-.priceNegative {
-  color: #fca5a5;
-  font-weight: 600;
-}
-
-.updateTime {
-  margin-top: 12px;
-  font-size: 0.85rem;
-  color: #94a3b8;
-  text-align: right;
+  .contentArea {
+    padding: 28px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -720,8 +824,30 @@
     height: 42px;
   }
 
-  .marketTable {
-    min-width: 100%;
+  .switchIconHorizontal {
+    display: none;
+  }
+
+  .switchIconVertical {
+    display: inline;
+  }
+}
+
+@media (max-width: 768px) {
+  .menu {
+    padding: 14px;
+  }
+
+  .menuItem {
+    min-width: 180px;
+  }
+
+  .infoTitle {
+    font-size: 2.1rem;
+  }
+
+  .contentArea {
+    padding: 24px;
   }
 }
 
@@ -733,23 +859,6 @@
   .card {
     padding: 24px;
     border-radius: 20px;
-  }
-
-  .appShell {
-    gap: 24px;
-  }
-
-  .topNav {
-    width: 100%;
-  }
-
-  .navButton {
-    flex: 1 1 140px;
-    text-align: center;
-  }
-
-  .rankingTable {
-    min-width: unset;
   }
 
   .title {
@@ -773,5 +882,13 @@
   .amountInput {
     text-align: left;
     font-size: 1.6rem;
+  }
+
+  .menuItem {
+    min-width: 160px;
+  }
+
+  .infoTitle {
+    font-size: 1.9rem;
   }
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -18,18 +17,39 @@ import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { SwapResponse } from "@/types/jupiter";
 import TokenSelector from "./TokenSelector";
-import TopMarketModal from "./TopMarketModal";
 import { useNetwork } from "@/context/NetworkContext";
 
 const NETWORK_OPTIONS = [
+  { value: "mainnet-beta", label: "Mainnet" },
   { value: "devnet", label: "Devnet" },
   { value: "testnet", label: "Testnet" },
-  { value: "mainnet-beta", label: "Mainnet" },
 ] as const;
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const AIRDROP_LAMPORTS = LAMPORTS_PER_SOL;
+
+const DEFAULT_SOL_TOKEN: TokenInfo = {
+  address: SOL_MINT,
+  symbol: "SOL",
+  name: "Solana",
+  decimals: 9,
+  logoURI:
+    "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png",
+  chainId: 101,
+  tags: ["native"],
+};
+
+const DEFAULT_USDC_TOKEN: TokenInfo = {
+  address: USDC_MINT,
+  symbol: "USDC",
+  name: "USD Coin",
+  decimals: 6,
+  logoURI:
+    "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
+  chainId: 101,
+  tags: ["stablecoin"],
+};
 
 const decodeTransaction = (encoded: string) =>
   Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
@@ -40,8 +60,9 @@ const SwapForm = () => {
   const { connection } = useConnection();
   const { publicKey, connected, sendTransaction } = useWallet();
 
-  const [inputToken, setInputToken] = useState<TokenInfo | null>(null);
-  const [outputToken, setOutputToken] = useState<TokenInfo | null>(null);
+  const [inputToken, setInputToken] = useState<TokenInfo | null>(DEFAULT_SOL_TOKEN);
+  const [outputToken, setOutputToken] = useState<TokenInfo | null>(DEFAULT_USDC_TOKEN);
+  const [customTokens, setCustomTokens] = useState<TokenInfo[]>([]);
   const [amount, setAmount] = useState<string>("");
   const [balance, setBalance] = useState<string | null>(null);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
@@ -51,39 +72,117 @@ const SwapForm = () => {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
-  const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
 
   useEffect(() => {
-    setInputToken(null);
-    setOutputToken(null);
+    setInputToken(DEFAULT_SOL_TOKEN);
+    setOutputToken(DEFAULT_USDC_TOKEN);
     setAmount("");
     setBalance(null);
     setSwapError(null);
     setSwapSignature(null);
     setAirdropMessage(null);
+    setCustomTokens([]);
   }, [network]);
+
+  useEffect(() => {
+    setCustomTokens((prev) => {
+      if (!prev.length) {
+        return prev;
+      }
+      const filtered = prev.filter(
+        (candidate) => !tokens.some((token) => token.address === candidate.address)
+      );
+      return filtered.length === prev.length ? prev : filtered;
+    });
+  }, [tokens]);
+
+  const tokenOptions = useMemo(() => {
+    if (!customTokens.length) {
+      return tokens;
+    }
+    const map = new Map<string, TokenInfo>();
+    for (const token of tokens) {
+      map.set(token.address, token);
+    }
+    for (const token of customTokens) {
+      map.set(token.address, token);
+    }
+    return Array.from(map.values());
+  }, [tokens, customTokens]);
 
   useEffect(() => {
     if (!tokens.length) {
       return;
     }
 
-    setInputToken((previous) => {
-      if (previous) return previous;
-      const preferred = tokens.find((token) => token.address === SOL_MINT);
-      return preferred ?? tokens[0];
-    });
+    const baseTokenMap = new Map(tokens.map((token) => [token.address, token] as const));
 
-    setOutputToken((previous) => {
-      if (previous) return previous;
-      const usdc = tokens.find((token) => token.address === USDC_MINT);
-      if (usdc && usdc.address !== inputToken?.address) {
-        return usdc;
+    const inputIsCustom = inputToken
+      ? !baseTokenMap.has(inputToken.address) &&
+        customTokens.some((token) => token.address === inputToken.address)
+      : false;
+
+    if (!inputToken || (!inputIsCustom && !baseTokenMap.has(inputToken.address))) {
+      const fallback =
+        baseTokenMap.get(SOL_MINT) ?? tokens[0] ?? null;
+      if (fallback && inputToken?.address !== fallback.address) {
+        setInputToken(fallback);
       }
-      const alternative = tokens.find((token) => token.address !== inputToken?.address);
-      return alternative ?? null;
-    });
-  }, [tokens, inputToken?.address]);
+    } else if (!inputIsCustom) {
+      const registered = baseTokenMap.get(inputToken.address);
+      if (registered && inputToken !== registered) {
+        setInputToken(registered);
+      }
+    }
+
+    const currentInputAddress = inputToken?.address;
+
+    const outputIsCustom = outputToken
+      ? !baseTokenMap.has(outputToken.address) &&
+        customTokens.some((token) => token.address === outputToken.address)
+      : false;
+
+    if (!outputToken || (!outputIsCustom && !baseTokenMap.has(outputToken.address))) {
+      const preferredByDefault =
+        tokens.find(
+          (token) => token.address === USDC_MINT && token.address !== currentInputAddress
+        ) ?? tokens.find((token) => token.address !== currentInputAddress) ?? null;
+
+      if (preferredByDefault && outputToken?.address !== preferredByDefault.address) {
+        setOutputToken(preferredByDefault);
+      }
+    } else if (!outputIsCustom) {
+      const registered = baseTokenMap.get(outputToken.address);
+      if (registered && outputToken !== registered) {
+        setOutputToken(registered);
+      }
+    }
+
+    if (inputToken && outputToken && inputToken.address === outputToken.address) {
+      const alternative = tokenOptions.find((token) => token.address !== inputToken.address) ?? null;
+      if (alternative) {
+        setOutputToken(alternative);
+      }
+    }
+  }, [tokens, customTokens, inputToken, outputToken, tokenOptions]);
+
+  const ensureCustomToken = useCallback(
+    (token: TokenInfo) => {
+      if (tokens.some((candidate) => candidate.address === token.address)) {
+        return;
+      }
+      setCustomTokens((previous) => {
+        const exists = previous.some((candidate) => candidate.address === token.address);
+        if (exists) {
+          return previous.map((candidate) =>
+            candidate.address === token.address ? token : candidate
+          );
+        }
+        return [...previous, token];
+      });
+    },
+    [tokens]
+  );
 
   const refreshBalance = useCallback(async () => {
     if (!publicKey) {
@@ -242,17 +341,19 @@ const SwapForm = () => {
   };
 
   const handleSelectInput = (token: TokenInfo) => {
+    ensureCustomToken(token);
     setInputToken(token);
     if (outputToken && outputToken.address === token.address) {
-      const alternative = tokens.find((candidate) => candidate.address !== token.address);
+      const alternative = tokenOptions.find((candidate) => candidate.address !== token.address);
       setOutputToken(alternative ?? null);
     }
   };
 
   const handleSelectOutput = (token: TokenInfo) => {
+    ensureCustomToken(token);
     setOutputToken(token);
     if (inputToken && inputToken.address === token.address) {
-      const alternative = tokens.find((candidate) => candidate.address !== token.address);
+      const alternative = tokenOptions.find((candidate) => candidate.address !== token.address);
       setInputToken(alternative ?? null);
     }
   };
@@ -390,13 +491,6 @@ const SwapForm = () => {
           </p>
         </div>
         <div className={styles.headerActions}>
-          <button
-            type="button"
-            className={styles.marketButton}
-            onClick={() => setIsMarketModalOpen(true)}
-          >
-            Top 10 criptomonedas
-          </button>
           <label className={styles.networkSelector}>
             <span>Red</span>
             <div className={styles.networkControl}>
@@ -453,8 +547,9 @@ const SwapForm = () => {
           <TokenSelector
             label="De"
             token={inputToken}
-            tokens={tokens}
+            tokens={tokenOptions}
             onTokenSelect={handleSelectInput}
+            network={network}
             amount={amount}
             onAmountChange={setAmount}
             placeholder="0.0"
@@ -470,16 +565,22 @@ const SwapForm = () => {
             type="button"
             className={styles.switchButton}
             onClick={handleSwapTokens}
-            aria-label="Cambiar tokens"
           >
-            ⇅
+            <span className={styles.switchIconHorizontal} aria-hidden>
+              ⇄
+            </span>
+            <span className={styles.switchIconVertical} aria-hidden>
+              ⇅
+            </span>
+            <span className={styles.srOnly}>Cambiar tokens</span>
           </button>
 
           <TokenSelector
             label="Para"
             token={outputToken}
-            tokens={tokens}
+            tokens={tokenOptions}
             onTokenSelect={handleSelectOutput}
+            network={network}
             amount={estimatedOutput}
             readOnlyAmount
             placeholder="0.0"
@@ -551,10 +652,6 @@ const SwapForm = () => {
           {isSwapping ? "Firmando…" : "Confirmar swap"}
         </button>
       </div>
-      <TopMarketModal
-        isOpen={isMarketModalOpen}
-        onClose={() => setIsMarketModalOpen(false)}
-      />
     </section>
   );
 };

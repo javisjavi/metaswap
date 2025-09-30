@@ -4,12 +4,14 @@ import { ChangeEvent, useState } from "react";
 import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import TokenListModal from "./TokenListModal";
+import { NetworkCluster } from "@/context/NetworkContext";
 
 interface TokenSelectorProps {
   label: string;
   token: TokenInfo | null;
   tokens: TokenInfo[];
   onTokenSelect: (token: TokenInfo) => void;
+  network: NetworkCluster;
   amount?: string;
   onAmountChange?: (value: string) => void;
   readOnlyAmount?: boolean;
@@ -23,6 +25,7 @@ const TokenSelector = ({
   token,
   tokens,
   onTokenSelect,
+  network,
   amount,
   onAmountChange,
   readOnlyAmount = false,
@@ -92,6 +95,7 @@ const TokenSelector = ({
         selectedMint={token?.address}
         onSelect={onTokenSelect}
         onClose={() => setIsModalOpen(false)}
+        network={network}
       />
     </div>
   );
