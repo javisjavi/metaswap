@@ -537,6 +537,7 @@
   padding: 12px 20px;
   font-weight: 600;
   box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
 }
 
 .walletButton:hover {
@@ -581,6 +582,7 @@
   border-radius: 999px;
   font-weight: 600;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .faucetButton:disabled {
@@ -650,6 +652,7 @@
   justify-content: center;
   position: relative;
   gap: 6px;
+  cursor: pointer;
 }
 
 .switchIconHorizontal {
@@ -717,7 +720,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .tokenButton {
@@ -729,6 +732,8 @@
   border-radius: 14px;
   padding: 8px 12px;
   transition: all 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .tokenButton:hover {
@@ -848,6 +853,7 @@
   border: 1px solid transparent;
   background: rgba(30, 41, 59, 0.7);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .tokenRow:hover,
@@ -958,6 +964,7 @@
   font-weight: 700;
   font-size: 1.1rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .swapButton:disabled {
@@ -970,6 +977,29 @@
   box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
 }
 
+@media (min-width: 1081px) {
+  .card {
+    padding: 40px 44px;
+  }
+
+  .selectorsWrapper {
+    grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1.2fr);
+    gap: 28px;
+  }
+
+  .selectorWrapper {
+    padding: 20px 24px;
+  }
+
+  .tokenButton {
+    min-width: 240px;
+    padding: 12px 18px;
+  }
+
+  .amountInput {
+    font-size: 2.2rem;
+  }
+}
 
 @media (max-width: 1080px) {
   .appShell {
@@ -1001,6 +1031,14 @@
   .switchButton {
     width: 100%;
     height: 42px;
+  }
+
+  .selectorBody {
+    flex-wrap: wrap;
+  }
+
+  .tokenButton {
+    flex-shrink: 1;
   }
 
   .switchIconHorizontal {

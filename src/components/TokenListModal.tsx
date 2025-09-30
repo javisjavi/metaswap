@@ -306,7 +306,7 @@ const TokenListModal = ({
 
     const [solToken] = filtered.splice(solIndex, 1);
     return [solToken, ...filtered];
-  }, [combinedTokens, searchTerm]);
+  }, [tokens, searchTerm, combinedTokens]);
 
   if (!isOpen) {
     return null;
