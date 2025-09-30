@@ -18,6 +18,7 @@ import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { SwapResponse } from "@/types/jupiter";
 import TokenSelector from "./TokenSelector";
+import TopMarketModal from "./TopMarketModal";
 import { useNetwork } from "@/context/NetworkContext";
 
 const NETWORK_OPTIONS = [
@@ -50,6 +51,7 @@ const SwapForm = () => {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
+  const [isMarketModalOpen, setIsMarketModalOpen] = useState(false);
 
   useEffect(() => {
     setInputToken(null);
@@ -201,57 +203,6 @@ const SwapForm = () => {
     setSwapError(null);
     setSwapSignature(null);
   }, [inputToken?.address, outputToken?.address, amount]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!publicKey || !inputToken) {
-      setInputTokenBalance(null);
-      return;
-    }
-
-    if (inputToken.address === SOL_MINT) {
-      setInputTokenBalance(balance);
-      return;
-    }
-
-    const fetchBalance = async () => {
-      try {
-        const mint = new PublicKey(inputToken.address);
-        const response = await connection.getParsedTokenAccountsByOwner(publicKey, {
-          mint,
-        });
-        const total = response.value.reduce((sum, { account }) => {
-          const data = account.data;
-          if ("parsed" in data) {
-            const parsed = data as ParsedAccountData;
-            const amountLamports = BigInt(parsed.parsed.info.tokenAmount.amount);
-            return sum + amountLamports;
-          }
-          return sum;
-        }, BigInt(0));
-        if (!cancelled) {
-          setInputTokenBalance(formatLamports(total, inputToken.decimals, 6));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Error al leer el balance del token", error);
-          setInputTokenBalance(null);
-        }
-      }
-    };
-
-    fetchBalance();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    publicKey,
-    inputToken,
-    connection,
-    balance,
-  ]);
 
   const handleAirdrop = useCallback(async () => {
     if (network === "mainnet-beta") {
@@ -439,19 +390,29 @@ const SwapForm = () => {
           </p>
         </div>
         <div className={styles.headerActions}>
-          <Link href="/top-10" className={styles.topMarketsLink}>
-            <span>Top 10 criptomonedas</span>
-            <span aria-hidden>→</span>
-          </Link>
+          <button
+            type="button"
+            className={styles.marketButton}
+            onClick={() => setIsMarketModalOpen(true)}
+          >
+            Top 10 criptomonedas
+          </button>
           <label className={styles.networkSelector}>
             <span>Red</span>
-            <select value={network} onChange={handleNetworkChange}>
-              {NETWORK_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <div className={styles.networkControl}>
+              <select
+                className={styles.networkSelect}
+                value={network}
+                onChange={handleNetworkChange}
+              >
+                {NETWORK_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <span aria-hidden className={styles.networkCaret}>▾</span>
+            </div>
           </label>
           <WalletMultiButton className={styles.walletButton} />
         </div>
@@ -590,6 +551,10 @@ const SwapForm = () => {
           {isSwapping ? "Firmando…" : "Confirmar swap"}
         </button>
       </div>
+      <TopMarketModal
+        isOpen={isMarketModalOpen}
+        onClose={() => setIsMarketModalOpen(false)}
+      />
     </section>
   );
 };

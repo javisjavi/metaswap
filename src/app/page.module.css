@@ -84,22 +84,21 @@
   gap: 16px;
 }
 
-.topMarketsLink {
+.marketButton {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(30, 41, 59, 0.6);
-  color: #e2e8f0;
+  border-radius: 14px;
+  background: rgba(96, 165, 250, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: #e0f2fe;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.topMarketsLink:hover {
-  color: #bfdbfe;
-  border-color: rgba(129, 140, 248, 0.75);
+.marketButton:hover {
+  background: rgba(96, 165, 250, 0.24);
   transform: translateY(-1px);
 }
 
@@ -122,13 +121,38 @@
   letter-spacing: 0.06em;
 }
 
-.networkSelector select {
+.networkControl {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  padding: 8px 32px 8px 12px;
+}
+
+.networkSelect {
   background: transparent;
   border: none;
   color: inherit;
   font-weight: 600;
   outline: none;
   cursor: pointer;
+  appearance: none;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.networkSelect option {
+  color: #0f172a;
+}
+
+.networkCaret {
+  position: absolute;
+  right: 12px;
+  font-size: 0.75rem;
+  pointer-events: none;
+  color: #94a3b8;
 }
 
 .title {
@@ -385,6 +409,80 @@
   gap: 16px;
 }
 
+.marketModal {
+  width: min(760px, 100%);
+  gap: 20px;
+}
+
+.marketSource {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.marketStatus {
+  padding: 32px 0;
+  text-align: center;
+  color: #e2e8f0;
+}
+
+.marketTableWrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.marketTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.marketTable th,
+.marketTable td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.marketTable thead {
+  background: rgba(30, 41, 59, 0.75);
+}
+
+.marketTable tbody tr:nth-child(even) {
+  background: rgba(30, 41, 59, 0.35);
+}
+
+.marketTable tbody tr:hover {
+  background: rgba(96, 165, 250, 0.16);
+}
+
+.marketNameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.marketSymbol {
+  font-weight: 600;
+  color: #f8fafc;
+  text-transform: uppercase;
+}
+
+.marketName {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.marketPositive {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.marketNegative {
+  color: #f87171;
+  font-weight: 600;
+}
+
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -620,6 +718,10 @@
   .switchButton {
     width: 100%;
     height: 42px;
+  }
+
+  .marketTable {
+    min-width: 100%;
   }
 }
 
