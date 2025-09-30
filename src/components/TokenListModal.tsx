@@ -20,6 +20,36 @@ interface TokenListModalProps {
 
 const normalize = (value: string) => value.toLowerCase();
 
+const computeMatchScore = (token: TokenInfo, term: string) => {
+  const symbol = token.symbol.toLowerCase();
+  const name = token.name.toLowerCase();
+  const address = token.address.toLowerCase();
+  const marketCap = token.marketCap ?? 0;
+
+  let matchWeight = 1;
+
+  if (address === term) {
+    matchWeight = 9;
+  } else if (symbol === term) {
+    matchWeight = 8;
+  } else if (name === term) {
+    matchWeight = 7;
+  } else if (symbol.startsWith(term)) {
+    matchWeight = 6;
+  } else if (name.startsWith(term)) {
+    matchWeight = 5;
+  } else if (symbol.includes(term)) {
+    matchWeight = 4;
+  } else if (name.includes(term)) {
+    matchWeight = 3;
+  } else if (address.startsWith(term)) {
+    matchWeight = 2;
+  }
+
+  const marketCapScore = marketCap > 0 ? Math.log10(marketCap + 1) : 0;
+  return matchWeight * 1_000_000 + marketCapScore;
+};
+
 type DexScreenerToken = {
   address: string;
   name?: string;
@@ -32,6 +62,7 @@ type DexScreenerPair = {
   info?: {
     imageUrl?: string;
   };
+  marketCap?: number;
 };
 
 type DexScreenerSearchResponse = {
@@ -204,6 +235,7 @@ const TokenListModal = ({
             logoURI,
             chainId: 101,
             tags: ["community", "pump.fun"],
+            verified: false,
           };
 
           metadataCache.current.set(mint, tokenInfo);
@@ -251,7 +283,7 @@ const TokenListModal = ({
     }
 
     const term = normalize(searchTerm.trim());
-    const filtered = tokens.filter((token) => {
+    const filtered = combinedTokens.filter((token) => {
       const haystack = `${token.symbol} ${token.name} ${token.address}`.toLowerCase();
       return haystack.includes(term);
     });
@@ -274,7 +306,7 @@ const TokenListModal = ({
 
     const [solToken] = filtered.splice(solIndex, 1);
     return [solToken, ...filtered];
-  }, [tokens, searchTerm]);
+  }, [combinedTokens, searchTerm]);
 
   if (!isOpen) {
     return null;
@@ -329,7 +361,23 @@ const TokenListModal = ({
                 }}
               />
               <div className={styles.tokenInfo}>
-                <span className={styles.tokenSymbol}>{token.symbol}</span>
+                <div className={styles.tokenSymbolRow}>
+                  <span className={styles.tokenSymbol}>{token.symbol}</span>
+                  {token.verified ? (
+                    <span
+                      className={styles.verifiedBadge}
+                      aria-label="Contrato verificado"
+                      title="Contrato verificado"
+                    >
+                      <img
+                        src="/verified-check.svg"
+                        alt=""
+                        className={styles.verifiedBadgeIcon}
+                        aria-hidden="true"
+                      />
+                    </span>
+                  ) : null}
+                </div>
                 <span className={styles.tokenName}>{token.name}</span>
               </div>
               <span className={styles.tokenAddress}>

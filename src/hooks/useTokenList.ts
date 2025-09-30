@@ -26,6 +26,7 @@ const SOL_TOKEN: TokenInfo = {
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png",
   chainId: 101,
   tags: ["native"],
+  verified: true,
 };
 
 export interface TokenListState {
@@ -51,7 +52,8 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
           throw new Error("No se pudo obtener la lista de tokens");
         }
         const payload = (await response.json()) as TokenInfo[];
-        const filtered = payload.filter(
+        const enriched = payload.map((token) => ({ ...token, verified: true }));
+        const filtered = enriched.filter(
           (token) =>
             token.chainId === NETWORK_CHAIN_ID[network] || ALWAYS_INCLUDED_MINTS.has(token.address)
         );

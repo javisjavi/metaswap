@@ -750,6 +750,13 @@
   align-items: flex-start;
 }
 
+.selectorSymbolRow,
+.tokenSymbolRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .selectorSymbol {
   font-weight: 600;
   font-size: 1.1rem;
@@ -860,6 +867,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.15);
+}
+
+.verifiedBadgeIcon {
+  width: 10px;
+  height: 10px;
 }
 
 .tokenSymbol {

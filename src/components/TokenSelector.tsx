@@ -76,7 +76,23 @@ const TokenSelector = ({
             }}
           />
           <div className={styles.selectorText}>
-            <span className={styles.selectorSymbol}>{token?.symbol ?? "Seleccionar"}</span>
+            <div className={styles.selectorSymbolRow}>
+              <span className={styles.selectorSymbol}>{token?.symbol ?? "Seleccionar"}</span>
+              {token?.verified ? (
+                <span
+                  className={styles.verifiedBadge}
+                  aria-label="Contrato verificado"
+                  title="Contrato verificado"
+                >
+                  <img
+                    src="/verified-check.svg"
+                    alt=""
+                    className={styles.verifiedBadgeIcon}
+                    aria-hidden="true"
+                  />
+                </span>
+              ) : null}
+            </div>
             <span className={styles.selectorName}>{token?.name ?? "Elegir token"}</span>
           </div>
         </button>

@@ -6,4 +6,6 @@ export interface TokenInfo {
   logoURI?: string;
   chainId: number;
   tags?: string[];
+  marketCap?: number;
+  verified?: boolean;
 }

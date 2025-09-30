@@ -40,6 +40,7 @@ const DEFAULT_SOL_TOKEN: TokenInfo = {
     "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png",
   chainId: 101,
   tags: ["native"],
+  verified: true,
 };
 
 const DEFAULT_USDC_TOKEN: TokenInfo = {
@@ -51,6 +52,7 @@ const DEFAULT_USDC_TOKEN: TokenInfo = {
     "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
   chainId: 101,
   tags: ["stablecoin"],
+  verified: true,
 };
 
 const decodeTransaction = (encoded: string) =>
