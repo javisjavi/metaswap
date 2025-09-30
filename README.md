@@ -19,7 +19,7 @@ La aplicación quedará disponible en [http://localhost:3000](http://localhost:3
 
 ## Características principales
 
-- Conexión con Solflare mediante `@solana/wallet-adapter`.
+- Conexión con Solflare mediante `@solana/wallet-adapter` y uso del endpoint de Helius para mainnet.
 - Solicitud de SOL de prueba en devnet con un botón de faucet.
 - Búsqueda y selección de tokens (incluye BONK por dirección).
 - Cotizaciones dinámicas usando Jupiter con actualización automática.

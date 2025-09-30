@@ -9,7 +9,6 @@ import {
   PublicKey,
   VersionedTransaction,
   Connection,
-  clusterApiUrl,
 } from "@solana/web3.js";
 
 import styles from "@/app/page.module.css";
@@ -20,6 +19,7 @@ import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amo
 import { SwapResponse } from "@/types/jupiter";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
+import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
 
 const NETWORK_OPTIONS = [
   { value: "mainnet-beta", label: "Mainnet" },
@@ -75,10 +75,10 @@ const SwapForm = () => {
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
 
-  const balanceConnection = useMemo(
-    () => new Connection(clusterApiUrl(network), "confirmed"),
-    [network]
-  );
+  const balanceConnection = useMemo(() => {
+    const endpoint = getEndpointForNetwork(network);
+    return new Connection(endpoint, "confirmed");
+  }, [network]);
 
   useEffect(() => {
     setInputToken(DEFAULT_SOL_TOKEN);
