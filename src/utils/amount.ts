@@ -13,12 +13,23 @@ export const formatLamports = (
   if (fraction === BigInt(0)) {
     return whole.toString();
   }
-  const fractionStr = fraction
-    .toString()
-    .padStart(decimals, "0")
-    .slice(0, precision)
-    .replace(/0+$/, "");
-  return fractionStr ? `${whole.toString()}.${fractionStr}` : whole.toString();
+  const fractionDigits = fraction.toString().padStart(decimals, "0");
+  const maxVisibleDigits = Math.min(precision, decimals);
+  let visibleDigits = fractionDigits.slice(0, maxVisibleDigits);
+
+  if (/^0+$/.test(visibleDigits)) {
+    const firstNonZeroIndex = fractionDigits.search(/[^0]/);
+    if (firstNonZeroIndex !== -1) {
+      const end = Math.min(Math.max(maxVisibleDigits, firstNonZeroIndex + 1), decimals);
+      visibleDigits = fractionDigits.slice(0, end);
+    }
+  }
+
+  const trimmedDigits = visibleDigits.replace(/0+$/, "");
+
+  return trimmedDigits
+    ? `${whole.toString()}.${trimmedDigits}`
+    : whole.toString();
 };
 
 export const parseAmountToLamports = (

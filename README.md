@@ -17,22 +17,6 @@ pnpm dev
 
 La aplicación quedará disponible en [http://localhost:3000](http://localhost:3000).
 
-### Configurar endpoints RPC
-
-Por defecto la aplicación utiliza el endpoint público de Solana para mainnet. Para evitar
-limitaciones o errores de verificación al firmar transacciones en producción, puedes definir
-un endpoint RPC personalizado mediante las siguientes variables de entorno (preferencia en
-este orden):
-
-- `NEXT_PUBLIC_SOLANA_MAINNET_RPC`
-- `NEXT_PUBLIC_QUICKNODE_RPC_URL`
-
-Incluye el valor deseado en un archivo `.env.local` en la raíz del proyecto, por ejemplo:
-
-```env
-NEXT_PUBLIC_SOLANA_MAINNET_RPC=https://mi-endpoint-personalizado.solana-mainnet.quiknode.pro/...
-```
-
 ## Características principales
 
 - Conexión con Solflare mediante `@solana/wallet-adapter`.
