@@ -8,6 +8,8 @@ import {
   ParsedAccountData,
   PublicKey,
   VersionedTransaction,
+  Connection,
+  clusterApiUrl,
 } from "@solana/web3.js";
 
 import styles from "@/app/page.module.css";
@@ -72,6 +74,11 @@ const SwapForm = () => {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
+
+  const balanceConnection = useMemo(
+    () => new Connection(clusterApiUrl(network), "confirmed"),
+    [network]
+  );
 
   useEffect(() => {
     setInputToken(DEFAULT_SOL_TOKEN);
@@ -191,14 +198,14 @@ const SwapForm = () => {
     }
     try {
       setIsFetchingBalance(true);
-      const lamports = await connection.getBalance(publicKey, "confirmed");
+      const lamports = await balanceConnection.getBalance(publicKey, "confirmed");
       setBalance(formatLamports(BigInt(lamports), 9, 4));
     } catch (error) {
       console.error("Error al leer el saldo", error);
     } finally {
       setIsFetchingBalance(false);
     }
-  }, [connection, publicKey]);
+  }, [balanceConnection, publicKey]);
 
   useEffect(() => {
     if (connected) {
@@ -224,7 +231,7 @@ const SwapForm = () => {
     const fetchTokenBalance = async () => {
       try {
         const mint = new PublicKey(inputToken.address);
-        const response = await connection.getParsedTokenAccountsByOwner(
+        const response = await balanceConnection.getParsedTokenAccountsByOwner(
           publicKey,
           { mint },
           "confirmed"
@@ -264,7 +271,7 @@ const SwapForm = () => {
     return () => {
       cancelled = true;
     };
-  }, [inputToken, publicKey, connection, balance]);
+  }, [inputToken, publicKey, balanceConnection, balance]);
 
   const parsedAmount = useMemo(
     () =>
