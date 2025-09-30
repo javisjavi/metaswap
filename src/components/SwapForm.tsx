@@ -5,6 +5,8 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   LAMPORTS_PER_SOL,
+  ParsedAccountData,
+  PublicKey,
   VersionedTransaction,
 } from "@solana/web3.js";
 
@@ -41,6 +43,9 @@ const SwapForm = () => {
   const [amount, setAmount] = useState<string>("");
   const [balance, setBalance] = useState<string | null>(null);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
+  const [inputTokenBalance, setInputTokenBalance] = useState<string | null>(null);
+  const [isFetchingInputTokenBalance, setIsFetchingInputTokenBalance] =
+    useState(false);
   const [isAirdropping, setIsAirdropping] = useState(false);
   const [airdropMessage, setAirdropMessage] = useState<string | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
@@ -103,6 +108,64 @@ const SwapForm = () => {
     }
   }, [connected, refreshBalance]);
 
+  useEffect(() => {
+    if (!inputToken || !publicKey) {
+      setInputTokenBalance(null);
+      return;
+    }
+
+    if (inputToken.address === SOL_MINT) {
+      setInputTokenBalance(balance);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchTokenBalance = async () => {
+      try {
+        const mint = new PublicKey(inputToken.address);
+        const response = await connection.getParsedTokenAccountsByOwner(
+          publicKey,
+          { mint },
+          "confirmed"
+        );
+
+        const total = response.value.reduce((sum, account) => {
+          const data = account.account.data as ParsedAccountData;
+          const amount = data?.parsed?.info?.tokenAmount?.amount as
+            | string
+            | undefined;
+          if (!amount) {
+            return sum;
+          }
+          try {
+            return sum + BigInt(amount);
+          } catch {
+            return sum;
+          }
+        }, BigInt(0));
+
+        if (!cancelled) {
+          setInputTokenBalance(
+            formatLamports(total, inputToken.decimals, Math.min(6, inputToken.decimals))
+          );
+        }
+      } catch (error) {
+        console.error("Error al leer el saldo del token", error);
+        if (!cancelled) {
+          setInputTokenBalance(null);
+        }
+      }
+    };
+
+    setInputTokenBalance(null);
+    fetchTokenBalance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [inputToken, publicKey, connection, balance]);
+
   const parsedAmount = useMemo(
     () =>
       inputToken ? parseAmountToLamports(amount, inputToken.decimals ?? 0) : null,
@@ -139,6 +202,86 @@ const SwapForm = () => {
     setSwapError(null);
     setSwapSignature(null);
   }, [inputToken?.address, outputToken?.address, amount]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!publicKey || !inputToken) {
+      setInputTokenBalance(null);
+      setIsFetchingInputTokenBalance(false);
+      return;
+    }
+
+    if (inputToken.address === SOL_MINT) {
+      setInputTokenBalance(balance);
+      setIsFetchingInputTokenBalance(isFetchingBalance);
+      return;
+    }
+
+    const fetchBalance = async () => {
+      setIsFetchingInputTokenBalance(true);
+      try {
+        const mint = new PublicKey(inputToken.address);
+        const response = await connection.getParsedTokenAccountsByOwner(publicKey, {
+          mint,
+        });
+        const total = response.value.reduce((sum, { account }) => {
+          const data = account.data;
+          if ("parsed" in data) {
+            const parsed = data as ParsedAccountData;
+            const amountLamports = BigInt(parsed.parsed.info.tokenAmount.amount);
+            return sum + amountLamports;
+          }
+          return sum;
+        }, BigInt(0));
+        if (!cancelled) {
+          setInputTokenBalance(formatLamports(total, inputToken.decimals, 6));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Error al leer el balance del token", error);
+          setInputTokenBalance(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsFetchingInputTokenBalance(false);
+        }
+      }
+    };
+
+    fetchBalance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    publicKey,
+    inputToken,
+    connection,
+    balance,
+    isFetchingBalance,
+  ]);
+
+  const inputAvailableLabel = useMemo(() => {
+    if (!inputToken) {
+      return null;
+    }
+    if (!connected) {
+      return "Conecta tu wallet";
+    }
+    if (isFetchingInputTokenBalance) {
+      return "Actualizando saldo…";
+    }
+    if (inputTokenBalance) {
+      return `${inputTokenBalance} ${inputToken.symbol}`;
+    }
+    return "-";
+  }, [
+    connected,
+    inputToken,
+    inputTokenBalance,
+    isFetchingInputTokenBalance,
+  ]);
 
   const handleAirdrop = useCallback(async () => {
     if (network === "mainnet-beta") {
@@ -381,6 +524,12 @@ const SwapForm = () => {
             amount={amount}
             onAmountChange={setAmount}
             placeholder="0.0"
+            availableAmount={connected ? inputTokenBalance ?? undefined : undefined}
+            onAvailableClick={
+              connected && inputTokenBalance
+                ? () => setAmount(inputTokenBalance)
+                : undefined
+            }
           />
 
           <button

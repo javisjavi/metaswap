@@ -1,4 +1,3 @@
-"use client";
 
 /* eslint-disable @next/next/no-img-element */
 import { ChangeEvent, useState } from "react";
@@ -15,6 +14,8 @@ interface TokenSelectorProps {
   onAmountChange?: (value: string) => void;
   readOnlyAmount?: boolean;
   placeholder?: string;
+  availableAmount?: string;
+  onAvailableClick?: () => void;
 }
 
 const TokenSelector = ({
@@ -26,6 +27,8 @@ const TokenSelector = ({
   onAmountChange,
   readOnlyAmount = false,
   placeholder,
+  availableAmount,
+  onAvailableClick,
 }: TokenSelectorProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -40,7 +43,19 @@ const TokenSelector = ({
   return (
     <div className={styles.selectorWrapper}>
       <div className={styles.selectorHeader}>
-        <span>{label}</span>
+        <div className={styles.selectorLabel}>
+          <span>{label}</span>
+          {availableAmount && onAvailableClick ? (
+            <button
+              type="button"
+              className={styles.availableBalanceButton}
+              onClick={onAvailableClick}
+              title="Usar todo el saldo disponible"
+            >
+              ({availableAmount})
+            </button>
+          ) : null}
+        </div>
         {token ? <span className={styles.tokenBadge}>{token.symbol}</span> : null}
       </div>
       <div className={styles.selectorBody}>
