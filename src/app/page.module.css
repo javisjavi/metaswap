@@ -158,9 +158,20 @@
 
 .selectorsWrapper {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 20px;
   align-items: end;
+}
+
+.selectorWrapper {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
 }
 
 .switchButton {
@@ -176,16 +187,6 @@
 
 .switchButton:hover {
   background: rgba(148, 163, 184, 0.35);
-}
-
-.selectorWrapper {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 18px;
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .selectorHeader {
@@ -207,6 +208,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .tokenButton {
@@ -251,6 +253,7 @@
 
 .amountInput {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   font-size: 1.8rem;
@@ -421,7 +424,7 @@
 
 @media (max-width: 900px) {
   .selectorsWrapper {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .switchButton {
@@ -446,5 +449,20 @@
 
   .selectorsWrapper {
     gap: 16px;
+  }
+
+  .selectorBody {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tokenButton {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .amountInput {
+    text-align: left;
+    font-size: 1.6rem;
   }
 }
