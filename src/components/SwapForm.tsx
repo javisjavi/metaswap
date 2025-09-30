@@ -26,7 +26,7 @@ const NETWORK_OPTIONS = [
 ] as const;
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
-const BONK_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
+const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const AIRDROP_LAMPORTS = LAMPORTS_PER_SOL;
 
 const decodeTransaction = (encoded: string) =>
@@ -44,8 +44,6 @@ const SwapForm = () => {
   const [balance, setBalance] = useState<string | null>(null);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
   const [inputTokenBalance, setInputTokenBalance] = useState<string | null>(null);
-  const [isFetchingInputTokenBalance, setIsFetchingInputTokenBalance] =
-    useState(false);
   const [isAirdropping, setIsAirdropping] = useState(false);
   const [airdropMessage, setAirdropMessage] = useState<string | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
@@ -75,9 +73,9 @@ const SwapForm = () => {
 
     setOutputToken((previous) => {
       if (previous) return previous;
-      const bonk = tokens.find((token) => token.address === BONK_MINT);
-      if (bonk && bonk.address !== inputToken?.address) {
-        return bonk;
+      const usdc = tokens.find((token) => token.address === USDC_MINT);
+      if (usdc && usdc.address !== inputToken?.address) {
+        return usdc;
       }
       const alternative = tokens.find((token) => token.address !== inputToken?.address);
       return alternative ?? null;
@@ -208,18 +206,15 @@ const SwapForm = () => {
 
     if (!publicKey || !inputToken) {
       setInputTokenBalance(null);
-      setIsFetchingInputTokenBalance(false);
       return;
     }
 
     if (inputToken.address === SOL_MINT) {
       setInputTokenBalance(balance);
-      setIsFetchingInputTokenBalance(isFetchingBalance);
       return;
     }
 
     const fetchBalance = async () => {
-      setIsFetchingInputTokenBalance(true);
       try {
         const mint = new PublicKey(inputToken.address);
         const response = await connection.getParsedTokenAccountsByOwner(publicKey, {
@@ -242,10 +237,6 @@ const SwapForm = () => {
           console.error("Error al leer el balance del token", error);
           setInputTokenBalance(null);
         }
-      } finally {
-        if (!cancelled) {
-          setIsFetchingInputTokenBalance(false);
-        }
       }
     };
 
@@ -259,28 +250,6 @@ const SwapForm = () => {
     inputToken,
     connection,
     balance,
-    isFetchingBalance,
-  ]);
-
-  const inputAvailableLabel = useMemo(() => {
-    if (!inputToken) {
-      return null;
-    }
-    if (!connected) {
-      return "Conecta tu wallet";
-    }
-    if (isFetchingInputTokenBalance) {
-      return "Actualizando saldo…";
-    }
-    if (inputTokenBalance) {
-      return `${inputTokenBalance} ${inputToken.symbol}`;
-    }
-    return "-";
-  }, [
-    connected,
-    inputToken,
-    inputTokenBalance,
-    isFetchingInputTokenBalance,
   ]);
 
   const handleAirdrop = useCallback(async () => {
