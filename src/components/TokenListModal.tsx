@@ -6,6 +6,7 @@ import { useConnection } from "@solana/wallet-adapter-react";
 import { Connection, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
+import { SOL_MINT } from "@/utils/tokenConstants";
 import { NetworkCluster } from "@/context/NetworkContext";
 
 interface TokenListModalProps {
@@ -248,12 +249,32 @@ const TokenListModal = ({
     if (!searchTerm.trim()) {
       return combinedTokens;
     }
+
     const term = normalize(searchTerm.trim());
-    return combinedTokens.filter((token) => {
+    const filtered = tokens.filter((token) => {
       const haystack = `${token.symbol} ${token.name} ${token.address}`.toLowerCase();
       return haystack.includes(term);
     });
-  }, [combinedTokens, searchTerm]);
+
+    if (filtered.length === 0) {
+      return filtered;
+    }
+
+    const shouldPrioritizeSol = term.includes("sol");
+
+    if (!shouldPrioritizeSol) {
+      return filtered;
+    }
+
+    const solIndex = filtered.findIndex((token) => token.address === SOL_MINT);
+
+    if (solIndex <= 0) {
+      return filtered;
+    }
+
+    const [solToken] = filtered.splice(solIndex, 1);
+    return [solToken, ...filtered];
+  }, [tokens, searchTerm]);
 
   if (!isOpen) {
     return null;

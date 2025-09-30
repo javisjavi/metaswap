@@ -17,8 +17,6 @@ const walletNetworkMap: Record<NetworkCluster, WalletAdapterNetwork> = {
   "mainnet-beta": WalletAdapterNetwork.Mainnet,
 };
 
-const QUICKNODE_MAINNET_ENDPOINT = process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL ?? null;
-
 interface WalletProviderProps {
   children: ReactNode;
 }
@@ -26,20 +24,34 @@ interface WalletProviderProps {
 const DEFAULT_ENDPOINTS: Record<NetworkCluster, string> = {
   devnet: clusterApiUrl("devnet"),
   testnet: clusterApiUrl("testnet"),
-  "mainnet-beta": "https://mainnet.helius-rpc.com/?api-key=06c5f6f8-30b3-4326-beff-c27807297023",
+  "mainnet-beta": clusterApiUrl("mainnet-beta"),
 };
 
-const customMainnetEndpoint =
-  typeof process !== "undefined"
-    ? process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC
-    : undefined;
+const resolveMainnetEndpoint = () => {
+  if (typeof process === "undefined") {
+    return DEFAULT_ENDPOINTS["mainnet-beta"];
+  }
+
+  const candidates = [
+    process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC,
+    process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && candidate.trim().length > 0) {
+      return candidate;
+    }
+  }
+
+  return DEFAULT_ENDPOINTS["mainnet-beta"];
+};
 
 const WalletContextProvider = ({ children }: WalletProviderProps) => {
   const { network } = useNetwork();
 
   const endpoint = useMemo(() => {
     if (network === "mainnet-beta") {
-      return customMainnetEndpoint ?? DEFAULT_ENDPOINTS[network];
+      return resolveMainnetEndpoint();
     }
 
     return DEFAULT_ENDPOINTS[network];
@@ -52,10 +64,13 @@ const WalletContextProvider = ({ children }: WalletProviderProps) => {
 
   useEffect(() => {
     console.info(`Conectando a la red ${network}`);
-    if (network === "mainnet-beta" && !QUICKNODE_MAINNET_ENDPOINT) {
-      console.warn(
-        "NEXT_PUBLIC_QUICKNODE_RPC_URL no está configurado. Se utilizará el endpoint público de Solana."
-      );
+    if (network === "mainnet-beta") {
+      const customEndpoint = resolveMainnetEndpoint();
+      if (customEndpoint === DEFAULT_ENDPOINTS["mainnet-beta"]) {
+        console.warn(
+          "No se detectó un endpoint RPC personalizado para mainnet. Se utilizará el endpoint público de Solana."
+        );
+      }
     }
   }, [network]);
 

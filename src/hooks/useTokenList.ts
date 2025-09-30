@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TokenInfo } from "@/types/token";
+import { SOL_MINT } from "@/utils/tokenConstants";
 
 const TOKEN_LIST_URL = "https://token.jup.ag/strict";
-const SOL_MINT = "So11111111111111111111111111111111111111112";
 const ALWAYS_INCLUDED_MINTS = new Set([
   SOL_MINT,
   "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
