@@ -24,7 +24,7 @@ interface WalletProviderProps {
 const DEFAULT_ENDPOINTS: Record<NetworkCluster, string> = {
   devnet: clusterApiUrl("devnet"),
   testnet: clusterApiUrl("testnet"),
-  "mainnet-beta": clusterApiUrl("mainnet-beta"),
+  "mainnet-beta": "https://mainnet.helius-rpc.com",
 };
 
 const resolveMainnetEndpoint = () => {
@@ -33,6 +33,7 @@ const resolveMainnetEndpoint = () => {
   }
 
   const candidates = [
+    process.env.NEXT_PUBLIC_HELIUS_RPC_URL,
     process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC,
     process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL,
   ];
@@ -68,7 +69,7 @@ const WalletContextProvider = ({ children }: WalletProviderProps) => {
       const customEndpoint = resolveMainnetEndpoint();
       if (customEndpoint === DEFAULT_ENDPOINTS["mainnet-beta"]) {
         console.warn(
-          "No se detectó un endpoint RPC personalizado para mainnet. Se utilizará el endpoint público de Solana."
+          "No se detectó un endpoint RPC personalizado para mainnet. Se utilizará el endpoint público de Helius."
         );
       }
     }
