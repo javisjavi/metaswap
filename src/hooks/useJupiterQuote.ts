@@ -56,7 +56,7 @@ export const useJupiterQuote = ({
     }
 
     const query = new URLSearchParams({
-      cluster,
+      cluster: "devnet",
       inputMint: params.inputMint,
       outputMint: params.outputMint,
       amount: params.amount,
@@ -80,7 +80,7 @@ export const useJupiterQuote = ({
     } finally {
       setLoading(false);
     }
-  }, [params, cluster]);
+  }, [params]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;

@@ -17,14 +17,33 @@ const walletNetworkMap: Record<NetworkCluster, WalletAdapterNetwork> = {
   "mainnet-beta": WalletAdapterNetwork.Mainnet,
 };
 
+const QUICKNODE_MAINNET_ENDPOINT = process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL ?? null;
+
 interface WalletProviderProps {
   children: ReactNode;
 }
 
+const DEFAULT_ENDPOINTS: Record<NetworkCluster, string> = {
+  devnet: clusterApiUrl("devnet"),
+  testnet: clusterApiUrl("testnet"),
+  "mainnet-beta": "https://api.testnet.solana.com",
+};
+
+const customMainnetEndpoint =
+  typeof process !== "undefined"
+    ? process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC
+    : undefined;
+
 const WalletContextProvider = ({ children }: WalletProviderProps) => {
   const { network } = useNetwork();
 
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(() => {
+    if (network === "mainnet-beta") {
+      return customMainnetEndpoint ?? DEFAULT_ENDPOINTS[network];
+    }
+
+    return DEFAULT_ENDPOINTS[network];
+  }, [network]);
 
   const wallets = useMemo(
     () => [new SolflareWalletAdapter({ network: walletNetworkMap[network] })],
@@ -33,6 +52,11 @@ const WalletContextProvider = ({ children }: WalletProviderProps) => {
 
   useEffect(() => {
     console.info(`Conectando a la red ${network}`);
+    if (network === "mainnet-beta" && !QUICKNODE_MAINNET_ENDPOINT) {
+      console.warn(
+        "NEXT_PUBLIC_QUICKNODE_RPC_URL no está configurado. Se utilizará el endpoint público de Solana."
+      );
+    }
   }, [network]);
 
   return (
