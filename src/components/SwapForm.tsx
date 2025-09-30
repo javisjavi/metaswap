@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -438,6 +439,10 @@ const SwapForm = () => {
           </p>
         </div>
         <div className={styles.headerActions}>
+          <Link href="/top-10" className={styles.topMarketsLink}>
+            <span>Top 10 criptomonedas</span>
+            <span aria-hidden>→</span>
+          </Link>
           <label className={styles.networkSelector}>
             <span>Red</span>
             <select value={network} onChange={handleNetworkChange}>
