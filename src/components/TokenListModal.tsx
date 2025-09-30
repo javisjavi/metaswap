@@ -20,36 +20,6 @@ interface TokenListModalProps {
 
 const normalize = (value: string) => value.toLowerCase();
 
-const computeMatchScore = (token: TokenInfo, term: string) => {
-  const symbol = token.symbol.toLowerCase();
-  const name = token.name.toLowerCase();
-  const address = token.address.toLowerCase();
-  const marketCap = token.marketCap ?? 0;
-
-  let matchWeight = 1;
-
-  if (address === term) {
-    matchWeight = 9;
-  } else if (symbol === term) {
-    matchWeight = 8;
-  } else if (name === term) {
-    matchWeight = 7;
-  } else if (symbol.startsWith(term)) {
-    matchWeight = 6;
-  } else if (name.startsWith(term)) {
-    matchWeight = 5;
-  } else if (symbol.includes(term)) {
-    matchWeight = 4;
-  } else if (name.includes(term)) {
-    matchWeight = 3;
-  } else if (address.startsWith(term)) {
-    matchWeight = 2;
-  }
-
-  const marketCapScore = marketCap > 0 ? Math.log10(marketCap + 1) : 0;
-  return matchWeight * 1_000_000 + marketCapScore;
-};
-
 type DexScreenerToken = {
   address: string;
   name?: string;
@@ -109,6 +79,11 @@ const sanitizeSymbol = (value?: string | null) => {
   if (!value) return "TOKEN";
   const normalized = value.trim();
   return normalized ? normalized.toUpperCase().slice(0, 16) : "TOKEN";
+};
+
+const getSolscanUrl = (mint: string, cluster: NetworkCluster) => {
+  const base = `https://solscan.io/token/${mint}`;
+  return cluster === "mainnet-beta" ? base : `${base}?cluster=${cluster}`;
 };
 
 const TokenListModal = ({
@@ -306,7 +281,7 @@ const TokenListModal = ({
 
     const [solToken] = filtered.splice(solIndex, 1);
     return [solToken, ...filtered];
-  }, [tokens, searchTerm, combinedTokens]);
+  }, [searchTerm, combinedTokens]);
 
   if (!isOpen) {
     return null;
@@ -339,52 +314,72 @@ const TokenListModal = ({
           autoFocus
         />
         <div className={styles.tokenList}>
-          {filteredTokens.map((token) => (
-            <button
-              type="button"
-              key={token.address}
-              className={`${styles.tokenRow} ${
-                token.address === selectedMint ? styles.tokenRowSelected : ""
-              }`}
-              onClick={() => {
-                onSelect(token);
-                onClose();
-              }}
-            >
-              <img
-                className={styles.tokenIcon}
-                src={token.logoURI ?? "/placeholder-token.svg"}
-                alt={token.symbol}
-                loading="lazy"
-                onError={(event) => {
-                  (event.currentTarget as HTMLImageElement).src = "/placeholder-token.svg";
-                }}
-              />
-              <div className={styles.tokenInfo}>
-                <div className={styles.tokenSymbolRow}>
-                  <span className={styles.tokenSymbol}>{token.symbol}</span>
-                  {token.verified ? (
-                    <span
-                      className={styles.verifiedBadge}
-                      aria-label="Contrato verificado"
-                      title="Contrato verificado"
-                    >
-                      <img
-                        src="/verified-check.svg"
-                        alt=""
-                        className={styles.verifiedBadgeIcon}
-                        aria-hidden="true"
-                      />
-                    </span>
-                  ) : null}
-                </div>
-                <span className={styles.tokenName}>{token.name}</span>
+          {filteredTokens.map((token) => {
+            const solscanUrl = getSolscanUrl(token.address, network);
+            const isSelected = token.address === selectedMint;
+            const truncatedAddress = `${token.address.slice(0, 4)}…${token.address.slice(-4)}`;
+
+            return (
+              <div
+                key={token.address}
+                className={`${styles.tokenRow} ${isSelected ? styles.tokenRowSelected : ""}`}
+              >
+                <button
+                  type="button"
+                  className={styles.tokenRowButton}
+                  onClick={() => {
+                    onSelect(token);
+                    onClose();
+                  }}
+                >
+                  <img
+                    className={styles.tokenIcon}
+                    src={token.logoURI ?? "/placeholder-token.svg"}
+                    alt={token.symbol}
+                    loading="lazy"
+                    onError={(event) => {
+                      (event.currentTarget as HTMLImageElement).src = "/placeholder-token.svg";
+                    }}
+                  />
+                  <div className={styles.tokenInfo}>
+                    <div className={styles.tokenSymbolRow}>
+                      <span className={styles.tokenSymbol}>{token.symbol}</span>
+                      {token.verified ? (
+                        <span
+                          className={styles.verifiedBadge}
+                          aria-label="Contrato verificado"
+                          title="Contrato verificado"
+                        >
+                          <img
+                            src="/verified-check.svg"
+                            alt=""
+                            className={styles.verifiedBadgeIcon}
+                            aria-hidden="true"
+                          />
+                        </span>
+                      ) : null}
+                    </div>
+                    <span className={styles.tokenName}>{token.name}</span>
+                  </div>
+                  <span className={styles.tokenAddress}>{truncatedAddress}</span>
+                </button>
+                <a
+                  href={solscanUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.solscanLink}
+                  aria-label={`Ver ${token.symbol} en Solscan`}
+                >
+                  <img
+                    src="/solscan.svg"
+                    alt=""
+                    className={styles.solscanIcon}
+                    aria-hidden="true"
+                  />
+                </a>
               </div>
-              <span className={styles.tokenAddress}>
-                {`${token.address.slice(0, 4)}…${token.address.slice(-4)}`}
-              </span>
-            </button>
-          ))}
+            );
+          })}
           {filteredTokens.length === 0 && !searchingExternal && !externalError && (
             <p className={styles.emptyState}>No encontramos tokens que coincidan con tu búsqueda.</p>
           )}

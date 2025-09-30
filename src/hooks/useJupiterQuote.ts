@@ -10,6 +10,7 @@ interface UseJupiterQuoteParams {
   enabled?: boolean;
   slippageBps?: number;
   cluster?: "devnet" | "testnet" | "mainnet-beta";
+  swapMode?: "ExactIn" | "ExactOut";
 }
 
 interface UseJupiterQuoteResult {
@@ -29,6 +30,7 @@ export const useJupiterQuote = ({
   enabled = true,
   slippageBps = 50,
   cluster = "devnet",
+  swapMode = "ExactIn",
 }: UseJupiterQuoteParams): UseJupiterQuoteResult => {
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,8 +47,9 @@ export const useJupiterQuote = ({
       amount: amount.toString(),
       slippageBps,
       cluster,
+      swapMode,
     };
-  }, [enabled, inputMint, outputMint, amount, slippageBps, cluster]);
+  }, [enabled, inputMint, outputMint, amount, slippageBps, cluster, swapMode]);
 
   const fetchQuote = useCallback(async () => {
     if (!params) {
@@ -61,6 +64,7 @@ export const useJupiterQuote = ({
       outputMint: params.outputMint,
       amount: params.amount,
       slippageBps: params.slippageBps.toString(),
+      swapMode: params.swapMode,
     });
 
     setLoading(true);

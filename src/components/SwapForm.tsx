@@ -67,7 +67,9 @@ const SwapForm = () => {
   const [inputToken, setInputToken] = useState<TokenInfo | null>(DEFAULT_SOL_TOKEN);
   const [outputToken, setOutputToken] = useState<TokenInfo | null>(DEFAULT_USDC_TOKEN);
   const [customTokens, setCustomTokens] = useState<TokenInfo[]>([]);
-  const [amount, setAmount] = useState<string>("");
+  const [amountMode, setAmountMode] = useState<"in" | "out">("in");
+  const [inputAmount, setInputAmount] = useState<string>("");
+  const [outputAmount, setOutputAmount] = useState<string>("");
   const [balance, setBalance] = useState<string | null>(null);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
   const [inputTokenBalance, setInputTokenBalance] = useState<string | null>(null);
@@ -116,7 +118,9 @@ const SwapForm = () => {
   useEffect(() => {
     setInputToken(DEFAULT_SOL_TOKEN);
     setOutputToken(DEFAULT_USDC_TOKEN);
-    setAmount("");
+    setAmountMode("in");
+    setInputAmount("");
+    setOutputAmount("");
     setBalance(null);
     setSwapError(null);
     setSwapSignature(null);
@@ -306,11 +310,23 @@ const SwapForm = () => {
     };
   }, [inputToken, publicKey, balanceConnection, balance]);
 
-  const parsedAmount = useMemo(
+  const parsedInputAmount = useMemo(
     () =>
-      inputToken ? parseAmountToLamports(amount, inputToken.decimals ?? 0) : null,
-    [amount, inputToken]
+      inputToken
+        ? parseAmountToLamports(inputAmount, inputToken.decimals ?? 0)
+        : null,
+    [inputAmount, inputToken]
   );
+
+  const parsedOutputAmount = useMemo(
+    () =>
+      outputToken
+        ? parseAmountToLamports(outputAmount, outputToken.decimals ?? 0)
+        : null,
+    [outputAmount, outputToken]
+  );
+
+  const quoteAmount = amountMode === "in" ? parsedInputAmount : parsedOutputAmount;
 
   const sameTokenSelected =
     inputToken && outputToken && inputToken.address === outputToken.address;
@@ -319,8 +335,8 @@ const SwapForm = () => {
     Boolean(
       inputToken &&
         outputToken &&
-        parsedAmount &&
-        parsedAmount > BigInt(0) &&
+        quoteAmount &&
+        quoteAmount > BigInt(0) &&
         !sameTokenSelected
     );
 
@@ -333,15 +349,16 @@ const SwapForm = () => {
   } = useJupiterQuote({
     inputMint: inputToken?.address,
     outputMint: outputToken?.address,
-    amount: parsedAmount,
+    amount: quoteAmount,
     enabled: canQuote,
     cluster: network,
+    swapMode: amountMode === "in" ? "ExactIn" : "ExactOut",
   });
 
   useEffect(() => {
     setSwapError(null);
     setSwapSignature(null);
-  }, [inputToken?.address, outputToken?.address, amount]);
+  }, [inputToken?.address, outputToken?.address, inputAmount, outputAmount, amountMode]);
 
   const handleAirdrop = useCallback(async () => {
     if (network === "mainnet-beta") {
@@ -377,8 +394,28 @@ const SwapForm = () => {
     if (!inputToken || !outputToken) return;
     setInputToken(outputToken);
     setOutputToken(inputToken);
-    setAmount("");
+    setAmountMode("in");
+    setInputAmount("");
+    setOutputAmount("");
   };
+
+  const handleInputAmountChange = useCallback(
+    (value: string) => {
+      setAmountMode("in");
+      setInputAmount(value);
+      setOutputAmount("");
+    },
+    [setAmountMode, setInputAmount, setOutputAmount]
+  );
+
+  const handleOutputAmountChange = useCallback(
+    (value: string) => {
+      setAmountMode("out");
+      setOutputAmount(value);
+      setInputAmount("");
+    },
+    [setAmountMode, setOutputAmount, setInputAmount]
+  );
 
   const handleSelectInput = (token: TokenInfo) => {
     ensureCustomToken(token);
@@ -398,15 +435,50 @@ const SwapForm = () => {
     }
   };
 
-  const estimatedOutput = useMemo(() => {
+  const formattedQuoteInputAmount = useMemo(() => {
+    if (!quote || !inputToken) return "";
+    return formatLamports(
+      quote.inAmount,
+      inputToken.decimals,
+      Math.min(6, inputToken.decimals)
+    );
+  }, [quote, inputToken]);
+
+  const formattedQuoteOutputAmount = useMemo(() => {
     if (!quote || !outputToken) return "";
-    return formatLamports(quote.outAmount, outputToken.decimals, 6);
+    return formatLamports(
+      quote.outAmount,
+      outputToken.decimals,
+      Math.min(6, outputToken.decimals)
+    );
   }, [quote, outputToken]);
 
-  const minimumReceived = useMemo(() => {
-    if (!quote || !outputToken) return "";
-    return formatLamports(quote.otherAmountThreshold, outputToken.decimals, 6);
-  }, [quote, outputToken]);
+  const displayInputAmount = amountMode === "in" ? inputAmount : formattedQuoteInputAmount;
+  const displayOutputAmount =
+    amountMode === "out" ? outputAmount : formattedQuoteOutputAmount;
+
+  const quoteThresholdAmount = useMemo(() => {
+    if (!quote) return "";
+    if (quote.swapMode === "ExactOut") {
+      if (!inputToken) return "";
+      return formatLamports(
+        quote.otherAmountThreshold,
+        inputToken.decimals,
+        Math.min(6, inputToken.decimals)
+      );
+    }
+    if (!outputToken) return "";
+    return formatLamports(
+      quote.otherAmountThreshold,
+      outputToken.decimals,
+      Math.min(6, outputToken.decimals)
+    );
+  }, [quote, inputToken, outputToken]);
+
+  const thresholdLabel =
+    quote?.swapMode === "ExactOut"
+      ? "Máximo a enviar (5%)"
+      : "Mínimo tras slippage (5%)";
 
   const priceDisplay = useMemo(() => {
     if (!quote || !inputToken || !outputToken) return null;
@@ -443,7 +515,13 @@ const SwapForm = () => {
       setSwapError("Conecta tu wallet Solflare para continuar.");
       return;
     }
-    if (!quote || !inputToken || !outputToken || !parsedAmount || parsedAmount <= BigInt(0)) {
+    if (
+      !quote ||
+      !inputToken ||
+      !outputToken ||
+      !quoteAmount ||
+      quoteAmount <= BigInt(0)
+    ) {
       setSwapError("Define un monto válido para cotizar el swap.");
       return;
     }
@@ -487,7 +565,9 @@ const SwapForm = () => {
       );
 
       setSwapSignature(signature);
-      setAmount("");
+      setAmountMode("in");
+      setInputAmount("");
+      setOutputAmount("");
       await refreshBalance();
       await refreshQuote();
     } catch (error) {
@@ -503,7 +583,7 @@ const SwapForm = () => {
     publicKey,
     quote,
     sendTransaction,
-    parsedAmount,
+    quoteAmount,
     inputToken,
     outputToken,
     refreshBalance,
@@ -512,7 +592,7 @@ const SwapForm = () => {
   ]);
 
   const disableSwapButton =
-    !connected || !canQuote || quoteLoading || isSwapping || tokensLoading;
+    !connected || !canQuote || quoteLoading || isSwapping || tokensLoading || !quote;
 
   const handleNetworkChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value as (typeof NETWORK_OPTIONS)[number]["value"];
@@ -600,13 +680,13 @@ const SwapForm = () => {
             tokens={tokenOptions}
             onTokenSelect={handleSelectInput}
             network={network}
-            amount={amount}
-            onAmountChange={setAmount}
+            amount={displayInputAmount}
+            onAmountChange={handleInputAmountChange}
             placeholder="0.0"
             availableAmount={connected ? inputTokenBalance ?? undefined : undefined}
             onAvailableClick={
               connected && inputTokenBalance
-                ? () => setAmount(inputTokenBalance)
+                ? () => handleInputAmountChange(inputTokenBalance)
                 : undefined
             }
           />
@@ -631,8 +711,8 @@ const SwapForm = () => {
             tokens={tokenOptions}
             onTokenSelect={handleSelectOutput}
             network={network}
-            amount={estimatedOutput}
-            readOnlyAmount
+            amount={displayOutputAmount}
+            onAmountChange={handleOutputAmountChange}
             placeholder="0.0"
           />
         </div>
@@ -648,12 +728,22 @@ const SwapForm = () => {
         <div className={styles.previewPanel}>
           <div className={styles.previewRow}>
             <span>Recibirás (estimado)</span>
-            <strong>{estimatedOutput ? `${estimatedOutput} ${outputToken?.symbol ?? ""}` : "-"}</strong>
+            <strong>
+              {displayOutputAmount
+                ? `${displayOutputAmount} ${outputToken?.symbol ?? ""}`
+                : "-"}
+            </strong>
           </div>
           <div className={styles.previewRow}>
-            <span>Mínimo tras slippage (5%)</span>
+            <span>{thresholdLabel}</span>
             <strong>
-              {minimumReceived ? `${minimumReceived} ${outputToken?.symbol ?? ""}` : "-"}
+              {quoteThresholdAmount
+                ? `${quoteThresholdAmount} ${
+                    quote?.swapMode === "ExactOut"
+                      ? inputToken?.symbol ?? ""
+                      : outputToken?.symbol ?? ""
+                  }`
+                : "-"}
             </strong>
           </div>
           <div className={styles.previewRow}>
