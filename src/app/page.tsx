@@ -327,18 +327,28 @@ const SupportPanel = () => (
       <article className={styles.infoCard}>
         <h2 className={styles.infoCardTitle}>Canales de ayuda</h2>
         <div className={styles.supportChannels}>
-          <div>
-            <span className={styles.channelLabel}>Chat en vivo</span>
-            <span className={styles.channelDetail}>Tiempo de respuesta &lt; 5 min</span>
-          </div>
-          <div>
-            <span className={styles.channelLabel}>Discord</span>
-            <span className={styles.channelDetail}>#metaswap-support</span>
-          </div>
-          <div>
-            <span className={styles.channelLabel}>Centro de ayuda</span>
-            <span className={styles.channelDetail}>artículos y videotutoriales</span>
-          </div>
+          <a
+            className={styles.supportChannelLink}
+            href="https://twitter.com/metaswap"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className={styles.channelLabel}>Twitter</span>
+            <span className={styles.channelDetail}>
+              Síguenos para anuncios al instante y actualizaciones del equipo.
+            </span>
+          </a>
+          <a
+            className={styles.supportChannelLink}
+            href="https://t.me/metaswap"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className={styles.channelLabel}>Telegram</span>
+            <span className={styles.channelDetail}>
+              Únete a la comunidad para soporte directo y noticias exclusivas.
+            </span>
+          </a>
         </div>
       </article>
 

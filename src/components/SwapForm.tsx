@@ -74,6 +74,37 @@ const SwapForm = () => {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const confettiPieces = [
+    styles.confettiPiece1,
+    styles.confettiPiece2,
+    styles.confettiPiece3,
+    styles.confettiPiece4,
+    styles.confettiPiece5,
+    styles.confettiPiece6,
+    styles.confettiPiece7,
+    styles.confettiPiece8,
+    styles.confettiPiece9,
+    styles.confettiPiece10,
+    styles.confettiPiece11,
+    styles.confettiPiece12,
+  ];
+
+  useEffect(() => {
+    if (!swapSignature) {
+      return;
+    }
+
+    setShowCelebration(true);
+    const timeout = window.setTimeout(() => {
+      setShowCelebration(false);
+    }, 3600);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [swapSignature]);
 
   const balanceConnection = useMemo(() => {
     const endpoint = getEndpointForNetwork(network);
@@ -490,6 +521,16 @@ const SwapForm = () => {
 
   return (
     <section className={styles.swapSection}>
+      {showCelebration && (
+        <div className={styles.swapCelebration} aria-hidden="true">
+          {confettiPieces.map((pieceClass, index) => (
+            <span
+              key={index}
+              className={`${styles.confettiPiece} ${pieceClass}`}
+            />
+          ))}
+        </div>
+      )}
       <header className={styles.swapHeader}>
         <div>
           <h1 className={styles.title}>MetaSwap</h1>
