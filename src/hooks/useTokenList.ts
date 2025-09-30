@@ -11,6 +11,12 @@ const ALWAYS_INCLUDED_MINTS = new Set([
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
 ]);
 
+const NETWORK_CHAIN_ID: Record<"devnet" | "testnet" | "mainnet-beta", number> = {
+  devnet: 103,
+  testnet: 102,
+  "mainnet-beta": 101,
+};
+
 const SOL_TOKEN: TokenInfo = {
   address: SOL_MINT,
   symbol: "SOL",
@@ -29,7 +35,7 @@ export interface TokenListState {
   findByMint: (mint: string) => TokenInfo | undefined;
 }
 
-export const useTokenList = (): TokenListState => {
+export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): TokenListState => {
   const [tokens, setTokens] = useState<TokenInfo[]>([SOL_TOKEN]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +52,8 @@ export const useTokenList = (): TokenListState => {
         }
         const payload = (await response.json()) as TokenInfo[];
         const filtered = payload.filter(
-          (token) => token.chainId === 103 || ALWAYS_INCLUDED_MINTS.has(token.address)
+          (token) =>
+            token.chainId === NETWORK_CHAIN_ID[network] || ALWAYS_INCLUDED_MINTS.has(token.address)
         );
 
         const map = new Map<string, TokenInfo>();
@@ -74,7 +81,7 @@ export const useTokenList = (): TokenListState => {
     loadTokens();
 
     return () => controller.abort();
-  }, []);
+  }, [network]);
 
   const findByMint = useCallback(
     (mint: string) => tokens.find((token) => token.address === mint),

@@ -9,6 +9,7 @@ interface UseJupiterQuoteParams {
   amount?: bigint | null;
   enabled?: boolean;
   slippageBps?: number;
+  cluster?: "devnet" | "testnet" | "mainnet-beta";
 }
 
 interface UseJupiterQuoteResult {
@@ -27,6 +28,7 @@ export const useJupiterQuote = ({
   amount,
   enabled = true,
   slippageBps = 50,
+  cluster = "devnet",
 }: UseJupiterQuoteParams): UseJupiterQuoteResult => {
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,8 +44,9 @@ export const useJupiterQuote = ({
       outputMint,
       amount: amount.toString(),
       slippageBps,
+      cluster,
     };
-  }, [enabled, inputMint, outputMint, amount, slippageBps]);
+  }, [enabled, inputMint, outputMint, amount, slippageBps, cluster]);
 
   const fetchQuote = useCallback(async () => {
     if (!params) {
@@ -53,7 +56,7 @@ export const useJupiterQuote = ({
     }
 
     const query = new URLSearchParams({
-      cluster: "devnet",
+      cluster,
       inputMint: params.inputMint,
       outputMint: params.outputMint,
       amount: params.amount,
@@ -77,7 +80,7 @@ export const useJupiterQuote = ({
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [params, cluster]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;

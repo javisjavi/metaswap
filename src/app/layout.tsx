@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import WalletContextProvider from "@/components/WalletProvider";
+import { NetworkProvider } from "@/context/NetworkContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MetaSwap | Solana Devnet",
+  title: "MetaSwap | Solana Swap Multired",
   description:
-    "Conecta tu wallet Solflare y realiza swaps de tokens en la devnet de Solana con cotizaciones en tiempo real.",
+    "Conecta tu wallet Solflare y realiza swaps de tokens en devnet, testnet o mainnet de Solana con cotizaciones en tiempo real.",
 };
 
 export default function RootLayout({
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <WalletContextProvider>{children}</WalletContextProvider>
+        <NetworkProvider>
+          <WalletContextProvider>{children}</WalletContextProvider>
+        </NetworkProvider>
       </body>
     </html>
   );

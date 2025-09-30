@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
@@ -15,6 +15,13 @@ import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { SwapResponse } from "@/types/jupiter";
 import TokenSelector from "./TokenSelector";
+import { useNetwork } from "@/context/NetworkContext";
+
+const NETWORK_OPTIONS = [
+  { value: "devnet", label: "Devnet" },
+  { value: "testnet", label: "Testnet" },
+  { value: "mainnet-beta", label: "Mainnet" },
+] as const;
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 const BONK_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
@@ -24,7 +31,8 @@ const decodeTransaction = (encoded: string) =>
   Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
 
 const SwapForm = () => {
-  const { tokens, loading: tokensLoading, error: tokensError } = useTokenList();
+  const { network, setNetwork } = useNetwork();
+  const { tokens, loading: tokensLoading, error: tokensError } = useTokenList(network);
   const { connection } = useConnection();
   const { publicKey, connected, sendTransaction } = useWallet();
 
@@ -38,6 +46,16 @@ const SwapForm = () => {
   const [swapError, setSwapError] = useState<string | null>(null);
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
+
+  useEffect(() => {
+    setInputToken(null);
+    setOutputToken(null);
+    setAmount("");
+    setBalance(null);
+    setSwapError(null);
+    setSwapSignature(null);
+    setAirdropMessage(null);
+  }, [network]);
 
   useEffect(() => {
     if (!tokens.length) {
@@ -114,6 +132,7 @@ const SwapForm = () => {
     outputMint: outputToken?.address,
     amount: parsedAmount,
     enabled: canQuote,
+    cluster: network,
   });
 
   useEffect(() => {
@@ -122,6 +141,10 @@ const SwapForm = () => {
   }, [inputToken?.address, outputToken?.address, amount]);
 
   const handleAirdrop = useCallback(async () => {
+    if (network === "mainnet-beta") {
+      setAirdropMessage("Los airdrops solo están disponibles en devnet y testnet.");
+      return;
+    }
     if (!publicKey) {
       setAirdropMessage("Conecta tu wallet para solicitar SOL de prueba.");
       return;
@@ -145,7 +168,7 @@ const SwapForm = () => {
     } finally {
       setIsAirdropping(false);
     }
-  }, [connection, publicKey, refreshBalance]);
+  }, [connection, publicKey, refreshBalance, network]);
 
   const handleSwapTokens = () => {
     if (!inputToken || !outputToken) return;
@@ -201,9 +224,14 @@ const SwapForm = () => {
 
   const swapRoutes = quote?.routePlan?.map((route) => route.swapInfo.label).join(" → ");
 
-  const explorerUrl = swapSignature
-    ? `https://explorer.solana.com/tx/${swapSignature}?cluster=devnet`
-    : null;
+  const explorerUrl = useMemo(() => {
+    if (!swapSignature) return null;
+    const base = `https://explorer.solana.com/tx/${swapSignature}`;
+    if (network === "mainnet-beta") {
+      return base;
+    }
+    return `${base}?cluster=${network}`;
+  }, [network, swapSignature]);
 
   const handleSwap = useCallback(async () => {
     if (!publicKey || !sendTransaction) {
@@ -220,7 +248,10 @@ const SwapForm = () => {
       setSwapError(null);
       setSwapSignature(null);
 
-      const response = await fetch("https://quote-api.jup.ag/v6/swap", {
+      const swapUrl = new URL("https://quote-api.jup.ag/v6/swap");
+      swapUrl.searchParams.set("cluster", network);
+
+      const response = await fetch(swapUrl.toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -272,10 +303,18 @@ const SwapForm = () => {
     outputToken,
     refreshBalance,
     refreshQuote,
+    network,
   ]);
 
   const disableSwapButton =
     !connected || !canQuote || quoteLoading || isSwapping || tokensLoading;
+
+  const handleNetworkChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value as (typeof NETWORK_OPTIONS)[number]["value"];
+    setNetwork(selected);
+  };
+
+  const airdropUnavailable = network === "mainnet-beta";
 
   return (
     <section className={styles.swapSection}>
@@ -283,10 +322,23 @@ const SwapForm = () => {
         <div>
           <h1 className={styles.title}>MetaSwap</h1>
           <p className={styles.subtitle}>
-            Intercambia tokens en Solana devnet con la seguridad de Solflare.
+            Intercambia tokens en la red de Solana que prefieras con la seguridad de
+            Solflare.
           </p>
         </div>
-        <WalletMultiButton className={styles.walletButton} />
+        <div className={styles.headerActions}>
+          <label className={styles.networkSelector}>
+            <span>Red</span>
+            <select value={network} onChange={handleNetworkChange}>
+              {NETWORK_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <WalletMultiButton className={styles.walletButton} />
+        </div>
       </header>
 
       <div className={styles.card}>
@@ -307,9 +359,13 @@ const SwapForm = () => {
             type="button"
             className={styles.faucetButton}
             onClick={handleAirdrop}
-            disabled={!connected || isAirdropping}
+            disabled={!connected || isAirdropping || airdropUnavailable}
           >
-            {isAirdropping ? "Solicitando…" : "Recibir 1 SOL"}
+            {airdropUnavailable
+              ? "Airdrop no disponible"
+              : isAirdropping
+              ? "Solicitando…"
+              : "Recibir 1 SOL"}
           </button>
         </div>
         {airdropMessage && <p className={styles.helperText}>{airdropMessage}</p>}
