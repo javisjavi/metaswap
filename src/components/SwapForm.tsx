@@ -79,6 +79,8 @@ const SwapForm = () => {
   const [swapSignature, setSwapSignature] = useState<string | null>(null);
   const [isSwapping, setIsSwapping] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [inputAmountDisplay, setInputAmountDisplay] = useState("");
+  const [outputAmountDisplay, setOutputAmountDisplay] = useState("");
 
   const confettiPieces = [
     styles.confettiPiece1,
@@ -453,9 +455,46 @@ const SwapForm = () => {
     );
   }, [quote, outputToken]);
 
-  const displayInputAmount = amountMode === "in" ? inputAmount : formattedQuoteInputAmount;
-  const displayOutputAmount =
-    amountMode === "out" ? outputAmount : formattedQuoteOutputAmount;
+  useEffect(() => {
+    if (amountMode === "in") {
+      setInputAmountDisplay(inputAmount);
+      if (inputAmount === "") {
+        setOutputAmountDisplay("");
+      }
+    }
+  }, [amountMode, inputAmount]);
+
+  useEffect(() => {
+    if (amountMode === "out") {
+      setOutputAmountDisplay(outputAmount);
+      if (outputAmount === "") {
+        setInputAmountDisplay("");
+      }
+    }
+  }, [amountMode, outputAmount]);
+
+  useEffect(() => {
+    if (amountMode === "in") {
+      if (formattedQuoteOutputAmount) {
+        setOutputAmountDisplay(formattedQuoteOutputAmount);
+      } else if (inputAmount === "") {
+        setOutputAmountDisplay("");
+      }
+      return;
+    }
+
+    if (formattedQuoteInputAmount) {
+      setInputAmountDisplay(formattedQuoteInputAmount);
+    } else if (outputAmount === "") {
+      setInputAmountDisplay("");
+    }
+  }, [
+    amountMode,
+    formattedQuoteInputAmount,
+    formattedQuoteOutputAmount,
+    inputAmount,
+    outputAmount,
+  ]);
 
   const quoteThresholdAmount = useMemo(() => {
     if (!quote) return "";
@@ -680,7 +719,7 @@ const SwapForm = () => {
             tokens={tokenOptions}
             onTokenSelect={handleSelectInput}
             network={network}
-            amount={displayInputAmount}
+            amount={inputAmountDisplay}
             onAmountChange={handleInputAmountChange}
             placeholder="0.0"
             availableAmount={connected ? inputTokenBalance ?? undefined : undefined}
@@ -711,7 +750,7 @@ const SwapForm = () => {
             tokens={tokenOptions}
             onTokenSelect={handleSelectOutput}
             network={network}
-            amount={displayOutputAmount}
+            amount={outputAmountDisplay}
             onAmountChange={handleOutputAmountChange}
             placeholder="0.0"
           />
@@ -729,8 +768,8 @@ const SwapForm = () => {
           <div className={styles.previewRow}>
             <span>Recibirás (estimado)</span>
             <strong>
-              {displayOutputAmount
-                ? `${displayOutputAmount} ${outputToken?.symbol ?? ""}`
+              {outputAmountDisplay
+                ? `${outputAmountDisplay} ${outputToken?.symbol ?? ""}`
                 : "-"}
             </strong>
           </div>
