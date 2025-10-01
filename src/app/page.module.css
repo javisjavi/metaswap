@@ -509,7 +509,9 @@
 }
 
 .networkSelect option {
-  color: #0f172a;
+  color: #e2e8f0;
+  background-color: rgba(15, 23, 42, 0.9);
+  font-weight: 600;
 }
 
 .networkCaret {
@@ -572,6 +574,30 @@
   display: block;
   font-size: 1.4rem;
   font-weight: 600;
+}
+
+.balanceValueContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.2;
+}
+
+.balanceToken {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  color: #cbd5f5;
+}
+
+.balanceTokenIcon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  background-image: url("/solana.svg");
+  background-size: cover;
+  background-position: center;
 }
 
 .faucetButton {
@@ -1146,19 +1172,26 @@
     gap: 16px;
   }
 
+  .selectorWrapper {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
   .selectorBody {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
 
   .tokenButton {
     width: 100%;
     justify-content: space-between;
+    padding: 6px 10px;
   }
 
   .amountInput {
     text-align: left;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
 
   .menuItem {

@@ -686,29 +686,39 @@ const SwapForm = () => {
           <div>
             <span className={styles.balanceLabel}>Saldo disponible</span>
             <strong className={styles.balanceValue}>
-              {connected
-                ? balance
-                  ? `${balance} SOL`
-                  : isFetchingBalance
-                  ? "Actualizando…"
-                  : "-"
-                : "Conecta tu wallet"}
+              {connected ? (
+                balance ? (
+                  <span className={styles.balanceValueContent}>
+                    {balance}
+                    <span className={styles.balanceToken}>
+                      <span aria-hidden className={styles.balanceTokenIcon} />
+                      SOL
+                    </span>
+                  </span>
+                ) : isFetchingBalance ? (
+                  "Actualizando…"
+                ) : (
+                  "-"
+                )
+              ) : (
+                "Conecta tu wallet"
+              )}
             </strong>
           </div>
-          <button
-            type="button"
-            className={styles.faucetButton}
-            onClick={handleAirdrop}
-            disabled={!connected || isAirdropping || airdropUnavailable}
-          >
-            {airdropUnavailable
-              ? "Airdrop no disponible"
-              : isAirdropping
-              ? "Solicitando…"
-              : "Recibir 1 SOL"}
-          </button>
+          {!airdropUnavailable ? (
+            <button
+              type="button"
+              className={styles.faucetButton}
+              onClick={handleAirdrop}
+              disabled={!connected || isAirdropping}
+            >
+              {isAirdropping ? "Solicitando…" : "Recibir 1 SOL"}
+            </button>
+          ) : null}
         </div>
-        {airdropMessage && <p className={styles.helperText}>{airdropMessage}</p>}
+        {!airdropUnavailable && airdropMessage ? (
+          <p className={styles.helperText}>{airdropMessage}</p>
+        ) : null}
 
         {tokensError && <p className={styles.errorBanner}>{tokensError}</p>}
 

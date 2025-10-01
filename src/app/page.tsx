@@ -329,7 +329,7 @@ const SupportPanel = () => (
         <div className={styles.supportChannels}>
           <a
             className={styles.supportChannelLink}
-            href="https://twitter.com/metaswap"
+            href="https://x.com/metaswap_dev"
             target="_blank"
             rel="noopener noreferrer"
           >
