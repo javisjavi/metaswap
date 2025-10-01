@@ -16,7 +16,6 @@ import {
 import styles from "@/app/page.module.css";
 import { useTokenList } from "@/hooks/useTokenList";
 import { useJupiterQuote } from "@/hooks/useJupiterQuote";
-import { JUPITER_SWAP_URL } from "@/config/jupiter";
 import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { SwapResponse } from "@/types/jupiter";
@@ -392,6 +391,7 @@ const SwapForm = () => {
     error: quoteError,
     refreshedAt,
     refresh: refreshQuote,
+    isFallback: isFallbackQuote,
   } = useJupiterQuote({
     inputMint: inputToken?.address,
     outputMint: outputToken?.address,
@@ -665,15 +665,19 @@ const SwapForm = () => {
       return;
     }
 
+    if (isFallbackQuote) {
+      setSwapError(swapTexts.quoteErrors.fetchFailed);
+      return;
+    }
+
     try {
       setIsSwapping(true);
       setSwapError(null);
       setSwapSignature(null);
 
-      const swapUrl = new URL(JUPITER_SWAP_URL);
-      swapUrl.searchParams.set("cluster", network);
+      const swapParams = new URLSearchParams({ cluster: network });
 
-      const response = await fetch(swapUrl.toString(), {
+      const response = await fetch(`/api/jupiter/swap?${swapParams.toString()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -730,16 +734,24 @@ const SwapForm = () => {
     quote,
     sendTransaction,
     quoteAmount,
+    isFallbackQuote,
     inputToken,
     outputToken,
     refreshBalance,
     refreshQuote,
     network,
     swapTexts.errors,
+    swapTexts.quoteErrors,
   ]);
 
   const disableSwapButton =
-    !connected || !canQuote || quoteLoading || isSwapping || tokensLoading || !quote;
+    !connected ||
+    !canQuote ||
+    quoteLoading ||
+    isSwapping ||
+    tokensLoading ||
+    !quote ||
+    isFallbackQuote;
 
   const handleNetworkChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value as (typeof NETWORK_OPTIONS)[number]["value"];
@@ -1013,6 +1025,11 @@ const SwapForm = () => {
               <strong>Jupiter</strong>
             )}
           </div>
+          {isFallbackQuote ? (
+            <div className={styles.routeFallbackMessage}>
+              {swapTexts.quoteErrors.fetchFailed}
+            </div>
+          ) : null}
           <div className={styles.previewFooter}>
             <div className={styles.slippageControl}>
               <div className={styles.slippageHeader}>

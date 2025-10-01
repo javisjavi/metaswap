@@ -11,34 +11,11 @@ const DEFAULT_ENDPOINTS: Record<NetworkCluster, string> = {
   "mainnet-beta": HELIUS_MAINNET_ENDPOINT,
 };
 
-const FALLBACK_MAINNET_ENDPOINT = clusterApiUrl("mainnet-beta");
-
-export const resolveMainnetEndpoint = (): string => {
-  if (typeof process === "undefined") {
-    return HELIUS_MAINNET_ENDPOINT;
-  }
-
-  const candidates = [
-    process.env.NEXT_PUBLIC_SOLANA_MAINNET_RPC,
-    process.env.NEXT_PUBLIC_QUICKNODE_RPC_URL,
-  ];
-
-  for (const candidate of candidates) {
-    if (candidate && candidate.trim().length > 0) {
-      return candidate;
-    }
-  }
-
-  if (HELIUS_MAINNET_ENDPOINT && HELIUS_MAINNET_ENDPOINT.trim().length > 0) {
-    return HELIUS_MAINNET_ENDPOINT;
-  }
-
-  return FALLBACK_MAINNET_ENDPOINT;
-};
+export const resolveMainnetEndpoint = (): string => HELIUS_MAINNET_ENDPOINT;
 
 export const getEndpointForNetwork = (network: NetworkCluster): string => {
   if (network === "mainnet-beta") {
-    return resolveMainnetEndpoint();
+    return HELIUS_MAINNET_ENDPOINT;
   }
 
   return DEFAULT_ENDPOINTS[network];

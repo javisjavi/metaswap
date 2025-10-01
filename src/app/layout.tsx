@@ -3,6 +3,7 @@ import WalletContextProvider from "@/components/WalletProvider";
 import { NetworkProvider } from "@/context/NetworkContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "MetaSwap | Solana Swap Multired",
@@ -20,7 +21,12 @@ export default function RootLayout({
       <body>
         <NetworkProvider>
           <LanguageProvider>
-            <WalletContextProvider>{children}</WalletContextProvider>
+            <WalletContextProvider>
+              <div className="appContainer">
+                <div className="appContent">{children}</div>
+                <Footer />
+              </div>
+            </WalletContextProvider>
           </LanguageProvider>
         </NetworkProvider>
       </body>

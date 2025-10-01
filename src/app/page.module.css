@@ -1,5 +1,5 @@
 .main {
-  min-height: 100vh;
+  flex: 1 0 auto;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -321,6 +321,180 @@
 .supportChannelLink:hover {
   transform: translateY(-2px) scale(1.01);
   box-shadow: 0 12px 32px rgba(59, 130, 246, 0.25);
+}
+
+.marketTableWrapper {
+  margin-top: 8px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 24px;
+  padding: 16px;
+  overflow-x: auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.marketTable {
+  min-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marketHeaderRow,
+.marketRow {
+  display: grid;
+  grid-template-columns: 64px minmax(200px, 2fr) repeat(4, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.marketHeaderRow {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(226, 232, 240, 0.68);
+  padding: 0 12px;
+}
+
+.marketHeaderCell {
+  text-align: right;
+}
+
+.marketHeaderCell:first-child,
+.marketHeaderCell:nth-child(2) {
+  text-align: left;
+}
+
+.marketRow {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 18px;
+  padding: 16px 12px;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.marketRow:hover {
+  transform: translateY(-2px);
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(30, 41, 59, 0.78);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.45);
+}
+
+.marketRank {
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  color: rgba(226, 232, 240, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.marketCoin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.marketCoinImage,
+.marketCoinFallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.marketCoinImage {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  object-fit: contain;
+}
+
+.marketCoinFallback {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(56, 189, 248, 0.55));
+  color: #0f172a;
+}
+
+.marketCoinInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.marketCoinName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.marketCoinSymbol {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.65);
+  letter-spacing: 0.08em;
+}
+
+.marketValue {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.marketChangePositive {
+  color: #4ade80;
+}
+
+.marketChangeNegative {
+  color: #f87171;
+}
+
+.marketStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(148, 163, 184, 0.14);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: #e2e8f0;
+  font-weight: 500;
+  max-width: 520px;
+}
+
+.marketRetryButton {
+  align-self: flex-start;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(34, 211, 238, 0.85));
+  border: none;
+  color: #0f172a;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marketRetryButton:hover,
+.marketRetryButton:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.45);
+  outline: none;
+}
+
+.marketUpdatedAt {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.65);
 }
 
 .channelLabel {
@@ -1147,6 +1321,17 @@
   max-width: 100%;
 }
 
+.routeFallbackMessage {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fcd34d;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
 .routeStage {
   display: flex;
   align-items: center;
@@ -1361,6 +1546,10 @@
   .contentArea {
     padding: 28px;
   }
+
+  .marketTable {
+    min-width: 640px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1396,6 +1585,10 @@
   .switchIconVertical {
     display: inline;
   }
+
+  .marketTable {
+    min-width: 580px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1413,6 +1606,15 @@
 
   .contentArea {
     padding: 24px;
+  }
+
+  .marketTable {
+    min-width: 520px;
+  }
+
+  .marketHeaderRow,
+  .marketRow {
+    grid-template-columns: 56px minmax(160px, 1.6fr) repeat(4, minmax(110px, 1fr));
   }
 }
 
@@ -1462,5 +1664,14 @@
 
   .infoTitle {
     font-size: 1.9rem;
+  }
+
+  .marketTable {
+    min-width: 480px;
+  }
+
+  .marketHeaderRow,
+  .marketRow {
+    grid-template-columns: 52px minmax(150px, 1.6fr) repeat(4, minmax(100px, 1fr));
   }
 }

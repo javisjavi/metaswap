@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuoteResponse } from "@/types/jupiter";
-import { JUPITER_QUOTE_URL } from "@/config/jupiter";
 import { buildFallbackQuote, QuoteParams } from "@/utils/fallbackQuote";
 
 interface UseJupiterQuoteParams {
@@ -23,6 +22,7 @@ interface UseJupiterQuoteResult {
   error: QuoteError | null;
   refreshedAt: number | null;
   refresh: () => Promise<void>;
+  isFallback: boolean;
 }
 
 const isValidQuoteResponse = (value: unknown): value is QuoteResponse => {
@@ -71,6 +71,7 @@ export const useJupiterQuote = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<QuoteError | null>(null);
   const [refreshedAt, setRefreshedAt] = useState<number | null>(null);
+  const [isFallback, setIsFallback] = useState(false);
   const latestRequestId = useRef(0);
 
   const params = useMemo<QuoteParams | null>(() => {
@@ -94,6 +95,7 @@ export const useJupiterQuote = ({
       setError(null);
       setRefreshedAt(null);
       setLoading(false);
+      setIsFallback(false);
       return;
     }
 
@@ -113,7 +115,9 @@ export const useJupiterQuote = ({
     setError(null);
 
     try {
-      const response = await fetch(`${JUPITER_QUOTE_URL}?${query.toString()}`);
+      const response = await fetch(`/api/jupiter/quote?${query.toString()}`, {
+        cache: "no-store",
+      });
       if (!response.ok) {
         throw new Error("FETCH_FAILED");
       }
@@ -126,6 +130,7 @@ export const useJupiterQuote = ({
       }
       setQuote(payload);
       setRefreshedAt(Date.now());
+      setIsFallback(false);
     } catch (err) {
       if (requestId !== latestRequestId.current) {
         return;
@@ -136,12 +141,14 @@ export const useJupiterQuote = ({
           setQuote(fallbackQuote);
           setRefreshedAt(Date.now());
           setError(null);
+          setIsFallback(true);
           return;
         }
       }
       setQuote(null);
       const message = (err as Error).message;
       setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
+      setIsFallback(false);
     } finally {
       if (requestId === latestRequestId.current) {
         setLoading(false);
@@ -164,5 +171,5 @@ export const useJupiterQuote = ({
     };
   }, [fetchQuote, params]);
 
-  return { quote, loading, error, refreshedAt, refresh: fetchQuote };
+  return { quote, loading, error, refreshedAt, refresh: fetchQuote, isFallback };
 };

@@ -1,4 +1,4 @@
-export type SectionKey = "swap" | "overview" | "support";
+export type SectionKey = "swap" | "overview" | "market" | "support";
 
 export const SUPPORTED_LANGUAGES = ["es", "en"] as const;
 
@@ -23,6 +23,25 @@ type SupportChannel = {
   label: string;
   detail: string;
   href: string;
+};
+
+type MarketTranslations = {
+  title: string;
+  subtitle: string;
+  columns: {
+    rank: string;
+    name: string;
+    price: string;
+    marketCap: string;
+    volume24h: string;
+    change24h: string;
+  };
+  status: {
+    loading: string;
+    error: string;
+    retry: string;
+    updatedAt: (time: string) => string;
+  };
 };
 
 type SwapFormTranslations = {
@@ -149,6 +168,7 @@ type AppTranslation = {
       badge: string;
     };
   };
+  market: MarketTranslations;
   swapForm: SwapFormTranslations;
   tokenSelector: TokenSelectorTranslations;
   tokenListModal: TokenListModalTranslations;
@@ -162,6 +182,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       sections: {
         swap: { label: "Intercambiar", description: "Opera tokens al instante" },
         overview: { label: "Panel", description: "Resumen de actividad" },
+        market: { label: "Mercado", description: "Top 10 criptomonedas" },
         support: { label: "Soporte", description: "Guías y ayuda" },
       },
     },
@@ -230,6 +251,25 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         description:
           "Actualizamos constantemente la estabilidad de la plataforma para que puedas operar sin interrupciones.",
         badge: "Operativo",
+      },
+    },
+    market: {
+      title: "Top 10 por capitalización",
+      subtitle:
+        "Consulta las principales criptomonedas por capitalización de mercado y sus métricas clave en tiempo real.",
+      columns: {
+        rank: "Posición",
+        name: "Activo",
+        price: "Precio",
+        marketCap: "Capitalización",
+        volume24h: "Volumen 24h",
+        change24h: "Variación 24h",
+      },
+      status: {
+        loading: "Cargando mercado...",
+        error: "No se pudo cargar la información del mercado. Intenta nuevamente.",
+        retry: "Reintentar",
+        updatedAt: (time: string) => `Última actualización: ${time}`,
       },
     },
     swapForm: {
@@ -318,6 +358,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       sections: {
         swap: { label: "Swap", description: "Trade tokens instantly" },
         overview: { label: "Overview", description: "Activity summary" },
+        market: { label: "Market", description: "Top 10 cryptocurrencies" },
         support: { label: "Support", description: "Guides and help" },
       },
     },
@@ -386,6 +427,25 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         description:
           "We continuously monitor platform stability so you can trade without interruptions.",
         badge: "Operational",
+      },
+    },
+    market: {
+      title: "Top 10 by market cap",
+      subtitle:
+        "Track the leading cryptocurrencies by market capitalization along with key metrics updated in real time.",
+      columns: {
+        rank: "Rank",
+        name: "Asset",
+        price: "Price",
+        marketCap: "Market cap",
+        volume24h: "24h volume",
+        change24h: "24h change",
+      },
+      status: {
+        loading: "Loading market data...",
+        error: "We couldn't load market information. Please try again.",
+        retry: "Try again",
+        updatedAt: (time: string) => `Last updated: ${time}`,
       },
     },
     swapForm: {
