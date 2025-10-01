@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TokenInfo } from "@/types/token";
+import { FALLBACK_TOKENS_BY_NETWORK } from "@/data/fallbackTokenList";
 import { SOL_MINT } from "@/utils/tokenConstants";
 
 const TOKEN_LIST_URL = "https://token.jup.ag/strict";
@@ -27,6 +28,21 @@ const SOL_TOKEN: TokenInfo = {
   chainId: 101,
   tags: ["native"],
   verified: true,
+};
+
+const mergeTokenLists = (...lists: TokenInfo[][]): TokenInfo[] => {
+  const map = new Map<string, TokenInfo>();
+
+  lists
+    .flat()
+    .filter(Boolean)
+    .forEach((token) => {
+      if (!map.has(token.address)) {
+        map.set(token.address, { ...token, verified: token.verified ?? true });
+      }
+    });
+
+  return Array.from(map.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
 };
 
 export type TokenListError = "fetchFailed" | "unexpected";
@@ -60,22 +76,23 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
             token.chainId === NETWORK_CHAIN_ID[network] || ALWAYS_INCLUDED_MINTS.has(token.address)
         );
 
-        const map = new Map<string, TokenInfo>();
-        [...filtered, SOL_TOKEN].forEach((token) => {
-          if (!map.has(token.address)) {
-            map.set(token.address, token);
-          }
-        });
-
-        const sorted = Array.from(map.values()).sort((a, b) =>
-          a.symbol.localeCompare(b.symbol)
-        );
-        setTokens(sorted);
+        setTokens(mergeTokenLists(filtered, [SOL_TOKEN]));
         setError(null);
       } catch (err) {
         if (controller.signal.aborted) return;
-        const message = (err as Error).message;
-        setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
+        console.error("Failed to load token list", err);
+        const fallbackTokens = FALLBACK_TOKENS_BY_NETWORK[network] ?? [];
+        if (fallbackTokens.length) {
+          setTokens(mergeTokenLists(fallbackTokens, [SOL_TOKEN]));
+        }
+        const message = (err as Error).message ?? "";
+        const normalized = message.toLowerCase();
+        const networkFailed =
+          message === "FETCH_FAILED" ||
+          normalized.includes("fetch") ||
+          normalized.includes("network") ||
+          normalized.includes("dns");
+        setError(networkFailed ? "fetchFailed" : "unexpected");
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
