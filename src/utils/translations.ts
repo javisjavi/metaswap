@@ -1,4 +1,4 @@
-export type SectionKey = "swap" | "overview" | "market" | "support";
+export type SectionKey = "swap" | "overview" | "market" | "pumpFun" | "support";
 
 export const SUPPORTED_LANGUAGES = ["es", "en"] as const;
 
@@ -25,6 +25,35 @@ type SupportChannel = {
   href: string;
 };
 
+type PumpFunTranslations = {
+  title: string;
+  subtitle: string;
+  limitNotice: (count: number) => string;
+  table: {
+    columns: {
+      rank: string;
+      project: string;
+      price: string;
+      marketCap: string;
+      progress: string;
+      raised: string;
+      launched: string;
+      holders: string;
+    };
+    progressTarget: (current: string, target?: string | null) => string;
+  };
+  status: {
+    loading: string;
+    error: string;
+    empty: string;
+    fallback: string;
+    remote: string;
+    credentialsHint: string;
+    updatedAt: (time: string) => string;
+    retry: string;
+  };
+};
+
 type MarketTranslations = {
   title: string;
   subtitle: string;
@@ -41,6 +70,20 @@ type MarketTranslations = {
     error: string;
     retry: string;
     updatedAt: (time: string) => string;
+  };
+  pagination: {
+    ariaLabel: string;
+    previous: string;
+    next: string;
+    pageLabel: (page: number) => string;
+    showing: (from: number, to: number) => string;
+    empty: string;
+  };
+  favorites: {
+    add: (asset: string) => string;
+    remove: (asset: string) => string;
+    connectWallet: string;
+    limitReached: string;
   };
 };
 
@@ -130,6 +173,7 @@ type AppTranslation = {
     ariaLabel: string;
     sections: Record<SectionKey, { label: string; description: string }>;
   };
+  pumpFun: PumpFunTranslations;
   overview: {
     title: string;
     subtitle: string;
@@ -183,7 +227,40 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         swap: { label: "Intercambiar", description: "Opera tokens al instante" },
         overview: { label: "Panel", description: "Resumen de actividad" },
         market: { label: "Mercado", description: "Top 10 criptomonedas" },
+        pumpFun: { label: "Pump.fun", description: "Próximos a la bonding curve" },
         support: { label: "Soporte", description: "Guías y ayuda" },
+      },
+    },
+    pumpFun: {
+      title: "Radar Pump.fun",
+      subtitle:
+        "Sigue los 20 lanzamientos que están por alcanzar la bonding curve y evalúa su tracción en segundos.",
+      limitNotice: (count) => `Top ${count} proyectos más cerca de la bonding curve`,
+      table: {
+        columns: {
+          rank: "#",
+          project: "Proyecto",
+          price: "Precio",
+          marketCap: "MC",
+          progress: "Progreso",
+          raised: "Recaudado",
+          launched: "Lanzado",
+          holders: "Holders",
+        },
+        progressTarget: (current, target) =>
+          target ? `${current} de ${target}` : `${current} recaudado`,
+      },
+      status: {
+        loading: "Cargando proyectos...",
+        error: "No pudimos obtener los datos en vivo.",
+        empty: "No encontramos proyectos a punto de entrar a la bonding curve.",
+        fallback:
+          "Mostrando la mejor estimación con datos de referencia (requiere credenciales públicas de Pump.fun para datos en vivo).",
+        remote: "Datos en vivo desde Pump.fun",
+        credentialsHint:
+          "Configura las variables PUMPFUN_API_USERNAME y PUMPFUN_API_PASSWORD para activar la fuente oficial.",
+        updatedAt: (time: string) => `Actualizado: ${time}`,
+        retry: "Reintentar",
       },
     },
     overview: {
@@ -254,7 +331,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       },
     },
     market: {
-      title: "Top 10 por capitalización",
+      title: "Top 100 por capitalización",
       subtitle:
         "Consulta las principales criptomonedas por capitalización de mercado y sus métricas clave en tiempo real.",
       columns: {
@@ -270,6 +347,20 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         error: "No se pudo cargar la información del mercado. Intenta nuevamente.",
         retry: "Reintentar",
         updatedAt: (time: string) => `Última actualización: ${time}`,
+      },
+      pagination: {
+        ariaLabel: "Paginación de mercado",
+        previous: "Página anterior",
+        next: "Página siguiente",
+        pageLabel: (page: number) => `Página ${page}`,
+        showing: (from: number, to: number) => `Mostrando ${from} - ${to}`,
+        empty: "No hay resultados en esta página",
+      },
+      favorites: {
+        add: (asset: string) => `Marcar ${asset} como favorito`,
+        remove: (asset: string) => `Quitar ${asset} de favoritos`,
+        connectWallet: "Conecta tu wallet para guardar favoritos",
+        limitReached: "Solo puedes guardar 5 favoritos por wallet",
       },
     },
     swapForm: {
@@ -359,7 +450,40 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         swap: { label: "Swap", description: "Trade tokens instantly" },
         overview: { label: "Overview", description: "Activity summary" },
         market: { label: "Market", description: "Top 10 cryptocurrencies" },
+        pumpFun: { label: "Pump.fun", description: "Near the bonding curve" },
         support: { label: "Support", description: "Guides and help" },
+      },
+    },
+    pumpFun: {
+      title: "Pump.fun Watchlist",
+      subtitle:
+        "Track the 20 launches closest to the bonding curve and gauge community traction in one glance.",
+      limitNotice: (count) => `Top ${count} projects closest to the bonding curve`,
+      table: {
+        columns: {
+          rank: "#",
+          project: "Project",
+          price: "Price",
+          marketCap: "MC",
+          progress: "Progress",
+          raised: "Raised",
+          launched: "Launched",
+          holders: "Holders",
+        },
+        progressTarget: (current, target) =>
+          target ? `${current} of ${target}` : `${current} raised`,
+      },
+      status: {
+        loading: "Loading projects...",
+        error: "Live data is currently unavailable.",
+        empty: "No projects are about to enter the bonding curve right now.",
+        fallback:
+          "Showing our best estimate with reference data (set Pump.fun public credentials to enable live metrics).",
+        remote: "Live data from Pump.fun",
+        credentialsHint:
+          "Set PUMPFUN_API_USERNAME and PUMPFUN_API_PASSWORD environment variables to enable the official feed.",
+        updatedAt: (time: string) => `Updated: ${time}`,
+        retry: "Retry",
       },
     },
     overview: {
@@ -430,7 +554,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       },
     },
     market: {
-      title: "Top 10 by market cap",
+      title: "Top 100 by market cap",
       subtitle:
         "Track the leading cryptocurrencies by market capitalization along with key metrics updated in real time.",
       columns: {
@@ -446,6 +570,20 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         error: "We couldn't load market information. Please try again.",
         retry: "Try again",
         updatedAt: (time: string) => `Last updated: ${time}`,
+      },
+      pagination: {
+        ariaLabel: "Market pagination",
+        previous: "Previous page",
+        next: "Next page",
+        pageLabel: (page: number) => `Page ${page}`,
+        showing: (from: number, to: number) => `Showing ${from} - ${to}`,
+        empty: "No results on this page",
+      },
+      favorites: {
+        add: (asset: string) => `Add ${asset} to favourites`,
+        remove: (asset: string) => `Remove ${asset} from favourites`,
+        connectWallet: "Connect your wallet to save favourites",
+        limitReached: "You can only save 5 favourites per wallet",
       },
     },
     swapForm: {

@@ -10,29 +10,39 @@
 .appShell {
   width: 100%;
   max-width: 1120px;
-  display: grid;
-  gap: 32px;
-  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
   background: rgba(15, 23, 42, 0.72);
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 28px;
-  padding: 24px;
+  padding: 20px 28px;
   backdrop-filter: blur(18px);
   box-shadow: 0 20px 50px rgba(2, 6, 23, 0.45);
   position: sticky;
-  top: 48px;
+  top: 24px;
+  z-index: 5;
 }
 
 .menuHeader {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.menuItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 .languageToggle {
@@ -78,14 +88,16 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 16px;
+  padding: 16px 18px;
   border-radius: 20px;
   background: transparent;
   border: 1px solid transparent;
   color: #e2e8f0;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  height: 100%;
+  transition: transform 0.25s ease, background 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.25s ease;
 }
 
 .menuItem:hover,
@@ -93,13 +105,15 @@
   background: rgba(148, 163, 184, 0.12);
   border-color: rgba(148, 163, 184, 0.32);
   outline: none;
-  transform: translateX(2px);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.35);
 }
 
 .menuItemActive {
   background: linear-gradient(135deg, #6366f1, #22d3ee);
   border-color: transparent;
   box-shadow: 0 16px 40px rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
 }
 
 .menuIconBadge {
@@ -125,7 +139,6 @@
   background: rgba(255, 255, 255, 0.24);
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  transform: translateX(2px);
 }
 
 .menuIconGraphic {
@@ -144,6 +157,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .menuLabel {
@@ -341,6 +356,56 @@
   gap: 12px;
 }
 
+.marketPagination {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.marketPaginationInfo {
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.marketPaginationControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marketPaginationLabel {
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.marketPaginationButton {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(30, 41, 59, 0.6);
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.marketPaginationButton:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.24);
+  border-color: rgba(96, 165, 250, 0.5);
+  color: rgba(226, 232, 240, 0.95);
+  transform: translateY(-1px);
+}
+
+.marketPaginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .marketHeaderRow,
 .marketRow {
   display: grid;
@@ -426,6 +491,45 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
+}
+
+.favoriteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.55);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.favoriteButton:not(:disabled):hover {
+  color: rgba(248, 250, 252, 0.9);
+  transform: scale(1.05);
+}
+
+.favoriteButton:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.85);
+  outline-offset: 2px;
+}
+
+.favoriteButton:disabled {
+  cursor: not-allowed;
+  color: rgba(148, 163, 184, 0.35);
+}
+
+.favoriteButtonActive {
+  color: #fbbf24;
+}
+
+.favoriteIcon {
+  width: 20px;
+  height: 20px;
 }
 
 .marketCoinImage,
@@ -1364,6 +1468,295 @@
   text-align: right;
 }
 
+.pumpPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 28px;
+  padding: 32px;
+  color: #f8fafc;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
+}
+
+.pumpHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.pumpTitle {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.pumpSubtitle {
+  color: #cbd5f5;
+  font-size: 1rem;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+.pumpLimitNotice {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.pumpHeaderMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pumpMetaText {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.pumpRetryButton {
+  background: rgba(96, 165, 250, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.55);
+  color: #e0f2fe;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pumpRetryButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pumpRetryButton:not(:disabled):hover,
+.pumpRetryButton:not(:disabled):focus-visible {
+  background: rgba(96, 165, 250, 0.28);
+  border-color: rgba(96, 165, 250, 0.75);
+  outline: none;
+}
+
+.pumpSourceRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.pumpBadge,
+.pumpBadgeFallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.pumpBadge {
+  background: rgba(34, 197, 94, 0.18);
+  color: #bbf7d0;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.pumpBadgeFallback {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fde68a;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.pumpHint {
+  color: #cbd5f5;
+}
+
+.pumpStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(30, 41, 59, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.pumpRetryInline {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  color: #e0f2fe;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pumpRetryInline:hover,
+.pumpRetryInline:focus-visible {
+  background: rgba(96, 165, 250, 0.32);
+  border-color: rgba(96, 165, 250, 0.65);
+  outline: none;
+}
+
+.pumpTableWrapper {
+  overflow-x: auto;
+}
+
+.pumpTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.pumpTable thead tr {
+  text-align: left;
+  color: #cbd5f5;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pumpTable th {
+  padding: 0 12px 12px;
+  font-weight: 600;
+}
+
+.pumpTable td {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  vertical-align: middle;
+}
+
+.pumpRankCell {
+  width: 40px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.pumpProjectCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.pumpProjectAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.pumpProjectFallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.22);
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.pumpProjectInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pumpProjectName {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.pumpProjectSymbol {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.pumpLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pumpSocialLink {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #bfdbfe;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pumpSocialLink:hover,
+.pumpSocialLink:focus-visible {
+  background: rgba(96, 165, 250, 0.26);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #e0f2fe;
+  outline: none;
+}
+
+.pumpNumberCell {
+  font-variant-numeric: tabular-nums;
+  color: #f1f5f9;
+}
+
+.pumpProgressCell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.pumpProgressBar {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+}
+
+.pumpProgressFill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #4ade80, #22d3ee);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.pumpProgressValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #bbf7d0;
+}
+
+.pumpProgressSummary {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.pumpDateCell {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
 .routeStage {
   display: flex;
   align-items: center;
@@ -1560,22 +1953,23 @@
 
 @media (max-width: 1080px) {
   .appShell {
-    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
   }
 
   .menu {
-    position: static;
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 16px;
-    gap: 12px;
+    top: 16px;
+    padding: 18px 24px;
   }
 
-  .menuItem {
-    min-width: 220px;
+  .menuItems {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 
   .contentArea {
+    padding: 28px;
+  }
+
+  .pumpPanel {
     padding: 28px;
   }
 }
@@ -1613,15 +2007,49 @@
   .switchIconVertical {
     display: inline;
   }
+
+  .pumpTable {
+    min-width: 620px;
+  }
 }
 
 @media (max-width: 768px) {
   .menu {
-    padding: 14px;
+    padding: 16px 18px;
+    top: 12px;
+    gap: 16px;
+  }
+
+  .menuBrand {
+    font-size: 1.1rem;
+  }
+
+  .menuItems {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin: 0 -6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+  }
+
+  .menuItems::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .menuItems::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.4);
+    border-radius: 999px;
+  }
+
+  .menuItems::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .menuItem {
-    min-width: 180px;
+    flex: 0 0 220px;
   }
 
   .infoTitle {
@@ -1630,6 +2058,25 @@
 
   .contentArea {
     padding: 24px;
+  }
+
+  .pumpPanel {
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .pumpHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pumpHeaderMeta {
+    justify-content: space-between;
+  }
+
+  .pumpTable {
+    min-width: 560px;
   }
 }
 
@@ -1679,6 +2126,26 @@
 
   .infoTitle {
     font-size: 1.9rem;
+  }
+
+  .pumpPanel {
+    padding: 20px;
+    border-radius: 20px;
+    gap: 20px;
+  }
+
+  .pumpTable {
+    min-width: 520px;
+  }
+
+  .pumpStatus {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .pumpRetryInline {
+    align-self: flex-end;
   }
 }
 
@@ -1780,5 +2247,9 @@
 
   .marketCell {
     gap: 4px;
+  }
+
+  .pumpTable {
+    min-width: 480px;
   }
 }

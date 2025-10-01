@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 import Image from "next/image";
 
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import { type PumpFunProject } from "@/types/pumpfun";
 import { type AppTranslation, type SectionKey } from "@/utils/translations";
 
 import styles from "./page.module.css";
@@ -192,6 +194,33 @@ const MarketIcon = ({ className }: IconProps) => (
   </svg>
 );
 
+const PumpFunIcon = ({ className }: IconProps) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    role="presentation"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 3c-2.5 2.05-4.2 4.35-4.2 7.1 0 2.03 1.27 3.7 4.2 5.9 2.93-2.2 4.2-3.87 4.2-5.9 0-2.75-1.7-5.05-4.2-7.1z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+      opacity="0.85"
+    />
+    <circle cx="12" cy="10.5" r="1.8" fill="currentColor" opacity="0.75" />
+    <path
+      d="M9.6 16.2 12 21l2.4-4.8"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity="0.85"
+    />
+  </svg>
+);
+
 const SupportIcon = ({ className }: IconProps) => (
   <svg
     className={className}
@@ -275,8 +304,30 @@ const SupportIcon = ({ className }: IconProps) => (
   </svg>
 );
 
-const MARKET_API_URL =
-  "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h";
+const MARKET_PAGE_SIZE = 100;
+const FAVORITES_LIMIT = 5;
+const FAVORITES_STORAGE_KEY_PREFIX = "metaswap:favorites:";
+
+const FavoriteStar = ({
+  filled,
+  className,
+}: {
+  filled: boolean;
+  className?: string;
+}) => (
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path
+      d="M12 3.3l2.3 4.7 5.2.76-3.8 3.68.9 5.19L12 15.95l-4.6 2.42.9-5.19L4.5 8.76l5.2-.76L12 3.3z"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={filled ? 0 : 1.6}
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const getMarketApiUrl = (page: number) =>
+  `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${MARKET_PAGE_SIZE}&page=${page}&sparkline=false&price_change_percentage=24h`;
 
 type MarketAsset = {
   id: string;
@@ -291,12 +342,17 @@ type MarketAsset = {
 
 const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
   const { language } = useLanguage();
+  const { publicKey } = useWallet();
   const [assets, setAssets] = useState<MarketAsset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   const locale = language === "es" ? "es-ES" : "en-US";
+
+  const walletAddress = useMemo(() => publicKey?.toBase58() ?? null, [publicKey]);
 
   const currencyFormatter = useMemo(
     () =>
@@ -338,15 +394,63 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
     [locale],
   );
 
+  useEffect(() => {
+    if (!walletAddress) {
+      setFavorites([]);
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(
+        `${FAVORITES_STORAGE_KEY_PREFIX}${walletAddress}`,
+      );
+
+      if (!stored) {
+        setFavorites([]);
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+
+      if (Array.isArray(parsed)) {
+        setFavorites(parsed.filter((value): value is string => typeof value === "string"));
+      } else {
+        setFavorites([]);
+      }
+    } catch (error) {
+      console.error("Failed to load favorites", error);
+      setFavorites([]);
+    }
+  }, [walletAddress]);
+
+  useEffect(() => {
+    if (!walletAddress || typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        `${FAVORITES_STORAGE_KEY_PREFIX}${walletAddress}`,
+        JSON.stringify(favorites),
+      );
+    } catch (error) {
+      console.error("Failed to persist favorites", error);
+    }
+  }, [favorites, walletAddress]);
+
   const loadMarketData = useCallback(
-    async (signal?: AbortSignal) => {
+    async (page: number, signal?: AbortSignal) => {
       if (!signal?.aborted) {
         setIsLoading(true);
         setHasError(false);
       }
 
       try {
-        const response = await fetch(MARKET_API_URL, {
+        const response = await fetch(getMarketApiUrl(page), {
           signal,
           cache: "no-store",
         });
@@ -405,16 +509,58 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
 
   useEffect(() => {
     const controller = new AbortController();
-    void loadMarketData(controller.signal);
+    void loadMarketData(currentPage, controller.signal);
 
     return () => {
       controller.abort();
     };
-  }, [loadMarketData]);
+  }, [currentPage, loadMarketData]);
 
   const handleRetry = useCallback(() => {
-    void loadMarketData();
-  }, [loadMarketData]);
+    void loadMarketData(currentPage);
+  }, [currentPage, loadMarketData]);
+
+  const toggleFavorite = useCallback(
+    (assetId: string) => {
+      if (!walletAddress) {
+        return;
+      }
+
+      setFavorites((previous) => {
+        if (previous.includes(assetId)) {
+          return previous.filter((id) => id !== assetId);
+        }
+
+        if (previous.length >= FAVORITES_LIMIT) {
+          return previous;
+        }
+
+        return [...previous, assetId];
+      });
+    },
+    [walletAddress],
+  );
+
+  const handleNextPage = useCallback(() => {
+    setCurrentPage((previous) => previous + 1);
+  }, []);
+
+  const handlePreviousPage = useCallback(() => {
+    setCurrentPage((previous) => Math.max(1, previous - 1));
+  }, []);
+
+  const pageStartIndex = useMemo(
+    () => (currentPage - 1) * MARKET_PAGE_SIZE + 1,
+    [currentPage],
+  );
+
+  const pageEndIndex = useMemo(
+    () => pageStartIndex + Math.max(assets.length - 1, 0),
+    [assets.length, pageStartIndex],
+  );
+
+  const canGoPrevious = currentPage > 1;
+  const canGoNext = assets.length === MARKET_PAGE_SIZE;
 
   return (
     <div className={styles.infoSection}>
@@ -456,6 +602,17 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
                 asset.change24h >= 0
                   ? styles.marketChangePositive
                   : styles.marketChangeNegative;
+              const isFavorite = favorites.includes(asset.id);
+              const disableFavoriteButton =
+                !walletAddress || (!isFavorite && favorites.length >= FAVORITES_LIMIT);
+              const favoriteLabel = isFavorite
+                ? content.favorites.remove(asset.name)
+                : content.favorites.add(asset.name);
+              const favoriteTitle = !walletAddress
+                ? content.favorites.connectWallet
+                : !isFavorite && favorites.length >= FAVORITES_LIMIT
+                  ? content.favorites.limitReached
+                  : favoriteLabel;
 
               return (
                 <div key={asset.id} className={styles.marketRow}>
@@ -463,13 +620,31 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
                     className={`${styles.marketCell} ${styles.marketRankCell}`}
                     data-label={content.columns.rank}
                   >
-                    <span className={styles.marketRank}>{index + 1}</span>
+                    <span className={styles.marketRank}>
+                      {pageStartIndex + index}
+                    </span>
                   </div>
                   <div
                     className={`${styles.marketCell} ${styles.marketCoinCell}`}
                     data-label={content.columns.name}
                   >
                     <div className={styles.marketCoin}>
+                      <button
+                        type="button"
+                        className={`${styles.favoriteButton} ${
+                          isFavorite ? styles.favoriteButtonActive : ""
+                        }`}
+                        onClick={() => toggleFavorite(asset.id)}
+                        aria-label={favoriteLabel}
+                        aria-pressed={isFavorite}
+                        disabled={disableFavoriteButton}
+                        title={favoriteTitle}
+                      >
+                        <FavoriteStar
+                          filled={isFavorite}
+                          className={styles.favoriteIcon}
+                        />
+                      </button>
                       {asset.image ? (
                         <Image
                           src={asset.image}
@@ -515,6 +690,37 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
               );
             })}
           </div>
+          <nav
+            className={styles.marketPagination}
+            aria-label={content.pagination.ariaLabel}
+          >
+            <span className={styles.marketPaginationInfo} aria-live="polite">
+              {assets.length > 0
+                ? content.pagination.showing(pageStartIndex, pageEndIndex)
+                : content.pagination.empty}
+            </span>
+            <div className={styles.marketPaginationControls}>
+              <button
+                type="button"
+                className={styles.marketPaginationButton}
+                onClick={handlePreviousPage}
+                disabled={!canGoPrevious || isLoading}
+              >
+                {content.pagination.previous}
+              </button>
+              <span className={styles.marketPaginationLabel}>
+                {content.pagination.pageLabel(currentPage)}
+              </span>
+              <button
+                type="button"
+                className={styles.marketPaginationButton}
+                onClick={handleNextPage}
+                disabled={!canGoNext || isLoading}
+              >
+                {content.pagination.next}
+              </button>
+            </div>
+          </nav>
         </div>
       )}
 
@@ -574,6 +780,311 @@ const OverviewPanel = ({ content }: { content: AppTranslation["overview"] }) => 
     </div>
   </div>
 );
+
+type PumpFunApiResponse = {
+  projects: PumpFunProject[];
+  source: "remote" | "fallback";
+  error?: string | null;
+};
+
+const PUMP_FUN_LIMIT = 20;
+
+const PumpFunPanel = ({ content }: { content: AppTranslation["pumpFun"] }) => {
+  const { language } = useLanguage();
+  const [projects, setProjects] = useState<PumpFunProject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [source, setSource] = useState<"remote" | "fallback" | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const locale = language === "es" ? "es-ES" : "en-US";
+
+  const compactCurrencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: "USD",
+        notation: "compact",
+        maximumFractionDigits: 2,
+      }),
+    [locale],
+  );
+
+  const numberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 0,
+      }),
+    [locale],
+  );
+
+  const dateTimeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    [locale],
+  );
+
+  const formatPrice = useCallback(
+    (value: number | null) => {
+      if (value === null) {
+        return "—";
+      }
+
+      const fractionDigits = value >= 1 ? 2 : value >= 0.01 ? 4 : 6;
+      return new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits,
+      }).format(value);
+    },
+    [locale],
+  );
+
+  const formatCurrency = useCallback(
+    (value: number | null) => {
+      if (value === null) {
+        return "—";
+      }
+
+      return compactCurrencyFormatter.format(value);
+    },
+    [compactCurrencyFormatter],
+  );
+
+  const fetchProjects = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/pumpfun/incoming", { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+
+      const data = (await response.json()) as PumpFunApiResponse;
+      setProjects(data.projects);
+      setSource(data.source);
+      setStatusMessage(data.error ?? null);
+      setLastUpdated(new Date());
+    } catch (requestError) {
+      const message =
+        requestError instanceof Error ? requestError.message : content.status.error;
+      setError(message);
+      setStatusMessage(null);
+      setSource(null);
+      setProjects([]);
+      setLastUpdated(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [content.status.error]);
+
+  useEffect(() => {
+    void fetchProjects();
+  }, [fetchProjects]);
+
+  const handleRetry = useCallback(() => {
+    void fetchProjects();
+  }, [fetchProjects]);
+
+  const displayedCount = projects.length
+    ? Math.min(projects.length, PUMP_FUN_LIMIT)
+    : PUMP_FUN_LIMIT;
+
+  return (
+    <section className={styles.pumpPanel} aria-labelledby="pumpfun-heading">
+      <header className={styles.pumpHeader}>
+        <div>
+          <h1 id="pumpfun-heading" className={styles.pumpTitle}>
+            {content.title}
+          </h1>
+          <p className={styles.pumpSubtitle}>{content.subtitle}</p>
+          <p className={styles.pumpLimitNotice}>{content.limitNotice(displayedCount)}</p>
+        </div>
+        <div className={styles.pumpHeaderMeta}>
+          {lastUpdated ? (
+            <span className={styles.pumpMetaText}>
+              {content.status.updatedAt(dateTimeFormatter.format(lastUpdated))}
+            </span>
+          ) : null}
+          <button
+            type="button"
+            className={styles.pumpRetryButton}
+            onClick={handleRetry}
+            disabled={isLoading}
+          >
+            {content.status.retry}
+          </button>
+        </div>
+      </header>
+
+      {source ? (
+        <div className={styles.pumpSourceRow} role="status">
+          <span
+            className={
+              source === "remote" ? styles.pumpBadge : styles.pumpBadgeFallback
+            }
+          >
+            {source === "remote" ? content.status.remote : content.status.fallback}
+          </span>
+          {source === "fallback" ? (
+            <span className={styles.pumpHint}>{content.status.credentialsHint}</span>
+          ) : null}
+          {statusMessage ? (
+            <span className={styles.pumpHint}>{statusMessage}</span>
+          ) : null}
+        </div>
+      ) : null}
+
+      {isLoading ? (
+        <div className={styles.pumpStatus} role="status">
+          {content.status.loading}
+        </div>
+      ) : error ? (
+        <div className={styles.pumpStatus} role="alert">
+          <span>{content.status.error}</span>
+          <button
+            type="button"
+            className={styles.pumpRetryInline}
+            onClick={handleRetry}
+          >
+            {content.status.retry}
+          </button>
+        </div>
+      ) : projects.length === 0 ? (
+        <div className={styles.pumpStatus} role="status">
+          {content.status.empty}
+        </div>
+      ) : (
+        <div className={styles.pumpTableWrapper}>
+          <table className={styles.pumpTable}>
+            <thead>
+              <tr>
+                <th scope="col">{content.table.columns.rank}</th>
+                <th scope="col">{content.table.columns.project}</th>
+                <th scope="col">{content.table.columns.price}</th>
+                <th scope="col">{content.table.columns.marketCap}</th>
+                <th scope="col">{content.table.columns.raised}</th>
+                <th scope="col">{content.table.columns.progress}</th>
+                <th scope="col">{content.table.columns.launched}</th>
+                <th scope="col">{content.table.columns.holders}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {projects.map((project, index) => {
+                const progressValue = project.bondingProgress ?? 0;
+                const progressPercent = Math.max(0, Math.min(progressValue, 1)) * 100;
+                const raisedValue =
+                  project.raisedUsd ?? project.marketCapUsd ?? project.liquidityUsd;
+                const targetValue = project.bondingMarketCapTargetUsd;
+                const progressSummary = content.table.progressTarget(
+                  raisedValue !== null ? formatCurrency(raisedValue) : "—",
+                  targetValue !== null ? formatCurrency(targetValue) : null,
+                );
+
+                const createdAt = project.createdAt ? new Date(project.createdAt) : null;
+                const formattedDate =
+                  createdAt && !Number.isNaN(createdAt.getTime())
+                    ? dateTimeFormatter.format(createdAt)
+                    : "—";
+
+                return (
+                  <tr key={project.id}>
+                    <td className={styles.pumpRankCell}>{index + 1}</td>
+                    <td>
+                      <div className={styles.pumpProjectCell}>
+                        {project.image ? (
+                          <Image
+                            src={project.image}
+                            alt={`${project.name} logo`}
+                            width={40}
+                            height={40}
+                            className={styles.pumpProjectAvatar}
+                            loading="lazy"
+                            sizes="40px"
+                          />
+                        ) : (
+                          <div className={styles.pumpProjectFallback} aria-hidden="true">
+                            {project.symbol.slice(0, 2).toUpperCase() || "?"}
+                          </div>
+                        )}
+                        <div className={styles.pumpProjectInfo}>
+                          <span className={styles.pumpProjectName}>{project.name}</span>
+                          <span className={styles.pumpProjectSymbol}>{project.symbol}</span>
+                          <div className={styles.pumpLinks}>
+                            {project.twitter ? (
+                              <a
+                                href={project.twitter}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.pumpSocialLink}
+                              >
+                                Twitter
+                              </a>
+                            ) : null}
+                            {project.telegram ? (
+                              <a
+                                href={project.telegram}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.pumpSocialLink}
+                              >
+                                Telegram
+                              </a>
+                            ) : null}
+                            {project.website ? (
+                              <a
+                                href={project.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.pumpSocialLink}
+                              >
+                                Web
+                              </a>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className={styles.pumpNumberCell}>{formatPrice(project.priceUsd)}</td>
+                    <td className={styles.pumpNumberCell}>{formatCurrency(project.marketCapUsd)}</td>
+                    <td className={styles.pumpNumberCell}>{formatCurrency(project.raisedUsd)}</td>
+                    <td>
+                      <div className={styles.pumpProgressCell}>
+                        <div className={styles.pumpProgressBar} aria-hidden="true">
+                          <div
+                            className={styles.pumpProgressFill}
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                        <span className={styles.pumpProgressValue}>
+                          {`${progressPercent.toFixed(1)}%`}
+                        </span>
+                        <span className={styles.pumpProgressSummary}>{progressSummary}</span>
+                      </div>
+                    </td>
+                    <td className={styles.pumpDateCell}>{formattedDate}</td>
+                    <td className={styles.pumpNumberCell}>
+                      {project.holders !== null
+                        ? numberFormatter.format(project.holders)
+                        : "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+};
 
 const SupportPanel = ({ content }: { content: AppTranslation["support"] }) => (
   <div className={styles.infoSection}>
@@ -643,6 +1154,12 @@ export default function Home() {
       Icon: MarketIcon,
     },
     {
+      key: "pumpFun",
+      label: translations.navigation.sections.pumpFun.label,
+      description: translations.navigation.sections.pumpFun.description,
+      Icon: PumpFunIcon,
+    },
+    {
       key: "support",
       label: translations.navigation.sections.support.label,
       description: translations.navigation.sections.support.description,
@@ -658,6 +1175,9 @@ export default function Home() {
     case "market":
       content = <MarketPanel content={translations.market} />;
       break;
+    case "pumpFun":
+      content = <PumpFunPanel content={translations.pumpFun} />;
+      break;
     case "support":
       content = <SupportPanel content={translations.support} />;
       break;
@@ -672,41 +1192,43 @@ export default function Home() {
           className={styles.menu}
           aria-label={translations.navigation.ariaLabel}
           role="tablist"
-          aria-orientation="vertical"
+          aria-orientation="horizontal"
         >
           <div className={styles.menuHeader}>
             <LanguageToggle />
           </div>
-          {sections.map((section) => {
-            const isActive = activeSection === section.key;
-            const itemClasses = [styles.menuItem];
-            if (isActive) {
-              itemClasses.push(styles.menuItemActive);
-            }
+          <div className={styles.menuItems}>
+            {sections.map((section) => {
+              const isActive = activeSection === section.key;
+              const itemClasses = [styles.menuItem];
+              if (isActive) {
+                itemClasses.push(styles.menuItemActive);
+              }
 
-            return (
-              <button
-                key={section.key}
-                type="button"
-                role="tab"
-                id={`tab-${section.key}`}
-                aria-selected={isActive}
-                aria-controls={`panel-${section.key}`}
-                className={itemClasses.join(" ")}
-                onClick={() => setActiveSection(section.key)}
-              >
-                <span className={styles.menuIconBadge} aria-hidden="true">
-                  <section.Icon className={styles.menuIconGraphic} />
-                </span>
-                <span className={styles.menuText}>
-                  <span className={styles.menuLabel}>{section.label}</span>
-                  <span className={styles.menuDescription}>
-                    {section.description}
+              return (
+                <button
+                  key={section.key}
+                  type="button"
+                  role="tab"
+                  id={`tab-${section.key}`}
+                  aria-selected={isActive}
+                  aria-controls={`panel-${section.key}`}
+                  className={itemClasses.join(" ")}
+                  onClick={() => setActiveSection(section.key)}
+                >
+                  <span className={styles.menuIconBadge} aria-hidden="true">
+                    <section.Icon className={styles.menuIconGraphic} />
                   </span>
-                </span>
-              </button>
-            );
-          })}
+                  <span className={styles.menuText}>
+                    <span className={styles.menuLabel}>{section.label}</span>
+                    <span className={styles.menuDescription}>
+                      {section.description}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </nav>
 
         <section
