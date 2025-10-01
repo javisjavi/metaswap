@@ -711,8 +711,16 @@ const SwapForm = () => {
       await refreshQuote();
     } catch (error) {
       console.error(error);
-      const message = (error as Error).message;
-      setSwapError(message && message.trim() ? message : swapTexts.errors.generic);
+      let message = (error as Error).message;
+      if (
+        error instanceof TypeError &&
+        (!message || message.trim() === "" || message === "Failed to fetch")
+      ) {
+        message = swapTexts.errors.network;
+      }
+      setSwapError(
+        message && message.trim() ? message : swapTexts.errors.generic
+      );
     } finally {
       setIsSwapping(false);
     }

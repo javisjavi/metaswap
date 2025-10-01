@@ -57,6 +57,7 @@ type SwapFormTranslations = {
   errors: {
     connectWallet: string;
     invalidAmount: string;
+    network: string;
     generic: string;
     sameTokens: string;
   };
@@ -263,6 +264,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       errors: {
         connectWallet: "Conecta tu wallet Solflare para continuar.",
         invalidAmount: "Define un monto válido para cotizar el swap.",
+        network:
+          "No pudimos conectar con el servicio de swaps. Revisa tu conexión e inténtalo nuevamente.",
         generic: "No se pudo completar el swap. Inténtalo nuevamente.",
         sameTokens: "Selecciona tokens diferentes para obtener una cotización válida.",
       },
@@ -417,6 +420,8 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       errors: {
         connectWallet: "Connect your Solflare wallet to continue.",
         invalidAmount: "Enter a valid amount to request a quote.",
+        network:
+          "We couldn't reach the swap service. Check your connection and try again.",
         generic: "We couldn't complete the swap. Please try again.",
         sameTokens: "Select different tokens to request a valid quote.",
       },
