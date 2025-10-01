@@ -13,6 +13,8 @@ interface UseJupiterQuoteParams {
   slippageBps?: number;
   cluster?: "devnet" | "testnet" | "mainnet-beta";
   swapMode?: "ExactIn" | "ExactOut";
+  inputDecimals?: number;
+  outputDecimals?: number;
 }
 
 export type QuoteError = "fetchFailed" | "unexpected";
@@ -62,6 +64,8 @@ const isValidQuoteResponse = (value: unknown): value is QuoteResponse => {
 export const useJupiterQuote = ({
   inputMint,
   outputMint,
+  inputDecimals,
+  outputDecimals,
   amount,
   enabled = true,
   slippageBps = 50,
@@ -86,8 +90,20 @@ export const useJupiterQuote = ({
       slippageBps,
       cluster,
       swapMode,
+      inputDecimals,
+      outputDecimals,
     };
-  }, [enabled, inputMint, outputMint, amount, slippageBps, cluster, swapMode]);
+  }, [
+    enabled,
+    inputMint,
+    outputMint,
+    amount,
+    slippageBps,
+    cluster,
+    swapMode,
+    inputDecimals,
+    outputDecimals,
+  ]);
 
   const fetchQuote = useCallback(async () => {
     if (!params) {

@@ -470,6 +470,8 @@ const SwapForm = () => {
   } = useJupiterQuote({
     inputMint: inputToken?.address,
     outputMint: outputToken?.address,
+    inputDecimals: inputToken?.decimals,
+    outputDecimals: outputToken?.decimals,
     amount: quoteAmount,
     enabled: canQuote,
     slippageBps,
