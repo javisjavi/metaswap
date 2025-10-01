@@ -340,19 +340,25 @@ type MarketAsset = {
   change24h: number;
 };
 
-const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
+const MarketPanel = ({
+  content,
+  favorites,
+  walletAddress,
+  onToggleFavorite,
+}: {
+  content: AppTranslation["market"];
+  favorites: string[];
+  walletAddress: string | null;
+  onToggleFavorite: (assetId: string) => void;
+}) => {
   const { language } = useLanguage();
-  const { publicKey } = useWallet();
   const [assets, setAssets] = useState<MarketAsset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState<string[]>([]);
 
   const locale = language === "es" ? "es-ES" : "en-US";
-
-  const walletAddress = useMemo(() => publicKey?.toBase58() ?? null, [publicKey]);
 
   const currencyFormatter = useMemo(
     () =>
@@ -393,54 +399,6 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
       }),
     [locale],
   );
-
-  useEffect(() => {
-    if (!walletAddress) {
-      setFavorites([]);
-      return;
-    }
-
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      const stored = window.localStorage.getItem(
-        `${FAVORITES_STORAGE_KEY_PREFIX}${walletAddress}`,
-      );
-
-      if (!stored) {
-        setFavorites([]);
-        return;
-      }
-
-      const parsed = JSON.parse(stored);
-
-      if (Array.isArray(parsed)) {
-        setFavorites(parsed.filter((value): value is string => typeof value === "string"));
-      } else {
-        setFavorites([]);
-      }
-    } catch (error) {
-      console.error("Failed to load favorites", error);
-      setFavorites([]);
-    }
-  }, [walletAddress]);
-
-  useEffect(() => {
-    if (!walletAddress || typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(
-        `${FAVORITES_STORAGE_KEY_PREFIX}${walletAddress}`,
-        JSON.stringify(favorites),
-      );
-    } catch (error) {
-      console.error("Failed to persist favorites", error);
-    }
-  }, [favorites, walletAddress]);
 
   const loadMarketData = useCallback(
     async (page: number, signal?: AbortSignal) => {
@@ -519,27 +477,6 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
   const handleRetry = useCallback(() => {
     void loadMarketData(currentPage);
   }, [currentPage, loadMarketData]);
-
-  const toggleFavorite = useCallback(
-    (assetId: string) => {
-      if (!walletAddress) {
-        return;
-      }
-
-      setFavorites((previous) => {
-        if (previous.includes(assetId)) {
-          return previous.filter((id) => id !== assetId);
-        }
-
-        if (previous.length >= FAVORITES_LIMIT) {
-          return previous;
-        }
-
-        return [...previous, assetId];
-      });
-    },
-    [walletAddress],
-  );
 
   const handleNextPage = useCallback(() => {
     setCurrentPage((previous) => previous + 1);
@@ -634,7 +571,7 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
                         className={`${styles.favoriteButton} ${
                           isFavorite ? styles.favoriteButtonActive : ""
                         }`}
-                        onClick={() => toggleFavorite(asset.id)}
+                        onClick={() => onToggleFavorite(asset.id)}
                         aria-label={favoriteLabel}
                         aria-pressed={isFavorite}
                         disabled={disableFavoriteButton}
@@ -1133,6 +1070,73 @@ const SupportPanel = ({ content }: { content: AppTranslation["support"] }) => (
 export default function Home() {
   const [activeSection, setActiveSection] = useState<SectionKey>("swap");
   const translations = useTranslations();
+  const { publicKey } = useWallet();
+  const walletAddress = useMemo(() => publicKey?.toBase58() ?? null, [publicKey]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  const favoritesStorageKey = useMemo(
+    () => `${FAVORITES_STORAGE_KEY_PREFIX}${walletAddress ?? "guest"}`,
+    [walletAddress],
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(favoritesStorageKey);
+
+      if (!stored) {
+        setFavorites([]);
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+
+      if (Array.isArray(parsed)) {
+        setFavorites(parsed.filter((value): value is string => typeof value === "string"));
+      } else {
+        setFavorites([]);
+      }
+    } catch (error) {
+      console.error("Failed to load favorites", error);
+      setFavorites([]);
+    }
+  }, [favoritesStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(favoritesStorageKey, JSON.stringify(favorites));
+    } catch (error) {
+      console.error("Failed to persist favorites", error);
+    }
+  }, [favorites, favoritesStorageKey]);
+
+  const handleToggleFavorite = useCallback(
+    (assetId: string) => {
+      if (!walletAddress) {
+        return;
+      }
+
+      setFavorites((previous) => {
+        if (previous.includes(assetId)) {
+          return previous.filter((id) => id !== assetId);
+        }
+
+        if (previous.length >= FAVORITES_LIMIT) {
+          return previous;
+        }
+
+        return [...previous, assetId];
+      });
+    },
+    [walletAddress],
+  );
 
   const sections: SectionDefinition[] = [
     {
@@ -1173,7 +1177,14 @@ export default function Home() {
       content = <OverviewPanel content={translations.overview} />;
       break;
     case "market":
-      content = <MarketPanel content={translations.market} />;
+      content = (
+        <MarketPanel
+          content={translations.market}
+          favorites={favorites}
+          walletAddress={walletAddress}
+          onToggleFavorite={handleToggleFavorite}
+        />
+      );
       break;
     case "pumpFun":
       content = <PumpFunPanel content={translations.pumpFun} />;
