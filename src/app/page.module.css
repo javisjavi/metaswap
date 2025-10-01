@@ -45,43 +45,157 @@
   align-items: stretch;
 }
 
-.languageToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 999px;
-  padding: 4px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px rgba(15, 23, 42, 0.3);
+.languageMenu {
+  position: relative;
 }
 
-.languageOption {
+.languageMenuTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 41, 59, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px 6px 16px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+    color 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 28px rgba(2, 6, 23, 0.35);
+}
+
+.languageMenuTrigger:hover,
+.languageMenuTrigger:focus-visible {
+  background: rgba(30, 41, 59, 0.92);
+  border-color: rgba(148, 163, 184, 0.45);
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 36px rgba(2, 6, 23, 0.45);
+}
+
+.languageMenuTriggerLabel {
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.languageMenuValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(34, 211, 238, 0.95));
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 12px 22px rgba(79, 70, 229, 0.45);
+  padding: 0 12px;
+}
+
+.languageMenuIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: rgba(226, 232, 240, 0.75);
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.languageMenuTrigger[aria-expanded="true"] .languageMenuIcon {
+  transform: rotate(-180deg);
+  color: rgba(226, 232, 240, 0.95);
+}
+
+.languageMenuList {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 200px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  padding: 10px;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 22px 44px rgba(2, 6, 23, 0.6);
+  z-index: 10;
+}
+
+.languageMenuListOpen {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.languageMenuOption {
+  width: 100%;
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: rgba(203, 213, 225, 0.92);
   font-weight: 600;
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 999px;
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  border-radius: 12px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.languageOption:focus-visible {
+.languageMenuOption:focus-visible {
   outline: 2px solid rgba(148, 163, 184, 0.45);
   outline-offset: 2px;
 }
 
-.languageOptionActive {
-  background: linear-gradient(135deg, #6366f1, #22d3ee);
-  color: #0f172a;
-  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.35);
+.languageMenuOption:hover,
+.languageMenuOption:focus-visible {
+  background: rgba(99, 102, 241, 0.12);
+  color: #e2e8f0;
 }
 
-.languageOption:not(.languageOptionActive):hover,
-.languageOption:not(.languageOptionActive):focus-visible {
-  color: #e2e8f0;
+.languageMenuOptionActive {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(34, 211, 238, 0.85));
+  color: #0f172a;
+  box-shadow: 0 14px 28px rgba(99, 102, 241, 0.38);
+}
+
+.languageMenuOptionActive .languageMenuOptionBadge {
+  background: rgba(15, 23, 42, 0.85);
+  color: rgba(226, 232, 240, 0.96);
+}
+
+.languageMenuOptionName {
+  flex: 1;
+  text-align: left;
+}
+
+.languageMenuOptionBadge {
+  min-width: 32px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.9);
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 0 10px;
 }
 
 .menuItem {
