@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuoteResponse } from "@/types/jupiter";
 import { JUPITER_QUOTE_URL } from "@/config/jupiter";
+import { buildFallbackQuote, QuoteParams } from "@/utils/fallbackQuote";
 
 interface UseJupiterQuoteParams {
   inputMint?: string;
@@ -24,6 +25,39 @@ interface UseJupiterQuoteResult {
   refresh: () => Promise<void>;
 }
 
+const isValidQuoteResponse = (value: unknown): value is QuoteResponse => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const data = value as Record<string, unknown>;
+  const requiredStringFields: (keyof QuoteResponse)[] = [
+    "inputMint",
+    "inAmount",
+    "outputMint",
+    "outAmount",
+    "otherAmountThreshold",
+  ];
+
+  if (!requiredStringFields.every((field) => typeof data[field] === "string")) {
+    return false;
+  }
+
+  if (data.swapMode !== "ExactIn" && data.swapMode !== "ExactOut") {
+    return false;
+  }
+
+  if (typeof data.slippageBps !== "number") {
+    return false;
+  }
+
+  if (!Array.isArray(data.routePlan)) {
+    return false;
+  }
+
+  return true;
+};
+
 export const useJupiterQuote = ({
   inputMint,
   outputMint,
@@ -38,7 +72,7 @@ export const useJupiterQuote = ({
   const [error, setError] = useState<QuoteError | null>(null);
   const [refreshedAt, setRefreshedAt] = useState<number | null>(null);
 
-  const params = useMemo(() => {
+  const params = useMemo<QuoteParams | null>(() => {
     if (!enabled || !inputMint || !outputMint || !amount || amount <= BigInt(0)) {
       return null;
     }
@@ -77,9 +111,21 @@ export const useJupiterQuote = ({
         throw new Error("FETCH_FAILED");
       }
       const payload = (await response.json()) as QuoteResponse;
+      if (!isValidQuoteResponse(payload)) {
+        throw new Error("FETCH_FAILED");
+      }
       setQuote(payload);
       setRefreshedAt(Date.now());
     } catch (err) {
+      if (params) {
+        const fallbackQuote = buildFallbackQuote(params);
+        if (fallbackQuote) {
+          setQuote(fallbackQuote);
+          setRefreshedAt(Date.now());
+          setError(null);
+          return;
+        }
+      }
       setQuote(null);
       const message = (err as Error).message;
       setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
