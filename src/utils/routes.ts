@@ -58,6 +58,14 @@ const resolvePlatformIcon = (label: string): string => {
   return PLATFORM_ICON_MAP[alias] ?? DEFAULT_PLATFORM_ICON;
 };
 
+const resolvePlatformLabel = (routeStep: QuoteRoutePlan): string => {
+  const rawLabel = routeStep.swapInfo.label?.trim();
+  if (!rawLabel || rawLabel.toLowerCase() === "fallback") {
+    return "Jupiter";
+  }
+  return rawLabel;
+};
+
 export const buildRouteSummary = (
   routePlan?: QuoteRoutePlan[][] | QuoteRoutePlan[] | null
 ): RouteSummary => {
@@ -70,7 +78,7 @@ export const buildRouteSummary = (
   return normalized
     .map((stage) =>
       stage.reduce<RoutePlatformSummary[]>((accumulator, step) => {
-        const label = step.swapInfo.label?.trim() || "Jupiter";
+        const label = resolvePlatformLabel(step);
         const percent = Number.isFinite(step.percent)
           ? step.percent
           : 0;
@@ -91,6 +99,56 @@ export const buildRouteSummary = (
         ];
       }, [])
     )
+    .filter((stage) => stage.length > 0);
+};
+
+const shortenMint = (mint: string): string =>
+  `${mint.slice(0, 4)}…${mint.slice(-4)}`;
+
+type TokenSymbolLookup = (mint: string) => string | undefined;
+
+const resolveTokenSymbol = (
+  mint: string,
+  lookup?: TokenSymbolLookup
+): string => lookup?.(mint) ?? shortenMint(mint);
+
+export const buildRoutePath = (
+  routePlan?: QuoteRoutePlan[][] | QuoteRoutePlan[] | null,
+  lookup?: TokenSymbolLookup
+): string[][] => {
+  if (!routePlan || !routePlan.length) {
+    return [];
+  }
+
+  const normalized = normalizeRoutePlan(routePlan);
+
+  return normalized
+    .map((stage) => {
+      if (!stage.length) {
+        return [];
+      }
+
+      return stage.reduce<string[]>((path, step, index) => {
+        const inputSymbol = resolveTokenSymbol(
+          step.swapInfo.inputMint,
+          lookup
+        );
+        const outputSymbol = resolveTokenSymbol(
+          step.swapInfo.outputMint,
+          lookup
+        );
+
+        if (index === 0) {
+          path.push(inputSymbol);
+        }
+
+        if (path[path.length - 1] !== outputSymbol) {
+          path.push(outputSymbol);
+        }
+
+        return path;
+      }, []);
+    })
     .filter((stage) => stage.length > 0);
 };
 

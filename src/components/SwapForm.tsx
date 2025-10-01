@@ -18,8 +18,12 @@ import { useTokenList } from "@/hooks/useTokenList";
 import { useJupiterQuote } from "@/hooks/useJupiterQuote";
 import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
-import { SwapResponse } from "@/types/jupiter";
-import { buildRouteSummary, DEFAULT_PLATFORM_ICON } from "@/utils/routes";
+import { QuoteRoutePlan, SwapResponse } from "@/types/jupiter";
+import {
+  buildRoutePath,
+  buildRouteSummary,
+  DEFAULT_PLATFORM_ICON,
+} from "@/utils/routes";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
 import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
@@ -34,10 +38,74 @@ const NETWORK_OPTIONS = [
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const MSOL_MINT = "mSoLzYCxHdYgAM7zR4mR6uvwywfrYASdHqGWjaeicZB";
 const AIRDROP_LAMPORTS = LAMPORTS_PER_SOL;
 const SLIPPAGE_PRESETS = [0.1, 0.5, 1, 2] as const;
 const QUICK_AMOUNT_PERCENTAGES = [25, 50, 75, 100] as const;
 const TRADINGVIEW_QUOTE_SYMBOL = "USDT";
+
+const PREVIEW_ROUTE_PLAN: QuoteRoutePlan[][] = [
+  [
+    {
+      swapInfo: {
+        ammKey: "demo-orca",
+        label: "Orca",
+        inputMint: SOL_MINT,
+        outputMint: MSOL_MINT,
+        inAmount: "0",
+        outAmount: "0",
+        feeAmount: "0",
+        feeMint: SOL_MINT,
+      },
+      percent: 55,
+      bps: 0,
+    },
+    {
+      swapInfo: {
+        ammKey: "demo-raydium",
+        label: "Raydium",
+        inputMint: SOL_MINT,
+        outputMint: MSOL_MINT,
+        inAmount: "0",
+        outAmount: "0",
+        feeAmount: "0",
+        feeMint: SOL_MINT,
+      },
+      percent: 45,
+      bps: 0,
+    },
+  ],
+  [
+    {
+      swapInfo: {
+        ammKey: "demo-meteora",
+        label: "Meteora DLMM",
+        inputMint: MSOL_MINT,
+        outputMint: USDC_MINT,
+        inAmount: "0",
+        outAmount: "0",
+        feeAmount: "0",
+        feeMint: MSOL_MINT,
+      },
+      percent: 65,
+      bps: 0,
+    },
+    {
+      swapInfo: {
+        ammKey: "demo-lifinity",
+        label: "Lifinity",
+        inputMint: MSOL_MINT,
+        outputMint: USDC_MINT,
+        inAmount: "0",
+        outAmount: "0",
+        feeAmount: "0",
+        feeMint: MSOL_MINT,
+      },
+      percent: 35,
+      bps: 0,
+    },
+  ],
+];
 
 const DEFAULT_SOL_TOKEN: TokenInfo = {
   address: SOL_MINT,
@@ -214,6 +282,13 @@ const SwapForm = () => {
     }
     return `BINANCE:${sanitized}${TRADINGVIEW_QUOTE_SYMBOL}`;
   }, [tradingViewBaseSymbol]);
+  const tokenSymbolLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    tokenOptions.forEach((token) => {
+      map.set(token.address, token.symbol);
+    });
+    return map;
+  }, [tokenOptions]);
 
   useEffect(() => {
     if (!tokens.length) {
@@ -642,6 +717,69 @@ const SwapForm = () => {
     [quote?.routePlan]
   );
 
+  const demoRouteSummary = useMemo(
+    () => buildRouteSummary(PREVIEW_ROUTE_PLAN),
+    []
+  );
+
+  const swapRoutePath = useMemo(
+    () =>
+      buildRoutePath(quote?.routePlan, (mint) => tokenSymbolLookup.get(mint)),
+    [quote?.routePlan, tokenSymbolLookup]
+  );
+
+  const demoRoutePath = useMemo(
+    () =>
+      buildRoutePath(
+        PREVIEW_ROUTE_PLAN,
+        (mint) => tokenSymbolLookup.get(mint)
+      ),
+    [tokenSymbolLookup]
+  );
+
+  const getRouteTokenChain = useCallback((routePath: string[][]) => {
+    if (!routePath.length) {
+      return null;
+    }
+
+    const flattened: string[] = [];
+
+    routePath.forEach((stage) => {
+      stage.forEach((symbol, index) => {
+        if (!flattened.length && index === 0) {
+          flattened.push(symbol);
+          return;
+        }
+
+        if (flattened[flattened.length - 1] !== symbol) {
+          flattened.push(symbol);
+        }
+      });
+    });
+
+    return flattened.join(" → ");
+  }, []);
+
+  const swapRouteTokenChain = useMemo(
+    () => getRouteTokenChain(swapRoutePath),
+    [getRouteTokenChain, swapRoutePath]
+  );
+
+  const demoRouteTokenChain = useMemo(
+    () => getRouteTokenChain(demoRoutePath),
+    [demoRoutePath, getRouteTokenChain]
+  );
+
+  const shouldUseDemoRoute = !quote && swapRouteSummary.length === 0;
+
+  const displayRouteSummary = shouldUseDemoRoute
+    ? demoRouteSummary
+    : swapRouteSummary;
+
+  const displayRouteTokenChain = shouldUseDemoRoute
+    ? demoRouteTokenChain
+    : swapRouteTokenChain;
+
   const formatRoutePercent = (value: number) => {
     if (value >= 99.5) {
       return "100";
@@ -994,51 +1132,58 @@ const SwapForm = () => {
           </div>
           <div className={styles.previewRow}>
             <span>{swapTexts.preview.route}</span>
-            {swapRouteSummary.length > 0 ? (
+            {displayRouteSummary.length > 0 ? (
               <div className={styles.routeDisplay}>
-                {swapRouteSummary.map((stage, stageIndex) => (
-                  <div key={`stage-${stageIndex}`} className={styles.routeStage}>
-                    {stage.map((platform, platformIndex) => (
-                      <Fragment key={`${platform.label}-${platformIndex}`}>
-                        <div className={styles.routePlatform}>
-                          <img
-                            src={platform.icon}
-                            alt=""
-                            className={styles.routePlatformIcon}
-                            onError={(event) => {
-                              (event.currentTarget as HTMLImageElement).src =
-                                DEFAULT_PLATFORM_ICON;
-                            }}
-                          />
-                          <span className={styles.routePlatformLabel}>
-                            {platform.label}
-                            {stage.length > 1 ? (
-                              <span className={styles.routePlatformPercent}>
-                                {formatRoutePercent(platform.percent)}%
-                              </span>
-                            ) : null}
-                          </span>
-                        </div>
-                        {platformIndex < stage.length - 1 ? (
-                          <span
-                            className={styles.routeStageSeparator}
-                            aria-hidden="true"
-                          >
-                            +
-                          </span>
-                        ) : null}
-                      </Fragment>
-                    ))}
-                    {stageIndex < swapRouteSummary.length - 1 ? (
-                      <span className={styles.routeArrow} aria-hidden="true">
-                        →
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
+                {displayRouteTokenChain ? (
+                  <span className={styles.routeTokenChain}>
+                    {displayRouteTokenChain}
+                  </span>
+                ) : null}
+                <div className={styles.routeStages}>
+                  {displayRouteSummary.map((stage, stageIndex) => (
+                    <div key={`stage-${stageIndex}`} className={styles.routeStage}>
+                      {stage.map((platform, platformIndex) => (
+                        <Fragment key={`${platform.label}-${platformIndex}`}>
+                          <div className={styles.routePlatform}>
+                            <img
+                              src={platform.icon}
+                              alt=""
+                              className={styles.routePlatformIcon}
+                              onError={(event) => {
+                                (event.currentTarget as HTMLImageElement).src =
+                                  DEFAULT_PLATFORM_ICON;
+                              }}
+                            />
+                            <span className={styles.routePlatformLabel}>
+                              {platform.label}
+                              {stage.length > 1 ? (
+                                <span className={styles.routePlatformPercent}>
+                                  {formatRoutePercent(platform.percent)}%
+                                </span>
+                              ) : null}
+                            </span>
+                          </div>
+                          {platformIndex < stage.length - 1 ? (
+                            <span
+                              className={styles.routeStageSeparator}
+                              aria-hidden="true"
+                            >
+                              +
+                            </span>
+                          ) : null}
+                        </Fragment>
+                      ))}
+                      {stageIndex < displayRouteSummary.length - 1 ? (
+                        <span className={styles.routeArrow} aria-hidden="true">
+                          →
+                        </span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
-              <strong>Jupiter</strong>
+              <strong>{displayRouteTokenChain ?? "Jupiter"}</strong>
             )}
           </div>
           {isFallbackQuote ? (
