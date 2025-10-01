@@ -328,7 +328,7 @@ const FavoriteStar = ({
 );
 
 const getMarketApiUrl = (page: number) =>
-  `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${MARKET_PAGE_SIZE}&page=${page}&sparkline=false&price_change_percentage=24h`;
+  `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${MARKET_PAGE_SIZE}&page=${page}&sparkline=true&price_change_percentage=24h`;
 
 type MarketAsset = {
   id: string;
@@ -339,6 +339,73 @@ type MarketAsset = {
   marketCap: number;
   volume24h: number;
   change24h: number;
+  sparkline: number[];
+};
+
+const SparklineChart = ({
+  data,
+  trend,
+}: {
+  data: number[];
+  trend: "up" | "down" | "flat";
+}) => {
+  const sanitized = data.filter(
+    (value): value is number =>
+      typeof value === "number" && Number.isFinite(value),
+  );
+
+  const colorClass =
+    trend === "up"
+      ? styles.marketSparklinePositive
+      : trend === "down"
+        ? styles.marketSparklineNegative
+        : styles.marketSparklineNeutral;
+
+  if (sanitized.length < 2) {
+    return (
+      <div
+        className={`${styles.marketSparklinePlaceholder} ${colorClass}`}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  const width = 120;
+  const height = 40;
+  const padding = 4;
+  const min = Math.min(...sanitized);
+  const max = Math.max(...sanitized);
+  const range = max - min || 1;
+
+  const points = sanitized.map((value, index) => {
+    const x =
+      padding + (index / (sanitized.length - 1)) * (width - padding * 2);
+    const y =
+      height - padding - ((value - min) / range) * (height - padding * 2);
+
+    return [x, y] as const;
+  });
+
+  const linePath = points
+    .map(([x, y], index) => `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`)
+    .join(" ");
+
+  const areaPath = `${linePath} L ${points[points.length - 1][0].toFixed(2)} ${
+    height - padding
+  } L ${points[0][0].toFixed(2)} ${height - padding} Z`;
+
+  return (
+    <svg
+      className={`${styles.marketSparklineChart} ${colorClass}`}
+      viewBox={`0 0 ${width} ${height}`}
+      role="presentation"
+      focusable="false"
+      aria-hidden="true"
+    >
+      <path className={styles.marketSparklineArea} d={areaPath} />
+      <path className={styles.marketSparklinePath} d={linePath} />
+    </svg>
+  );
 };
 
 const MarketPanel = ({
@@ -427,6 +494,7 @@ const MarketPanel = ({
           market_cap: number | null;
           total_volume: number | null;
           price_change_percentage_24h: number | null;
+          sparkline_in_7d: { price: Array<number | null> } | null;
         }> = await response.json();
 
         if (signal?.aborted) {
@@ -445,6 +513,12 @@ const MarketPanel = ({
             typeof coin.price_change_percentage_24h === "number"
               ? coin.price_change_percentage_24h
               : 0,
+          sparkline: Array.isArray(coin.sparkline_in_7d?.price)
+            ? coin.sparkline_in_7d!.price.filter(
+                (value): value is number =>
+                  typeof value === "number" && Number.isFinite(value),
+              )
+            : [],
         }));
 
         setAssets(normalized);
@@ -524,36 +598,43 @@ const MarketPanel = ({
         </div>
       ) : (
         <div className={styles.marketTableWrapper}>
-          <div className={styles.marketTable}>
-            <div className={styles.marketHeaderRow}>
-              <span className={styles.marketHeaderCell}>{content.columns.rank}</span>
-              <span className={styles.marketHeaderCell}>{content.columns.name}</span>
-              <span className={styles.marketHeaderCell}>{content.columns.price}</span>
-              <span className={styles.marketHeaderCell}>{content.columns.marketCap}</span>
-              <span className={styles.marketHeaderCell}>{content.columns.volume24h}</span>
-              <span className={styles.marketHeaderCell}>{content.columns.change24h}</span>
-            </div>
+            <div className={styles.marketTable}>
+              <div className={styles.marketHeaderRow}>
+                <span className={styles.marketHeaderCell}>{content.columns.rank}</span>
+                <span className={styles.marketHeaderCell}>{content.columns.name}</span>
+                <span className={styles.marketHeaderCell}>{content.columns.price}</span>
+                <span className={styles.marketHeaderCell}>{content.columns.marketCap}</span>
+                <span className={styles.marketHeaderCell}>{content.columns.volume24h}</span>
+                <span className={styles.marketHeaderCell}>{content.columns.change24h}</span>
+                <span className={styles.marketHeaderCell}>{content.columns.sparkline}</span>
+              </div>
 
-            {assets.map((asset, index) => {
-              const formattedChange = `${asset.change24h >= 0 ? "+" : ""}${percentageFormatter.format(asset.change24h / 100)}`;
-              const changeClassName =
-                asset.change24h >= 0
-                  ? styles.marketChangePositive
-                  : styles.marketChangeNegative;
-              const isFavorite = favorites.includes(asset.id);
-              const disableFavoriteButton =
-                !walletAddress || (!isFavorite && favorites.length >= FAVORITES_LIMIT);
-              const favoriteLabel = isFavorite
-                ? content.favorites.remove(asset.name)
-                : content.favorites.add(asset.name);
-              const favoriteTitle = !walletAddress
-                ? content.favorites.connectWallet
-                : !isFavorite && favorites.length >= FAVORITES_LIMIT
-                  ? content.favorites.limitReached
-                  : favoriteLabel;
+              {assets.map((asset, index) => {
+                const formattedChange = `${asset.change24h >= 0 ? "+" : ""}${percentageFormatter.format(asset.change24h / 100)}`;
+                const changeClassName =
+                  asset.change24h >= 0
+                    ? styles.marketChangePositive
+                    : styles.marketChangeNegative;
+                const isFavorite = favorites.includes(asset.id);
+                const disableFavoriteButton =
+                  !walletAddress || (!isFavorite && favorites.length >= FAVORITES_LIMIT);
+                const favoriteLabel = isFavorite
+                  ? content.favorites.remove(asset.name)
+                  : content.favorites.add(asset.name);
+                const favoriteTitle = !walletAddress
+                  ? content.favorites.connectWallet
+                  : !isFavorite && favorites.length >= FAVORITES_LIMIT
+                    ? content.favorites.limitReached
+                    : favoriteLabel;
+                const changeTrend =
+                  asset.change24h > 0
+                    ? "up"
+                    : asset.change24h < 0
+                      ? "down"
+                      : "flat";
 
-              return (
-                <div key={asset.id} className={styles.marketRow}>
+                return (
+                  <div key={asset.id} className={styles.marketRow}>
                   <div
                     className={`${styles.marketCell} ${styles.marketRankCell}`}
                     data-label={content.columns.rank}
@@ -623,6 +704,14 @@ const MarketPanel = ({
                     <span className={`${styles.marketValue} ${changeClassName}`}>
                       {formattedChange}
                     </span>
+                  </div>
+                  <div
+                    className={`${styles.marketCell} ${styles.marketSparklineCell}`}
+                    data-label={content.columns.sparkline}
+                  >
+                    <div className={styles.marketSparklineWrapper}>
+                      <SparklineChart data={asset.sparkline} trend={changeTrend} />
+                    </div>
                   </div>
                 </div>
               );

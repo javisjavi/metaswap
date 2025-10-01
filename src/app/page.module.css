@@ -529,7 +529,8 @@
     minmax(0, 1.2fr)
     minmax(0, 1.3fr)
     minmax(0, 1.3fr)
-    minmax(0, 1.1fr);
+    minmax(0, 1.1fr)
+    minmax(0, 1.4fr);
   gap: clamp(8px, 1.6vw, 16px);
   align-items: center;
 }
@@ -562,6 +563,70 @@
 
 .marketCell > span {
   width: 100%;
+}
+
+.marketSparklineCell {
+  justify-content: center;
+}
+
+.marketSparklineWrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marketSparklineChart {
+  width: 100%;
+  max-width: 140px;
+  height: 40px;
+  display: block;
+}
+
+.marketSparklinePath {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.marketSparklineArea {
+  fill: currentColor;
+  opacity: 0.18;
+}
+
+.marketSparklinePlaceholder {
+  width: 100%;
+  max-width: 140px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.marketSparklinePlaceholder::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  height: 1.6px;
+  background: rgba(148, 163, 184, 0.35);
+  transform: translateY(-50%);
+}
+
+.marketSparklinePositive {
+  color: rgba(94, 234, 212, 0.9);
+}
+
+.marketSparklineNegative {
+  color: rgba(248, 113, 113, 0.92);
+}
+
+.marketSparklineNeutral {
+  color: rgba(148, 163, 184, 0.85);
 }
 
 .marketRankCell {
@@ -2252,7 +2317,8 @@
       minmax(0, 1.1fr)
       minmax(0, 1.2fr)
       minmax(0, 1.2fr)
-      minmax(0, 1fr);
+      minmax(0, 1fr)
+      minmax(0, 1.3fr);
   }
 }
 
@@ -2265,7 +2331,8 @@
       minmax(0, 1fr)
       minmax(0, 1.1fr)
       minmax(0, 1.1fr)
-      minmax(0, 0.9fr);
+      minmax(0, 0.9fr)
+      minmax(0, 1.2fr);
   }
 }
 
@@ -2294,6 +2361,10 @@
     align-items: flex-start;
     justify-content: flex-start;
     gap: 6px;
+  }
+
+  .marketSparklineCell {
+    align-items: flex-start;
   }
 
   .marketCell::before {
@@ -2330,6 +2401,12 @@
 
   .marketCoin {
     width: 100%;
+  }
+
+  .marketSparklineWrapper,
+  .marketSparklineChart,
+  .marketSparklinePlaceholder {
+    max-width: 100%;
   }
 }
 

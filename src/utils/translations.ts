@@ -64,6 +64,7 @@ type MarketTranslations = {
     marketCap: string;
     volume24h: string;
     change24h: string;
+    sparkline: string;
   };
   status: {
     loading: string;
@@ -360,6 +361,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         marketCap: "Capitalización",
         volume24h: "Volumen 24h",
         change24h: "Variación 24h",
+        sparkline: "Tendencia 7d",
       },
       status: {
         loading: "Cargando mercado...",
@@ -594,6 +596,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         marketCap: "Market cap",
         volume24h: "24h volume",
         change24h: "24h change",
+        sparkline: "7d trend",
       },
       status: {
         loading: "Loading market data...",
