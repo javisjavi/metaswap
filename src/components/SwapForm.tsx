@@ -23,7 +23,8 @@ import { buildRouteSummary, DEFAULT_PLATFORM_ICON } from "@/utils/routes";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
 import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
-import { useTranslations } from "@/context/LanguageContext";
+import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import TradingViewChart from "./TradingViewChart";
 
 const NETWORK_OPTIONS = [
   { value: "mainnet-beta", label: "Mainnet" },
@@ -36,6 +37,7 @@ const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const AIRDROP_LAMPORTS = LAMPORTS_PER_SOL;
 const SLIPPAGE_PRESETS = [0.1, 0.5, 1, 2] as const;
 const QUICK_AMOUNT_PERCENTAGES = [25, 50, 75, 100] as const;
+const TRADINGVIEW_QUOTE_SYMBOL = "USDT";
 
 const DEFAULT_SOL_TOKEN: TokenInfo = {
   address: SOL_MINT,
@@ -75,6 +77,7 @@ const WalletMultiButton = dynamic(
 const SwapForm = () => {
   const translations = useTranslations();
   const swapTexts = translations.swapForm;
+  const { language } = useLanguage();
 
   const { network, setNetwork } = useNetwork();
   const { tokens, loading: tokensLoading, error: tokensError } = useTokenList(network);
@@ -198,6 +201,19 @@ const SwapForm = () => {
     }
     return Array.from(map.values());
   }, [tokens, customTokens]);
+
+  const tradingViewBaseSymbol = useMemo(() => {
+    const symbol = inputToken?.symbol ?? DEFAULT_SOL_TOKEN.symbol;
+    return symbol.toUpperCase();
+  }, [inputToken?.symbol]);
+
+  const tradingViewSymbol = useMemo(() => {
+    const sanitized = tradingViewBaseSymbol.replace(/[^0-9A-Z]/g, "");
+    if (!sanitized) {
+      return `BINANCE:${DEFAULT_SOL_TOKEN.symbol}${TRADINGVIEW_QUOTE_SYMBOL}`;
+    }
+    return `BINANCE:${sanitized}${TRADINGVIEW_QUOTE_SYMBOL}`;
+  }, [tradingViewBaseSymbol]);
 
   useEffect(() => {
     if (!tokens.length) {
@@ -1103,6 +1119,23 @@ const SwapForm = () => {
         >
           {isSwapping ? swapTexts.swapButton.loading : swapTexts.swapButton.default}
         </button>
+      </div>
+
+      <div className={styles.tradingViewCard}>
+        <div className={styles.tradingViewHeader}>
+          <div>
+            <h2 className={styles.tradingViewTitle}>{swapTexts.chart.title}</h2>
+            <p className={styles.tradingViewSubtitle}>
+              {swapTexts.chart.subtitle(
+                tradingViewBaseSymbol,
+                TRADINGVIEW_QUOTE_SYMBOL
+              )}
+            </p>
+          </div>
+        </div>
+        <div className={styles.tradingViewWidget}>
+          <TradingViewChart symbol={tradingViewSymbol} locale={language} />
+        </div>
       </div>
     </section>
   );

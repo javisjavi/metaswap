@@ -138,6 +138,10 @@ type SwapFormTranslations = {
     statusLastUpdated: (time: string) => string;
     statusEnterAmount: string;
   };
+  chart: {
+    title: string;
+    subtitle: (baseSymbol: string, quoteSymbol: string) => string;
+  };
   swapButton: {
     default: string;
     loading: string;
@@ -415,6 +419,11 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         statusLastUpdated: (time) => `Última actualización: ${time} (se renueva automáticamente)`,
         statusEnterAmount: "Introduce un monto para obtener una cotización en tiempo real.",
       },
+      chart: {
+        title: "Precio en tiempo real",
+        subtitle: (base, quote) =>
+          `Cotización de ${base}/${quote} provista por TradingView.`,
+      },
       swapButton: {
         default: "Confirmar swap",
         loading: "Firmando…",
@@ -637,6 +646,11 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         statusUpdating: "Updating quote…",
         statusLastUpdated: (time) => `Last updated: ${time} (auto-refreshing)`,
         statusEnterAmount: "Enter an amount to get a live quote.",
+      },
+      chart: {
+        title: "Live market price",
+        subtitle: (base, quote) =>
+          `Live ${base}/${quote} rate powered by TradingView.`,
       },
       swapButton: {
         default: "Confirm swap",
