@@ -30,6 +30,8 @@ const NETWORK_OPTIONS = [
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const AIRDROP_LAMPORTS = LAMPORTS_PER_SOL;
+const SLIPPAGE_PRESETS = [0.1, 0.5, 1, 2] as const;
+const QUICK_AMOUNT_PERCENTAGES = [25, 50, 75, 100] as const;
 
 const DEFAULT_SOL_TOKEN: TokenInfo = {
   address: SOL_MINT,
@@ -81,6 +83,8 @@ const SwapForm = () => {
   const [showCelebration, setShowCelebration] = useState(false);
   const [inputAmountDisplay, setInputAmountDisplay] = useState("");
   const [outputAmountDisplay, setOutputAmountDisplay] = useState("");
+  const [slippageBps, setSlippageBps] = useState(50);
+  const [slippageInput, setSlippageInput] = useState("0.5");
 
   const confettiPieces = [
     styles.confettiPiece1,
@@ -96,6 +100,30 @@ const SwapForm = () => {
     styles.confettiPiece11,
     styles.confettiPiece12,
   ];
+
+  const clampSlippagePercent = useCallback(
+    (value: number) => Math.min(50, Math.max(0, value)),
+    []
+  );
+
+  const formatSlippagePercent = useCallback((value: number) => {
+    if (Number.isNaN(value)) {
+      return "0";
+    }
+    if (Number.isInteger(value)) {
+      return value.toString();
+    }
+    return value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  }, []);
+
+  const applySlippagePercent = useCallback(
+    (percent: number) => {
+      const clamped = clampSlippagePercent(percent);
+      setSlippageBps(Math.round(clamped * 100));
+      setSlippageInput(formatSlippagePercent(clamped));
+    },
+    [clampSlippagePercent, formatSlippagePercent]
+  );
 
   useEffect(() => {
     if (!swapSignature) {
@@ -353,6 +381,7 @@ const SwapForm = () => {
     outputMint: outputToken?.address,
     amount: quoteAmount,
     enabled: canQuote,
+    slippageBps,
     cluster: network,
     swapMode: amountMode === "in" ? "ExactIn" : "ExactOut",
   });
@@ -408,6 +437,31 @@ const SwapForm = () => {
       setOutputAmount("");
     },
     [setAmountMode, setInputAmount, setOutputAmount]
+  );
+
+  const handleQuickAmountSelect = useCallback(
+    (percentage: number) => {
+      if (!inputTokenBalance || !inputToken) {
+        return;
+      }
+      const decimals = inputToken.decimals ?? 0;
+      const balanceLamports = parseAmountToLamports(
+        inputTokenBalance,
+        decimals
+      );
+      if (balanceLamports === null) {
+        return;
+      }
+      const amountLamports =
+        (balanceLamports * BigInt(percentage)) / BigInt(100);
+      const formatted = formatLamports(
+        amountLamports,
+        decimals,
+        Math.min(6, decimals)
+      );
+      handleInputAmountChange(formatted);
+    },
+    [handleInputAmountChange, inputTokenBalance, inputToken]
   );
 
   const handleOutputAmountChange = useCallback(
@@ -514,10 +568,15 @@ const SwapForm = () => {
     );
   }, [quote, inputToken, outputToken]);
 
+  const slippagePercentDisplay = useMemo(
+    () => formatSlippagePercent(slippageBps / 100),
+    [formatSlippagePercent, slippageBps]
+  );
+
   const thresholdLabel =
     quote?.swapMode === "ExactOut"
-      ? "Máximo a enviar (5%)"
-      : "Mínimo tras slippage (5%)";
+      ? `Máximo a enviar (${slippagePercentDisplay}%)`
+      : `Mínimo tras slippage (${slippagePercentDisplay}%)`;
 
   const priceDisplay = useMemo(() => {
     if (!quote || !inputToken || !outputToken) return null;
@@ -638,7 +697,47 @@ const SwapForm = () => {
     setNetwork(selected);
   };
 
+  const handleSlippageInputChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
+      if (!/^\d*(\.\d{0,2})?$/.test(value)) {
+        return;
+      }
+      setSlippageInput(value);
+      if (value === "") {
+        return;
+      }
+      const parsed = Number(value);
+      if (!Number.isNaN(parsed)) {
+        const clamped = clampSlippagePercent(parsed);
+        setSlippageBps(Math.round(clamped * 100));
+      }
+    },
+    [clampSlippagePercent]
+  );
+
+  const handleSlippageBlur = useCallback(() => {
+    if (slippageInput === "") {
+      applySlippagePercent(0);
+      return;
+    }
+    const parsed = Number(slippageInput);
+    if (Number.isNaN(parsed)) {
+      applySlippagePercent(slippageBps / 100);
+      return;
+    }
+    applySlippagePercent(parsed);
+  }, [applySlippagePercent, slippageInput, slippageBps]);
+
+  const handleSlippagePreset = useCallback(
+    (value: number) => {
+      applySlippagePercent(value);
+    },
+    [applySlippagePercent]
+  );
+
   const airdropUnavailable = network === "mainnet-beta";
+  const quickAmountsDisabled = !connected || !inputTokenBalance || !inputToken;
 
   return (
     <section className={styles.swapSection}>
@@ -723,22 +822,37 @@ const SwapForm = () => {
         {tokensError && <p className={styles.errorBanner}>{tokensError}</p>}
 
         <div className={styles.selectorsWrapper}>
-          <TokenSelector
-            label="De"
-            token={inputToken}
-            tokens={tokenOptions}
-            onTokenSelect={handleSelectInput}
-            network={network}
-            amount={inputAmountDisplay}
-            onAmountChange={handleInputAmountChange}
-            placeholder="0.0"
-            availableAmount={connected ? inputTokenBalance ?? undefined : undefined}
-            onAvailableClick={
-              connected && inputTokenBalance
-                ? () => handleInputAmountChange(inputTokenBalance)
-                : undefined
-            }
-          />
+          <div className={styles.selectorStack}>
+            <TokenSelector
+              label="De"
+              token={inputToken}
+              tokens={tokenOptions}
+              onTokenSelect={handleSelectInput}
+              network={network}
+              amount={inputAmountDisplay}
+              onAmountChange={handleInputAmountChange}
+              placeholder="0.0"
+              availableAmount={connected ? inputTokenBalance ?? undefined : undefined}
+              onAvailableClick={
+                connected && inputTokenBalance
+                  ? () => handleInputAmountChange(inputTokenBalance)
+                  : undefined
+              }
+            />
+            <div className={styles.quickAmountRow}>
+              {QUICK_AMOUNT_PERCENTAGES.map((percentage) => (
+                <button
+                  key={percentage}
+                  type="button"
+                  className={styles.quickAmountButton}
+                  onClick={() => handleQuickAmountSelect(percentage)}
+                  disabled={quickAmountsDisabled}
+                >
+                  {percentage}%
+                </button>
+              ))}
+            </div>
+          </div>
 
           <button
             type="button"
@@ -808,16 +922,59 @@ const SwapForm = () => {
             <strong>{swapRoutes ?? "Jupiter"}</strong>
           </div>
           <div className={styles.previewFooter}>
-            {quoteLoading ? (
-              <span>Actualizando cotización…</span>
-            ) : refreshedAt ? (
-              <span>
-                Última actualización: {new Date(refreshedAt).toLocaleTimeString()} (se renueva
-                automáticamente)
-              </span>
-            ) : (
-              <span>Introduce un monto para obtener una cotización en tiempo real.</span>
-            )}
+            <div className={styles.slippageControl}>
+              <div className={styles.slippageHeader}>
+                <span>Slippage máximo</span>
+                <div className={styles.slippagePresets}>
+                  {SLIPPAGE_PRESETS.map((preset) => {
+                    const presetBps = Math.round(preset * 100);
+                    const isActive = presetBps === slippageBps;
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={`${styles.slippagePresetButton} ${
+                          isActive ? styles.slippagePresetButtonActive : ""
+                        }`}
+                        onClick={() => handleSlippagePreset(preset)}
+                        aria-pressed={isActive}
+                      >
+                        {formatSlippagePercent(preset)}%
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className={styles.slippageInputGroup}>
+                <input
+                  id="slippage-input"
+                  className={styles.slippageInput}
+                  type="text"
+                  inputMode="decimal"
+                  value={slippageInput}
+                  onChange={handleSlippageInputChange}
+                  onBlur={handleSlippageBlur}
+                  placeholder="0.5"
+                  aria-describedby="slippage-help"
+                />
+                <span className={styles.slippageSuffix}>%</span>
+              </div>
+              <p id="slippage-help" className={styles.slippageHelper}>
+                Ajusta la tolerancia de precio para tus swaps.
+              </p>
+            </div>
+            <div className={styles.previewFooterStatus}>
+              {quoteLoading ? (
+                <span>Actualizando cotización…</span>
+              ) : refreshedAt ? (
+                <span>
+                  Última actualización: {new Date(refreshedAt).toLocaleTimeString()} (se renueva
+                  automáticamente)
+                </span>
+              ) : (
+                <span>Introduce un monto para obtener una cotización en tiempo real.</span>
+              )}
+            </div>
           </div>
         </div>
 
