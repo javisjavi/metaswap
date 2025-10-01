@@ -1,3 +1,6 @@
+import { type SupportedLanguage } from "./translations";
+import { getIntlLocale } from "./language";
+
 export const formatLamports = (
   raw: string | bigint,
   decimals: number,
@@ -59,7 +62,11 @@ export const parseAmountToLamports = (
   }
 };
 
-export const formatNumber = (value: number, maximumFractionDigits = 4): string =>
-  new Intl.NumberFormat("en-US", {
+export const formatNumber = (
+  value: number,
+  maximumFractionDigits = 4,
+  language: SupportedLanguage = "en"
+): string =>
+  new Intl.NumberFormat(getIntlLocale(language), {
     maximumFractionDigits,
   }).format(value);

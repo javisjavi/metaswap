@@ -1,12 +1,16 @@
 export type SectionKey = "swap" | "overview" | "market" | "pumpFun" | "support";
 
-export const SUPPORTED_LANGUAGES = ["es", "en"] as const;
+export const SUPPORTED_LANGUAGES = ["es", "en", "fr", "pt", "de", "ja"] as const;
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const LANGUAGE_METADATA: Record<SupportedLanguage, { short: string; name: string }> = {
   es: { short: "ES", name: "Español" },
   en: { short: "EN", name: "English" },
+  fr: { short: "FR", name: "Français" },
+  pt: { short: "PT", name: "Português" },
+  de: { short: "DE", name: "Deutsch" },
+  ja: { short: "JA", name: "日本語" },
 };
 
 type OverviewCardStat = {
@@ -231,7 +235,7 @@ type AppTranslation = {
   tokenListModal: TokenListModalTranslations;
 };
 
-export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
+const BASE_TRANSLATIONS = {
   es: {
     languageToggleLabel: "Cambiar idioma",
     themeToggle: {
@@ -702,6 +706,118 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
       viewOnSolscan: (symbol) => `View ${symbol} on Solscan`,
     },
   },
+} as const satisfies Record<"es" | "en", AppTranslation>;
+
+const ES_TRANSLATION = BASE_TRANSLATIONS.es;
+const EN_TRANSLATION = BASE_TRANSLATIONS.en;
+
+const FR_TRANSLATION: AppTranslation = {
+  ...EN_TRANSLATION,
+  languageToggleLabel: "Changer de langue",
+  themeToggle: {
+    ...EN_TRANSLATION.themeToggle,
+    label: "Thème",
+    light: "Clair",
+    dark: "Sombre",
+    switchToLight: "Passer en mode clair",
+    switchToDark: "Passer en mode sombre",
+  },
+  navigation: {
+    ...EN_TRANSLATION.navigation,
+    ariaLabel: "Navigation principale",
+    sections: {
+      ...EN_TRANSLATION.navigation.sections,
+      swap: { label: "Échanger", description: "Échangez des tokens instantanément" },
+      overview: { label: "Aperçu", description: "Résumé de l'activité" },
+      market: { label: "Marché", description: "Top 10 des cryptomonnaies" },
+      pumpFun: { label: "Pump.fun", description: "Proches de la bonding curve" },
+      support: { label: "Assistance", description: "Guides et aide" },
+    },
+  },
+};
+
+const PT_TRANSLATION: AppTranslation = {
+  ...EN_TRANSLATION,
+  languageToggleLabel: "Mudar idioma",
+  themeToggle: {
+    ...EN_TRANSLATION.themeToggle,
+    label: "Tema",
+    light: "Claro",
+    dark: "Escuro",
+    switchToLight: "Ativar modo claro",
+    switchToDark: "Ativar modo escuro",
+  },
+  navigation: {
+    ...EN_TRANSLATION.navigation,
+    ariaLabel: "Navegação principal",
+    sections: {
+      ...EN_TRANSLATION.navigation.sections,
+      swap: { label: "Trocar", description: "Negocie tokens instantaneamente" },
+      overview: { label: "Visão geral", description: "Resumo de atividades" },
+      market: { label: "Mercado", description: "Top 10 criptomoedas" },
+      pumpFun: { label: "Pump.fun", description: "Perto da bonding curve" },
+      support: { label: "Suporte", description: "Guias e ajuda" },
+    },
+  },
+};
+
+const DE_TRANSLATION: AppTranslation = {
+  ...EN_TRANSLATION,
+  languageToggleLabel: "Sprache ändern",
+  themeToggle: {
+    ...EN_TRANSLATION.themeToggle,
+    label: "Thema",
+    light: "Hell",
+    dark: "Dunkel",
+    switchToLight: "Zum hellen Modus wechseln",
+    switchToDark: "Zum dunklen Modus wechseln",
+  },
+  navigation: {
+    ...EN_TRANSLATION.navigation,
+    ariaLabel: "Hauptnavigation",
+    sections: {
+      ...EN_TRANSLATION.navigation.sections,
+      swap: { label: "Tauschen", description: "Tokens sofort handeln" },
+      overview: { label: "Übersicht", description: "Aktivitätszusammenfassung" },
+      market: { label: "Markt", description: "Top 10 Kryptowährungen" },
+      pumpFun: { label: "Pump.fun", description: "Nahe der Bonding-Kurve" },
+      support: { label: "Support", description: "Anleitungen und Hilfe" },
+    },
+  },
+};
+
+const JA_TRANSLATION: AppTranslation = {
+  ...EN_TRANSLATION,
+  languageToggleLabel: "言語を変更",
+  themeToggle: {
+    ...EN_TRANSLATION.themeToggle,
+    label: "テーマ",
+    light: "ライト",
+    dark: "ダーク",
+    switchToLight: "ライトモードに切り替え",
+    switchToDark: "ダークモードに切り替え",
+  },
+  navigation: {
+    ...EN_TRANSLATION.navigation,
+    ariaLabel: "メインナビゲーション",
+    sections: {
+      ...EN_TRANSLATION.navigation.sections,
+      swap: { label: "スワップ", description: "トークンをすぐに交換" },
+      overview: { label: "概要", description: "アクティビティのサマリー" },
+      market: { label: "マーケット", description: "トップ10暗号資産" },
+      pumpFun: { label: "Pump.fun", description: "ボンディングカーブ直前" },
+      support: { label: "サポート", description: "ガイドとヘルプ" },
+    },
+  },
+};
+
+export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
+  es: ES_TRANSLATION,
+  en: EN_TRANSLATION,
+  fr: FR_TRANSLATION,
+  pt: PT_TRANSLATION,
+  de: DE_TRANSLATION,
+  ja: JA_TRANSLATION,
 };
 
 export type { AppTranslation, SwapFormTranslations };

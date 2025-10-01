@@ -11,6 +11,7 @@ import WalletButton from "@/components/WalletButton";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import { type PumpFunProject } from "@/types/pumpfun";
 import { type AppTranslation, type SectionKey } from "@/utils/translations";
+import { getIntlLocale } from "@/utils/language";
 
 import styles from "./page.module.css";
 import SwapForm from "@/components/SwapForm";
@@ -427,7 +428,7 @@ const MarketPanel = ({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const locale = language === "es" ? "es-ES" : "en-US";
+  const locale = getIntlLocale(language);
 
   const currencyFormatter = useMemo(
     () =>
@@ -826,7 +827,7 @@ const PumpFunPanel = ({ content }: { content: AppTranslation["pumpFun"] }) => {
   const [source, setSource] = useState<"remote" | "fallback" | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const locale = language === "es" ? "es-ES" : "en-US";
+  const locale = getIntlLocale(language);
 
   const compactCurrencyFormatter = useMemo(
     () =>

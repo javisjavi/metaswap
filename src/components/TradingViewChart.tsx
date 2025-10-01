@@ -3,19 +3,14 @@
 import { useEffect, useRef } from "react";
 
 import { useTheme } from "@/context/ThemeContext";
+import { getTradingViewLocale } from "@/utils/language";
+import { type SupportedLanguage } from "@/utils/translations";
 
 const DEFAULT_WIDGET_HEIGHT = 360;
 
-const mapLocale = (locale: string) => {
-  if (locale === "es") {
-    return "es";
-  }
-  return "en";
-};
-
 type TradingViewChartProps = {
   symbol: string;
-  locale: string;
+  locale: SupportedLanguage;
 };
 
 const TradingViewChart = ({ symbol, locale }: TradingViewChartProps) => {
@@ -43,7 +38,7 @@ const TradingViewChart = ({ symbol, locale }: TradingViewChartProps) => {
       timezone: "Etc/UTC",
       theme: theme === "light" ? "light" : "dark",
       style: "1",
-      locale: mapLocale(locale),
+      locale: getTradingViewLocale(locale),
       enable_publishing: false,
       hide_top_toolbar: false,
       hide_legend: false,

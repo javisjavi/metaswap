@@ -21,6 +21,7 @@ import { useNetwork } from "@/context/NetworkContext";
 import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import TradingViewChart from "./TradingViewChart";
+import { getIntlLocale } from "@/utils/language";
 
 const NETWORK_OPTIONS = [
   { value: "mainnet-beta", label: "Mainnet" },
@@ -687,11 +688,11 @@ const SwapForm = () => {
       return null;
     }
     const ratio = outputValue / inputValue;
-    return `${formatNumber(ratio, 6)} ${outputToken.symbol}/${inputToken.symbol}`;
-  }, [quote, inputToken, outputToken]);
+    return `${formatNumber(ratio, 6, language)} ${outputToken.symbol}/${inputToken.symbol}`;
+  }, [quote, inputToken, outputToken, language]);
 
   const priceImpact = quote?.priceImpactPct
-    ? formatNumber(parseFloat(quote.priceImpactPct) * 100, 2)
+    ? formatNumber(parseFloat(quote.priceImpactPct) * 100, 2, language)
     : null;
 
   const priceImpactDisplay = priceImpact
@@ -708,7 +709,7 @@ const SwapForm = () => {
   }, [network, swapSignature]);
 
   const formattedRefreshedAt = refreshedAt
-    ? new Date(refreshedAt).toLocaleTimeString()
+    ? new Date(refreshedAt).toLocaleTimeString(getIntlLocale(language))
     : null;
 
   const handleSwap = useCallback(async () => {
