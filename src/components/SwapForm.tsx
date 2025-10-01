@@ -636,33 +636,6 @@ const SwapForm = () => {
     return formatNumber(value, 2);
   };
 
-  const isFallbackQuote = useMemo(
-    () =>
-      Boolean(
-        quote?.routePlan.length &&
-          quote.routePlan.every((route) => route.swapInfo.label === "Fallback")
-      ),
-    [quote]
-  );
-
-  const isFallbackQuote = useMemo(
-    () =>
-      Boolean(
-        quote?.routePlan.length &&
-          quote.routePlan.every((route) => route.swapInfo.label === "Fallback")
-      ),
-    [quote]
-  );
-
-  const isFallbackQuote = useMemo(
-    () =>
-      Boolean(
-        quote?.routePlan.length &&
-          quote.routePlan.every((route) => route.swapInfo.label === "Fallback")
-      ),
-    [quote]
-  );
-
   const explorerUrl = useMemo(() => {
     if (!swapSignature) return null;
     const base = `https://explorer.solana.com/tx/${swapSignature}`;
