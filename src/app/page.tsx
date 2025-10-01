@@ -459,40 +459,58 @@ const MarketPanel = ({ content }: { content: AppTranslation["market"] }) => {
 
               return (
                 <div key={asset.id} className={styles.marketRow}>
-                  <span className={styles.marketRank}>{index + 1}</span>
-                  <div className={styles.marketCoin}>
-                    {asset.image ? (
-                      <Image
-                        src={asset.image}
-                        alt={`${asset.name} logo`}
-                        width={40}
-                        height={40}
-                        className={styles.marketCoinImage}
-                        loading="lazy"
-                        sizes="40px"
-                      />
-                    ) : (
-                      <div className={styles.marketCoinFallback} aria-hidden="true">
-                        {asset.symbol.slice(0, 2)}
+                  <div
+                    className={`${styles.marketCell} ${styles.marketRankCell}`}
+                    data-label={content.columns.rank}
+                  >
+                    <span className={styles.marketRank}>{index + 1}</span>
+                  </div>
+                  <div
+                    className={`${styles.marketCell} ${styles.marketCoinCell}`}
+                    data-label={content.columns.name}
+                  >
+                    <div className={styles.marketCoin}>
+                      {asset.image ? (
+                        <Image
+                          src={asset.image}
+                          alt={`${asset.name} logo`}
+                          width={40}
+                          height={40}
+                          className={styles.marketCoinImage}
+                          loading="lazy"
+                          sizes="40px"
+                        />
+                      ) : (
+                        <div className={styles.marketCoinFallback} aria-hidden="true">
+                          {asset.symbol.slice(0, 2)}
+                        </div>
+                      )}
+                      <div className={styles.marketCoinInfo}>
+                        <span className={styles.marketCoinName}>{asset.name}</span>
+                        <span className={styles.marketCoinSymbol}>{asset.symbol}</span>
                       </div>
-                    )}
-                    <div className={styles.marketCoinInfo}>
-                      <span className={styles.marketCoinName}>{asset.name}</span>
-                      <span className={styles.marketCoinSymbol}>{asset.symbol}</span>
                     </div>
                   </div>
-                  <span className={styles.marketValue}>
-                    {currencyFormatter.format(asset.currentPrice)}
-                  </span>
-                  <span className={styles.marketValue}>
-                    {compactCurrencyFormatter.format(asset.marketCap)}
-                  </span>
-                  <span className={styles.marketValue}>
-                    {compactCurrencyFormatter.format(asset.volume24h)}
-                  </span>
-                  <span className={`${styles.marketValue} ${changeClassName}`}>
-                    {formattedChange}
-                  </span>
+                  <div className={styles.marketCell} data-label={content.columns.price}>
+                    <span className={styles.marketValue}>
+                      {currencyFormatter.format(asset.currentPrice)}
+                    </span>
+                  </div>
+                  <div className={styles.marketCell} data-label={content.columns.marketCap}>
+                    <span className={styles.marketValue}>
+                      {compactCurrencyFormatter.format(asset.marketCap)}
+                    </span>
+                  </div>
+                  <div className={styles.marketCell} data-label={content.columns.volume24h}>
+                    <span className={styles.marketValue}>
+                      {compactCurrencyFormatter.format(asset.volume24h)}
+                    </span>
+                  </div>
+                  <div className={styles.marketCell} data-label={content.columns.change24h}>
+                    <span className={`${styles.marketValue} ${changeClassName}`}>
+                      {formattedChange}
+                    </span>
+                  </div>
                 </div>
               );
             })}

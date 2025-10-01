@@ -334,7 +334,8 @@
 }
 
 .marketTable {
-  min-width: 720px;
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -343,8 +344,14 @@
 .marketHeaderRow,
 .marketRow {
   display: grid;
-  grid-template-columns: 64px minmax(200px, 2fr) repeat(4, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns:
+    minmax(48px, 0.7fr)
+    minmax(0, 2.5fr)
+    minmax(0, 1.2fr)
+    minmax(0, 1.3fr)
+    minmax(0, 1.3fr)
+    minmax(0, 1.1fr);
+  gap: clamp(8px, 1.6vw, 16px);
   align-items: center;
 }
 
@@ -358,11 +365,36 @@
 
 .marketHeaderCell {
   text-align: right;
+  white-space: nowrap;
 }
 
 .marketHeaderCell:first-child,
 .marketHeaderCell:nth-child(2) {
   text-align: left;
+}
+
+.marketCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  gap: 4px;
+}
+
+.marketCell > span {
+  width: 100%;
+}
+
+.marketRankCell {
+  justify-content: center;
+}
+
+.marketRankCell > span {
+  width: auto;
+}
+
+.marketCoinCell {
+  justify-content: flex-start;
 }
 
 .marketRow {
@@ -1546,10 +1578,6 @@
   .contentArea {
     padding: 28px;
   }
-
-  .marketTable {
-    min-width: 640px;
-  }
 }
 
 @media (max-width: 900px) {
@@ -1585,10 +1613,6 @@
   .switchIconVertical {
     display: inline;
   }
-
-  .marketTable {
-    min-width: 580px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1606,15 +1630,6 @@
 
   .contentArea {
     padding: 24px;
-  }
-
-  .marketTable {
-    min-width: 520px;
-  }
-
-  .marketHeaderRow,
-  .marketRow {
-    grid-template-columns: 56px minmax(160px, 1.6fr) repeat(4, minmax(110px, 1fr));
   }
 }
 
@@ -1665,13 +1680,105 @@
   .infoTitle {
     font-size: 1.9rem;
   }
+}
 
-  .marketTable {
-    min-width: 480px;
-  }
-
+@media (max-width: 1024px) {
   .marketHeaderRow,
   .marketRow {
-    grid-template-columns: 52px minmax(150px, 1.6fr) repeat(4, minmax(100px, 1fr));
+    grid-template-columns:
+      minmax(44px, 0.6fr)
+      minmax(0, 2.3fr)
+      minmax(0, 1.1fr)
+      minmax(0, 1.2fr)
+      minmax(0, 1.2fr)
+      minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .marketHeaderRow,
+  .marketRow {
+    grid-template-columns:
+      minmax(40px, 0.55fr)
+      minmax(0, 2.1fr)
+      minmax(0, 1fr)
+      minmax(0, 1.1fr)
+      minmax(0, 1.1fr)
+      minmax(0, 0.9fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .marketTableWrapper {
+    padding: 14px;
+    overflow-x: visible;
+  }
+
+  .marketTable {
+    gap: 16px;
+  }
+
+  .marketHeaderRow {
+    display: none;
+  }
+
+  .marketRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 16px 14px;
+  }
+
+  .marketCell {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .marketCell::before {
+    content: attr(data-label);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(226, 232, 240, 0.65);
+  }
+
+  .marketRankCell {
+    align-items: center;
+  }
+
+  .marketRankCell::before {
+    align-self: flex-start;
+  }
+
+  .marketCell > span {
+    width: 100%;
+  }
+
+  .marketValue {
+    text-align: left;
+  }
+
+  .marketCoinCell {
+    width: 100%;
+  }
+
+  .marketCoinCell::before {
+    margin-bottom: 4px;
+  }
+
+  .marketCoin {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .marketRow {
+    padding: 14px 12px;
+    gap: 16px;
+  }
+
+  .marketCell {
+    gap: 4px;
   }
 }
