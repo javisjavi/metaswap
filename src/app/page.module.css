@@ -33,9 +33,22 @@
 .menuHeader {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.menuHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.menuHeaderRight {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 .menuItems {

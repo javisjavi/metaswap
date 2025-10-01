@@ -1,7 +1,6 @@
 "use client";
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   LAMPORTS_PER_SOL,
@@ -126,14 +125,6 @@ const DEFAULT_USDC_TOKEN: TokenInfo = {
 
 const decodeTransaction = (encoded: string) =>
   Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
-
-const WalletMultiButton = dynamic(
-  () =>
-    import("@solana/wallet-adapter-react-ui").then(
-      (mod) => mod.WalletMultiButton
-    ),
-  { ssr: false }
-);
 
 const SwapForm = () => {
   const translations = useTranslations();
@@ -904,7 +895,6 @@ const SwapForm = () => {
               <span aria-hidden className={styles.networkCaret}>▾</span>
             </div>
           </label>
-          <WalletMultiButton className={styles.walletButton} />
         </div>
       </header>
 

@@ -7,6 +7,7 @@ import Image from "next/image";
 
 import LanguageToggle from "@/components/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
+import WalletButton from "@/components/WalletButton";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import { type PumpFunProject } from "@/types/pumpfun";
 import { type AppTranslation, type SectionKey } from "@/utils/translations";
@@ -1296,8 +1297,13 @@ export default function Home() {
           aria-orientation="horizontal"
         >
           <div className={styles.menuHeader}>
-            <ThemeToggle />
-            <LanguageToggle />
+            <div className={styles.menuHeaderLeft}>
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
+            <div className={styles.menuHeaderRight}>
+              <WalletButton />
+            </div>
           </div>
           <div className={styles.menuItems}>
             {sections.map((section) => {
