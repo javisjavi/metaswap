@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import WalletContextProvider from "@/components/WalletProvider";
 import { NetworkProvider } from "@/context/NetworkContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
@@ -21,12 +22,14 @@ export default function RootLayout({
       <body>
         <NetworkProvider>
           <LanguageProvider>
-            <WalletContextProvider>
-              <div className="appContainer">
-                <div className="appContent">{children}</div>
-                <Footer />
-              </div>
-            </WalletContextProvider>
+            <ThemeProvider>
+              <WalletContextProvider>
+                <div className="appContainer">
+                  <div className="appContent">{children}</div>
+                  <Footer />
+                </div>
+              </WalletContextProvider>
+            </ThemeProvider>
           </LanguageProvider>
         </NetworkProvider>
       </body>

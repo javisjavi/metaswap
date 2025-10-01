@@ -170,8 +170,17 @@ type TokenListModalTranslations = {
   viewOnSolscan: (symbol: string) => string;
 };
 
+type ThemeToggleTranslations = {
+  label: string;
+  light: string;
+  dark: string;
+  switchToLight: string;
+  switchToDark: string;
+};
+
 type AppTranslation = {
   languageToggleLabel: string;
+  themeToggle: ThemeToggleTranslations;
   navigation: {
     ariaLabel: string;
     sections: Record<SectionKey, { label: string; description: string }>;
@@ -224,6 +233,13 @@ type AppTranslation = {
 export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
   es: {
     languageToggleLabel: "Cambiar idioma",
+    themeToggle: {
+      label: "Tema",
+      light: "Claro",
+      dark: "Oscuro",
+      switchToLight: "Cambiar a modo claro",
+      switchToDark: "Cambiar a modo oscuro",
+    },
     navigation: {
       ariaLabel: "Navegación principal",
       sections: {
@@ -451,6 +467,13 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
   },
   en: {
     languageToggleLabel: "Change language",
+    themeToggle: {
+      label: "Theme",
+      light: "Light",
+      dark: "Dark",
+      switchToLight: "Switch to light mode",
+      switchToDark: "Switch to dark mode",
+    },
     navigation: {
       ariaLabel: "Main navigation",
       sections: {

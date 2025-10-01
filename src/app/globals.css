@@ -4,6 +4,12 @@
   --foreground: #f8fafc;
 }
 
+:root.light-theme {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

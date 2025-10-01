@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { useTheme } from "@/context/ThemeContext";
+
 const DEFAULT_WIDGET_HEIGHT = 360;
 
 const mapLocale = (locale: string) => {
@@ -18,6 +20,7 @@ type TradingViewChartProps = {
 
 const TradingViewChart = ({ symbol, locale }: TradingViewChartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const container = containerRef.current;
@@ -38,7 +41,7 @@ const TradingViewChart = ({ symbol, locale }: TradingViewChartProps) => {
       symbol,
       interval: "60",
       timezone: "Etc/UTC",
-      theme: "dark",
+      theme: theme === "light" ? "light" : "dark",
       style: "1",
       locale: mapLocale(locale),
       enable_publishing: false,
@@ -55,7 +58,7 @@ const TradingViewChart = ({ symbol, locale }: TradingViewChartProps) => {
     return () => {
       container.innerHTML = "";
     };
-  }, [symbol, locale]);
+  }, [symbol, locale, theme]);
 
   return (
     <div className="tradingview-widget-container" style={{ width: "100%", height: "100%" }}>
