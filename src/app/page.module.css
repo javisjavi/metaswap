@@ -1487,40 +1487,6 @@
   font-size: 0.9rem;
 }
 
-.routeDisplay {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
-  max-width: 100%;
-}
-
-.routeTokenChain {
-  font-weight: 600;
-  color: #e2e8f0;
-  font-size: 0.85rem;
-  text-align: right;
-}
-
-.routeStages {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.routeFallbackMessage {
-  margin-top: 8px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.35);
-  color: #fcd34d;
-  font-size: 0.85rem;
-  text-align: right;
-}
-
 .pumpPanel {
   display: flex;
   flex-direction: column;
@@ -1808,54 +1774,6 @@
   color: #e2e8f0;
   font-size: 0.9rem;
   white-space: nowrap;
-}
-
-.routeStage {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.routePlatform {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 999px;
-  padding: 4px 10px;
-  color: #f8fafc;
-  font-weight: 600;
-  font-size: 0.85rem;
-  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.15);
-}
-
-.routePlatformIcon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.35);
-}
-
-.routePlatformLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.routePlatformPercent {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-.routeStageSeparator,
-.routeArrow {
-  color: #94a3b8;
-  font-weight: 600;
-  font-size: 0.85rem;
 }
 
 .previewFooter {

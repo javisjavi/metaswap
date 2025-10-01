@@ -131,7 +131,6 @@ type SwapFormTranslations = {
     price: string;
     priceImpact: string;
     priceImpactMinimal: string;
-    route: string;
     slippageTitle: string;
     slippageHelper: string;
     statusUpdating: string;
@@ -412,7 +411,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         price: "Precio estimado",
         priceImpact: "Impacto en el precio",
         priceImpactMinimal: "< 0.01%",
-        route: "Ruta",
         slippageTitle: "Slippage máximo",
         slippageHelper: "Ajusta la tolerancia de precio para tus swaps.",
         statusUpdating: "Actualizando cotización…",
@@ -640,7 +638,6 @@ export const TRANSLATIONS: Record<SupportedLanguage, AppTranslation> = {
         price: "Estimated price",
         priceImpact: "Price impact",
         priceImpactMinimal: "< 0.01%",
-        route: "Route",
         slippageTitle: "Max slippage",
         slippageHelper: "Adjust your price tolerance for swaps.",
         statusUpdating: "Updating quote…",

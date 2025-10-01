@@ -1,8 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-
-import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
@@ -19,11 +17,6 @@ import { useJupiterQuote } from "@/hooks/useJupiterQuote";
 import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { QuoteRoutePlan, SwapResponse } from "@/types/jupiter";
-import {
-  buildRoutePath,
-  buildRouteSummary,
-  DEFAULT_PLATFORM_ICON,
-} from "@/utils/routes";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
 import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
@@ -712,84 +705,6 @@ const SwapForm = () => {
     ? `${priceImpact}%`
     : swapTexts.preview.priceImpactMinimal;
 
-  const swapRouteSummary = useMemo(
-    () => buildRouteSummary(quote?.routePlan),
-    [quote?.routePlan]
-  );
-
-  const demoRouteSummary = useMemo(
-    () => buildRouteSummary(PREVIEW_ROUTE_PLAN),
-    []
-  );
-
-  const swapRoutePath = useMemo(
-    () =>
-      buildRoutePath(quote?.routePlan, (mint) => tokenSymbolLookup.get(mint)),
-    [quote?.routePlan, tokenSymbolLookup]
-  );
-
-  const demoRoutePath = useMemo(
-    () =>
-      buildRoutePath(
-        PREVIEW_ROUTE_PLAN,
-        (mint) => tokenSymbolLookup.get(mint)
-      ),
-    [tokenSymbolLookup]
-  );
-
-  const getRouteTokenChain = useCallback((routePath: string[][]) => {
-    if (!routePath.length) {
-      return null;
-    }
-
-    const flattened: string[] = [];
-
-    routePath.forEach((stage) => {
-      stage.forEach((symbol, index) => {
-        if (!flattened.length && index === 0) {
-          flattened.push(symbol);
-          return;
-        }
-
-        if (flattened[flattened.length - 1] !== symbol) {
-          flattened.push(symbol);
-        }
-      });
-    });
-
-    return flattened.join(" → ");
-  }, []);
-
-  const swapRouteTokenChain = useMemo(
-    () => getRouteTokenChain(swapRoutePath),
-    [getRouteTokenChain, swapRoutePath]
-  );
-
-  const demoRouteTokenChain = useMemo(
-    () => getRouteTokenChain(demoRoutePath),
-    [demoRoutePath, getRouteTokenChain]
-  );
-
-  const shouldUseDemoRoute = !quote && swapRouteSummary.length === 0;
-
-  const displayRouteSummary = shouldUseDemoRoute
-    ? demoRouteSummary
-    : swapRouteSummary;
-
-  const displayRouteTokenChain = shouldUseDemoRoute
-    ? demoRouteTokenChain
-    : swapRouteTokenChain;
-
-  const formatRoutePercent = (value: number) => {
-    if (value >= 99.5) {
-      return "100";
-    }
-    if (value >= 10) {
-      return formatNumber(value, 0);
-    }
-    return formatNumber(value, 2);
-  };
-
   const explorerUrl = useMemo(() => {
     if (!swapSignature) return null;
     const base = `https://explorer.solana.com/tx/${swapSignature}`;
@@ -1130,67 +1045,6 @@ const SwapForm = () => {
             <span>{swapTexts.preview.priceImpact}</span>
             <strong>{priceImpactDisplay}</strong>
           </div>
-          <div className={styles.previewRow}>
-            <span>{swapTexts.preview.route}</span>
-            {displayRouteSummary.length > 0 ? (
-              <div className={styles.routeDisplay}>
-                {displayRouteTokenChain ? (
-                  <span className={styles.routeTokenChain}>
-                    {displayRouteTokenChain}
-                  </span>
-                ) : null}
-                <div className={styles.routeStages}>
-                  {displayRouteSummary.map((stage, stageIndex) => (
-                    <div key={`stage-${stageIndex}`} className={styles.routeStage}>
-                      {stage.map((platform, platformIndex) => (
-                        <Fragment key={`${platform.label}-${platformIndex}`}>
-                          <div className={styles.routePlatform}>
-                            <img
-                              src={platform.icon}
-                              alt=""
-                              className={styles.routePlatformIcon}
-                              onError={(event) => {
-                                (event.currentTarget as HTMLImageElement).src =
-                                  DEFAULT_PLATFORM_ICON;
-                              }}
-                            />
-                            <span className={styles.routePlatformLabel}>
-                              {platform.label}
-                              {stage.length > 1 ? (
-                                <span className={styles.routePlatformPercent}>
-                                  {formatRoutePercent(platform.percent)}%
-                                </span>
-                              ) : null}
-                            </span>
-                          </div>
-                          {platformIndex < stage.length - 1 ? (
-                            <span
-                              className={styles.routeStageSeparator}
-                              aria-hidden="true"
-                            >
-                              +
-                            </span>
-                          ) : null}
-                        </Fragment>
-                      ))}
-                      {stageIndex < displayRouteSummary.length - 1 ? (
-                        <span className={styles.routeArrow} aria-hidden="true">
-                          →
-                        </span>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <strong>{displayRouteTokenChain ?? "Jupiter"}</strong>
-            )}
-          </div>
-          {isFallbackQuote ? (
-            <div className={styles.routeFallbackMessage}>
-              {swapTexts.quoteErrors.fetchFailed}
-            </div>
-          ) : null}
           <div className={styles.previewFooter}>
             <div className={styles.slippageControl}>
               <div className={styles.slippageHeader}>
