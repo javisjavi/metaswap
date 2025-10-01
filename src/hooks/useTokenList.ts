@@ -5,8 +5,8 @@ import { TokenInfo } from "@/types/token";
 import { FALLBACK_TOKENS_BY_NETWORK } from "@/data/fallbackTokenList";
 import { SOL_MINT } from "@/utils/tokenConstants";
 import { FALLBACK_TOKENS } from "@/data/tokenListFallback";
+import { fetchTokenListFromHelius } from "@/utils/heliusTokenList";
 
-const TOKEN_LIST_URL = "https://token.jup.ag/strict";
 const ALWAYS_INCLUDED_MINTS = new Set([
   SOL_MINT,
   "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
@@ -90,12 +90,22 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
     const loadTokens = async () => {
       try {
         setLoading(true);
-        const response = await fetch(TOKEN_LIST_URL, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error("FETCH_FAILED");
+        let fetched: TokenInfo[] = [];
+
+        if (network === "mainnet-beta") {
+          fetched = await fetchTokenListFromHelius(network, [
+            ...ALWAYS_INCLUDED_MINTS,
+          ]);
+        } else {
+          fetched = FALLBACK_TOKENS_BY_NETWORK[network] ?? [];
         }
-        const payload = (await response.json()) as TokenInfo[];
-        setTokens(buildTokenList(payload));
+
+        const filtered = fetched.filter(
+          (token) =>
+            token.chainId === NETWORK_CHAIN_ID[network] || ALWAYS_INCLUDED_MINTS.has(token.address)
+        );
+
+        setTokens(mergeTokenLists(filtered, [SOL_TOKEN]));
         setError(null);
       } catch (err) {
         if (controller.signal.aborted) return;

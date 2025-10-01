@@ -39,14 +39,69 @@ const MAINNET_TOKENS: TokenInfo[] = [
     verified: true,
   },
   {
-    address: "mSoLzYCxHdYgdzU16g5Qa2sUt17sz6zBqx7CxcAKqdP",
-    symbol: "mSOL",
-    name: "Marinade Staked SOL",
+    address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    symbol: "BONK",
+    name: "Bonk",
+    decimals: 5,
+    chainId: 101,
+    logoURI:
+      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263/logo.png",
+    tags: ["meme"],
+    verified: true,
+  },
+  {
+    address: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
+    symbol: "stSOL",
+    name: "Lido Staked SOL",
     decimals: 9,
     chainId: 101,
     logoURI:
-      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/mSoLzYCxHdYgdzU16g5Qa2sUt17sz6zBqx7CxcAKqdP/logo.png",
+      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj/logo.png",
     tags: ["staking"],
+    verified: true,
+  },
+  {
+    address: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    symbol: "RAY",
+    name: "Raydium",
+    decimals: 6,
+    chainId: 101,
+    logoURI:
+      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R/logo.png",
+    tags: ["dex"],
+    verified: true,
+  },
+  {
+    address: "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE",
+    symbol: "ORCA",
+    name: "Orca",
+    decimals: 6,
+    chainId: 101,
+    logoURI:
+      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE/logo.png",
+    tags: ["dex"],
+    verified: true,
+  },
+  {
+    address: "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey",
+    symbol: "MNDE",
+    name: "Marinade",
+    decimals: 9,
+    chainId: 101,
+    logoURI:
+      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey/logo.png",
+    tags: ["staking"],
+    verified: true,
+  },
+  {
+    address: "HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p",
+    symbol: "LDO",
+    name: "Lido DAO",
+    decimals: 8,
+    chainId: 101,
+    logoURI:
+      "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p/logo.png",
+    tags: ["governance"],
     verified: true,
   },
 ];
