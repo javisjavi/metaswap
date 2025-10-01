@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { TokenInfo } from "@/types/token";
 import { FALLBACK_TOKENS_BY_NETWORK } from "@/data/fallbackTokenList";
 import { SOL_MINT } from "@/utils/tokenConstants";
+import { FALLBACK_TOKENS } from "@/data/tokenListFallback";
 
 const TOKEN_LIST_URL = "https://token.jup.ag/strict";
 const ALWAYS_INCLUDED_MINTS = new Set([
@@ -62,6 +63,30 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
   useEffect(() => {
     const controller = new AbortController();
 
+    const buildTokenList = (tokenList: TokenInfo[]) => {
+      const enriched = tokenList.map((token) => ({
+        ...token,
+        verified: token.verified ?? true,
+      }));
+
+      const filtered = enriched.filter(
+        (token) =>
+          token.chainId === NETWORK_CHAIN_ID[network] ||
+          ALWAYS_INCLUDED_MINTS.has(token.address)
+      );
+
+      const map = new Map<string, TokenInfo>();
+      [...filtered, SOL_TOKEN].forEach((token) => {
+        if (!map.has(token.address)) {
+          map.set(token.address, token);
+        }
+      });
+
+      return Array.from(map.values()).sort((a, b) =>
+        a.symbol.localeCompare(b.symbol)
+      );
+    };
+
     const loadTokens = async () => {
       try {
         setLoading(true);
@@ -70,29 +95,14 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
           throw new Error("FETCH_FAILED");
         }
         const payload = (await response.json()) as TokenInfo[];
-        const enriched = payload.map((token) => ({ ...token, verified: true }));
-        const filtered = enriched.filter(
-          (token) =>
-            token.chainId === NETWORK_CHAIN_ID[network] || ALWAYS_INCLUDED_MINTS.has(token.address)
-        );
-
-        setTokens(mergeTokenLists(filtered, [SOL_TOKEN]));
+        setTokens(buildTokenList(payload));
         setError(null);
       } catch (err) {
         if (controller.signal.aborted) return;
-        console.error("Failed to load token list", err);
-        const fallbackTokens = FALLBACK_TOKENS_BY_NETWORK[network] ?? [];
-        if (fallbackTokens.length) {
-          setTokens(mergeTokenLists(fallbackTokens, [SOL_TOKEN]));
-        }
-        const message = (err as Error).message ?? "";
-        const normalized = message.toLowerCase();
-        const networkFailed =
-          message === "FETCH_FAILED" ||
-          normalized.includes("fetch") ||
-          normalized.includes("network") ||
-          normalized.includes("dns");
-        setError(networkFailed ? "fetchFailed" : "unexpected");
+        const message = (err as Error).message;
+        const fallbackTokens = FALLBACK_TOKENS[network] ?? [];
+        setTokens(buildTokenList(fallbackTokens));
+        setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
