@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuoteResponse } from "@/types/jupiter";
 import { JUPITER_QUOTE_URL } from "@/config/jupiter";
 import { buildFallbackQuote, QuoteParams } from "@/utils/fallbackQuote";
@@ -71,6 +71,7 @@ export const useJupiterQuote = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<QuoteError | null>(null);
   const [refreshedAt, setRefreshedAt] = useState<number | null>(null);
+  const latestRequestId = useRef(0);
 
   const params = useMemo<QuoteParams | null>(() => {
     if (!enabled || !inputMint || !outputMint || !amount || amount <= BigInt(0)) {
@@ -88,10 +89,16 @@ export const useJupiterQuote = ({
 
   const fetchQuote = useCallback(async () => {
     if (!params) {
+      latestRequestId.current += 1;
       setQuote(null);
       setError(null);
+      setRefreshedAt(null);
+      setLoading(false);
       return;
     }
+
+    const requestId = latestRequestId.current + 1;
+    latestRequestId.current = requestId;
 
     const query = new URLSearchParams({
       cluster: params.cluster,
@@ -114,9 +121,15 @@ export const useJupiterQuote = ({
       if (!isValidQuoteResponse(payload)) {
         throw new Error("FETCH_FAILED");
       }
+      if (requestId !== latestRequestId.current) {
+        return;
+      }
       setQuote(payload);
       setRefreshedAt(Date.now());
     } catch (err) {
+      if (requestId !== latestRequestId.current) {
+        return;
+      }
       if (params) {
         const fallbackQuote = buildFallbackQuote(params);
         if (fallbackQuote) {
@@ -130,7 +143,9 @@ export const useJupiterQuote = ({
       const message = (err as Error).message;
       setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestId.current) {
+        setLoading(false);
+      }
     }
   }, [params]);
 
