@@ -24,3 +24,7 @@ La aplicación quedará disponible en [http://localhost:3000](http://localhost:3
 - Búsqueda y selección de tokens (incluye BONK por dirección).
 - Cotizaciones dinámicas usando Jupiter con actualización automática.
 - Visualización del saldo disponible y de la previsualización de la operación antes de confirmar el swap.
+
+### Variables de entorno
+
+- `NEXT_PUBLIC_JUPITER_API_BASE_URL`: URL base para el API de Jupiter. Por defecto usa `https://quote-api.jup.ag`, pero puede ajustarse si el dominio no está disponible desde la red donde se despliega la aplicación.

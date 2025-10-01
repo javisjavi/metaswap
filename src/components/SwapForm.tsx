@@ -14,6 +14,7 @@ import {
 import styles from "@/app/page.module.css";
 import { useTokenList } from "@/hooks/useTokenList";
 import { useJupiterQuote } from "@/hooks/useJupiterQuote";
+import { JUPITER_SWAP_URL } from "@/config/jupiter";
 import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { SwapResponse } from "@/types/jupiter";
@@ -653,7 +654,7 @@ const SwapForm = () => {
       setSwapError(null);
       setSwapSignature(null);
 
-      const swapUrl = new URL("https://quote-api.jup.ag/v6/swap");
+      const swapUrl = new URL(JUPITER_SWAP_URL);
       swapUrl.searchParams.set("cluster", network);
 
       const response = await fetch(swapUrl.toString(), {

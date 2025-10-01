@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { QuoteResponse } from "@/types/jupiter";
+import { JUPITER_QUOTE_URL } from "@/config/jupiter";
 
 interface UseJupiterQuoteParams {
   inputMint?: string;
@@ -22,8 +23,6 @@ interface UseJupiterQuoteResult {
   refreshedAt: number | null;
   refresh: () => Promise<void>;
 }
-
-const JUPITER_QUOTE_URL = "https://quote-api.jup.ag/v6/quote";
 
 export const useJupiterQuote = ({
   inputMint,
