@@ -22,6 +22,7 @@ import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import TradingViewChart from "./TradingViewChart";
 import { getIntlLocale } from "@/utils/language";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 const NETWORK_OPTIONS = [
   { value: "mainnet-beta", label: "Mainnet" },
@@ -136,6 +137,7 @@ const SwapForm = () => {
   const { tokens, loading: tokensLoading, error: tokensError } = useTokenList(network);
   const { connection } = useConnection();
   const { publicKey, connected, sendTransaction } = useWallet();
+  const walletModal = useWalletModal();
 
   const [inputToken, setInputToken] = useState<TokenInfo | null>(DEFAULT_SOL_TOKEN);
   const [outputToken, setOutputToken] = useState<TokenInfo | null>(DEFAULT_USDC_TOKEN);
@@ -715,6 +717,9 @@ const SwapForm = () => {
   const handleSwap = useCallback(async () => {
     if (!publicKey || !sendTransaction) {
       setSwapError(swapTexts.errors.connectWallet);
+      if (walletModal) {
+        walletModal.setVisible(true);
+      }
       return;
     }
     if (
@@ -805,16 +810,15 @@ const SwapForm = () => {
     network,
     swapTexts.errors,
     swapTexts.quoteErrors,
+    walletModal,
   ]);
 
   const disableSwapButton =
-    !connected ||
     !canQuote ||
     quoteLoading ||
     isSwapping ||
     tokensLoading ||
-    !quote ||
-    isFallbackQuote;
+    !quote;
 
   const handleNetworkChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value as (typeof NETWORK_OPTIONS)[number]["value"];
