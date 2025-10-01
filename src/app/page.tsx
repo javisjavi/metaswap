@@ -1291,21 +1291,21 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.appShell}>
+        <div className={styles.menuControls}>
+          <div className={styles.menuControlsLeft}>
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
+          <div className={styles.menuControlsRight}>
+            <WalletButton />
+          </div>
+        </div>
         <nav
           className={styles.menu}
           aria-label={translations.navigation.ariaLabel}
           role="tablist"
           aria-orientation="horizontal"
         >
-          <div className={styles.menuHeader}>
-            <div className={styles.menuHeaderLeft}>
-              <ThemeToggle />
-              <LanguageToggle />
-            </div>
-            <div className={styles.menuHeaderRight}>
-              <WalletButton />
-            </div>
-          </div>
           <div className={styles.menuItems}>
             {sections.map((section) => {
               const isActive = activeSection === section.key;

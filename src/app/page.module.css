@@ -30,22 +30,23 @@
   z-index: 5;
 }
 
-.menuHeader {
+.menuControls {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 16px;
   flex-wrap: wrap;
+  padding: 0 28px;
 }
 
-.menuHeaderLeft {
+.menuControlsLeft {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
 
-.menuHeaderRight {
+.menuControlsRight {
   margin-left: auto;
   display: flex;
   align-items: center;
@@ -2439,175 +2440,195 @@
 }
 
 :global(.light-theme) .main {
-  background: linear-gradient(180deg, rgba(241, 245, 249, 0.92), #e2e8f0);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(37, 99, 235, 0.16), transparent 55%),
+    radial-gradient(circle at 82% 18%, rgba(14, 165, 233, 0.12), transparent 45%),
+    linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
 :global(.light-theme) .menu {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 20px 50px rgba(148, 163, 184, 0.28);
+  background: var(--surface-primary);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: blur(18px);
 }
 
 :global(.light-theme) .languageToggle {
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.36);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 12px 28px rgba(148, 163, 184, 0.25);
+  background: var(--surface-muted);
+  border: 1px solid var(--surface-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 18px 32px rgba(15, 23, 42, 0.08);
 }
 
 :global(.light-theme) .languageOption {
-  color: #475569;
+  color: rgba(15, 23, 42, 0.72);
 }
 
 :global(.light-theme) .languageOption:not(.languageOptionActive):hover,
 :global(.light-theme) .languageOption:not(.languageOptionActive):focus-visible {
-  color: #0f172a;
+  color: var(--accent-strong);
 }
 
 :global(.light-theme) .menuItem {
-  color: #1f2937;
+  color: #1e293b;
+  border-color: var(--surface-border);
+  background: var(--surface-primary);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
 
 :global(.light-theme) .menuItem:hover,
 :global(.light-theme) .menuItem:focus-visible {
-  background: rgba(148, 163, 184, 0.18);
-  border-color: rgba(148, 163, 184, 0.38);
-  box-shadow: 0 16px 32px rgba(148, 163, 184, 0.26);
+  background: var(--accent-soft);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 22px 40px rgba(37, 99, 235, 0.18);
+  color: var(--accent-strong);
 }
 
 :global(.light-theme) .menuItemActive {
-  box-shadow: 0 16px 36px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 26px 48px rgba(37, 99, 235, 0.3);
+  border-color: rgba(37, 99, 235, 0.35);
 }
 
 :global(.light-theme) .menuDescription {
-  color: rgba(71, 85, 105, 0.85);
+  color: rgba(15, 23, 42, 0.56);
 }
 
 :global(.light-theme) .menuIconBadge {
-  background: rgba(226, 232, 240, 0.62);
-  border: 1px solid rgba(148, 163, 184, 0.42);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color: var(--accent-strong);
 }
 
 :global(.light-theme) .menuItem:hover .menuIconBadge,
 :global(.light-theme) .menuItem:focus-visible .menuIconBadge {
-  background: rgba(226, 232, 240, 0.86);
-  border-color: rgba(148, 163, 184, 0.52);
+  background: #dbeafe;
+  border-color: rgba(37, 99, 235, 0.3);
 }
 
 :global(.light-theme) .menuItemActive .menuIconBadge {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(148, 163, 184, 0.5);
-  box-shadow: 0 12px 28px rgba(148, 163, 184, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: #2563eb;
+  border-color: rgba(37, 99, 235, 0.4);
+  color: #ffffff;
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 :global(.light-theme) .menuIconGraphic {
-  color: rgba(15, 23, 42, 0.7);
+  color: rgba(15, 23, 42, 0.58);
 }
 
 :global(.light-theme) .menuItemActive .menuIconGraphic {
-  color: rgba(15, 23, 42, 0.92);
+  color: #ffffff;
 }
 
 :global(.light-theme) .contentArea {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(148, 163, 184, 0.32);
-  box-shadow: 0 24px 60px rgba(148, 163, 184, 0.28);
+  background: var(--surface-primary);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow);
   color: #1f2937;
+  backdrop-filter: blur(18px);
 }
 
 :global(.light-theme) .infoSection,
 :global(.light-theme) .swapSection {
-  color: #1f2937;
+  color: #0f172a;
 }
 
 :global(.light-theme) .infoSubtitle,
 :global(.light-theme) .tradingViewSubtitle,
 :global(.light-theme) .subtitle,
 :global(.light-theme) .marketPaginationInfo {
-  color: #64748b;
+  color: rgba(15, 23, 42, 0.58);
 }
 
 :global(.light-theme) .infoCard,
 :global(.light-theme) .tradingViewCard,
 :global(.light-theme) .marketTableWrapper,
 :global(.light-theme) .card {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  box-shadow: 0 18px 44px rgba(148, 163, 184, 0.24);
+  background: #ffffff;
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow-soft);
 }
 
 :global(.light-theme) .infoCardText,
 :global(.light-theme) .infoList {
-  color: #475569;
+  color: rgba(15, 23, 42, 0.7);
 }
 
 :global(.light-theme) .infoList li::before {
-  color: #38bdf8;
+  color: var(--accent);
 }
 
 :global(.light-theme) .quickActions button {
-  background: rgba(224, 242, 254, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  color: #0f172a;
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  color: var(--accent-strong);
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.12);
 }
 
 :global(.light-theme) .quickActions button:hover,
 :global(.light-theme) .quickActions button:focus-visible {
-  background: rgba(191, 219, 254, 0.9);
+  background: #dbeafe;
 }
 
 :global(.light-theme) .reminders > div {
-  background: rgba(241, 245, 249, 0.95);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: var(--surface-muted);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow-soft);
 }
 
 :global(.light-theme) .supportChannelLink {
-  background: rgba(224, 242, 254, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.42);
-  color: #0f172a;
-  box-shadow: 0 0 0 rgba(148, 163, 184, 0.2);
+  background: var(--accent);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  color: #ffffff;
+  box-shadow: 0 22px 40px rgba(37, 99, 235, 0.22);
 }
 
 :global(.light-theme) .supportChannelLink:hover {
-  box-shadow: 0 12px 32px rgba(148, 163, 184, 0.28);
+  box-shadow: 0 26px 48px rgba(37, 99, 235, 0.28);
+  transform: translateY(-1px);
 }
 
 :global(.light-theme) .marketPaginationLabel {
-  color: rgba(15, 23, 42, 0.82);
+  color: rgba(15, 23, 42, 0.65);
 }
 
 :global(.light-theme) .marketPaginationButton {
-  background: rgba(241, 245, 249, 0.96);
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: var(--surface-muted);
+  border: 1px solid var(--surface-border);
   color: #1f2937;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 :global(.light-theme) .marketPaginationButton:hover:not(:disabled) {
-  background: rgba(226, 232, 240, 0.96);
-  color: #0f172a;
+  background: #dbeafe;
+  border-color: rgba(37, 99, 235, 0.28);
+  color: var(--accent-strong);
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.16);
 }
 
 :global(.light-theme) .networkSelector {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: var(--surface-primary);
+  border: 1px solid var(--surface-border);
   color: #0f172a;
+  box-shadow: var(--surface-shadow-soft);
 }
 
 :global(.light-theme) .networkSelector span {
-  color: #64748b;
+  color: rgba(15, 23, 42, 0.55);
 }
 
 :global(.light-theme) .networkControl {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.9));
-  border: 1px solid rgba(148, 163, 184, 0.36);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 12px 28px rgba(148, 163, 184, 0.24);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.9));
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 32px rgba(15, 23, 42, 0.08);
 }
 
 :global(.light-theme) .networkCaret {
-  color: #94a3b8;
+  color: rgba(15, 23, 42, 0.4);
 }
 
 :global(.light-theme) .tradingViewWidget {
-  background: rgba(241, 245, 249, 0.96);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: var(--surface-muted);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow-soft);
 }
