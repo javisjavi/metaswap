@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QuoteResponse } from "@/types/jupiter";
 import { buildFallbackQuote, QuoteParams } from "@/utils/fallbackQuote";
+import { JUPITER_QUOTE_URL } from "@/config/jupiter";
 
 interface UseJupiterQuoteParams {
   inputMint?: string;
@@ -111,25 +112,87 @@ export const useJupiterQuote = ({
       swapMode: params.swapMode,
     });
 
+    const endpoints = (() => {
+      const targets = new Set<string>();
+      const search = query.toString();
+      if (JUPITER_QUOTE_URL.startsWith("http")) {
+        targets.add(`${JUPITER_QUOTE_URL}?${search}`);
+      }
+      targets.add(`/api/jupiter/quote?${search}`);
+      return Array.from(targets);
+    })();
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/jupiter/quote?${query.toString()}`, {
-        cache: "no-store",
-      });
-      if (!response.ok) {
-        throw new Error("FETCH_FAILED");
+      let payload: QuoteResponse | null = null;
+      let lastError: Error | null = null;
+
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint, {
+            cache: "no-store",
+            headers: { accept: "application/json" },
+          });
+
+          if (!response.ok) {
+            const error = new Error("FETCH_FAILED") as Error & { status?: number };
+            error.status = response.status;
+            lastError = error;
+            if (
+              response.status >= 500 ||
+              response.status === 429 ||
+              response.status === 408
+            ) {
+              continue;
+            }
+            break;
+          }
+
+          const data = (await response.json()) as QuoteResponse;
+          if (!isValidQuoteResponse(data)) {
+            lastError = new Error("FETCH_FAILED");
+            continue;
+          }
+
+          payload = data;
+          break;
+        } catch (fetchError) {
+          const error = fetchError as Error & { status?: number };
+          error.message = "FETCH_FAILED";
+          lastError = error;
+          if (error?.status && error.status < 500) {
+            break;
+          }
+        }
       }
-      const payload = (await response.json()) as QuoteResponse;
-      if (!isValidQuoteResponse(payload)) {
-        throw new Error("FETCH_FAILED");
-      }
+
       if (requestId !== latestRequestId.current) {
         return;
       }
-      setQuote(payload);
-      setRefreshedAt(Date.now());
+
+      if (payload) {
+        setQuote(payload);
+        setRefreshedAt(Date.now());
+        setIsFallback(false);
+        return;
+      }
+
+      if (params) {
+        const fallbackQuote = buildFallbackQuote(params);
+        if (fallbackQuote) {
+          setQuote(fallbackQuote);
+          setRefreshedAt(Date.now());
+          setError(null);
+          setIsFallback(true);
+          return;
+        }
+      }
+
+      setQuote(null);
+      const message = lastError?.message ?? "FETCH_FAILED";
+      setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
       setIsFallback(false);
     } catch (err) {
       if (requestId !== latestRequestId.current) {
