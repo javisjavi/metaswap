@@ -180,7 +180,7 @@ export const useJupiterQuote = ({
       }
 
       if (params) {
-        const fallbackQuote = buildFallbackQuote(params);
+        const fallbackQuote = await buildFallbackQuote(params);
         if (fallbackQuote) {
           setQuote(fallbackQuote);
           setRefreshedAt(Date.now());
@@ -199,7 +199,7 @@ export const useJupiterQuote = ({
         return;
       }
       if (params) {
-        const fallbackQuote = buildFallbackQuote(params);
+        const fallbackQuote = await buildFallbackQuote(params);
         if (fallbackQuote) {
           setQuote(fallbackQuote);
           setRefreshedAt(Date.now());
