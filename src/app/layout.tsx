@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import WalletContextProvider from "@/components/WalletProvider";
 import { NetworkProvider } from "@/context/NetworkContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,10 +16,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body>
         <NetworkProvider>
-          <WalletContextProvider>{children}</WalletContextProvider>
+          <LanguageProvider>
+            <WalletContextProvider>{children}</WalletContextProvider>
+          </LanguageProvider>
         </NetworkProvider>
       </body>
     </html>

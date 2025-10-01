@@ -20,6 +20,7 @@ import { SwapResponse } from "@/types/jupiter";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
 import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
+import { useTranslations } from "@/context/LanguageContext";
 
 const NETWORK_OPTIONS = [
   { value: "mainnet-beta", label: "Mainnet" },
@@ -69,6 +70,9 @@ const WalletMultiButton = dynamic(
 );
 
 const SwapForm = () => {
+  const translations = useTranslations();
+  const swapTexts = translations.swapForm;
+
   const { network, setNetwork } = useNetwork();
   const { tokens, loading: tokensLoading, error: tokensError } = useTokenList(network);
   const { connection } = useConnection();
@@ -394,6 +398,11 @@ const SwapForm = () => {
     swapMode: amountMode === "in" ? "ExactIn" : "ExactOut",
   });
 
+  const tokenListErrorMessage = tokensError
+    ? swapTexts.tokenListErrors[tokensError]
+    : null;
+  const quoteErrorMessage = quoteError ? swapTexts.quoteErrors[quoteError] : null;
+
   useEffect(() => {
     setSwapError(null);
     setSwapSignature(null);
@@ -401,11 +410,11 @@ const SwapForm = () => {
 
   const handleAirdrop = useCallback(async () => {
     if (network === "mainnet-beta") {
-      setAirdropMessage("Los airdrops solo están disponibles en devnet y testnet.");
+      setAirdropMessage(swapTexts.airdrop.unavailable);
       return;
     }
     if (!publicKey) {
-      setAirdropMessage("Conecta tu wallet para solicitar SOL de prueba.");
+      setAirdropMessage(swapTexts.airdrop.connectWallet);
       return;
     }
     try {
@@ -417,17 +426,16 @@ const SwapForm = () => {
         { signature, ...latestBlockhash },
         "confirmed"
       );
-      setAirdropMessage("Airdrop completado. El saldo puede tardar unos segundos en actualizarse.");
+      setAirdropMessage(swapTexts.airdrop.success);
       await refreshBalance();
     } catch (error) {
       console.error(error);
-      setAirdropMessage(
-        (error as Error).message ?? "No fue posible solicitar el airdrop en este momento."
-      );
+      const message = (error as Error).message;
+      setAirdropMessage(message && message.trim() ? message : swapTexts.airdrop.genericError);
     } finally {
       setIsAirdropping(false);
     }
-  }, [connection, publicKey, refreshBalance, network]);
+  }, [connection, publicKey, refreshBalance, network, swapTexts.airdrop]);
 
   const handleSwapTokens = () => {
     if (!inputToken || !outputToken) return;
@@ -583,8 +591,8 @@ const SwapForm = () => {
 
   const thresholdLabel =
     quote?.swapMode === "ExactOut"
-      ? `Máximo a enviar (${slippagePercentDisplay}%)`
-      : `Mínimo tras slippage (${slippagePercentDisplay}%)`;
+      ? swapTexts.preview.thresholdExactOut(slippagePercentDisplay)
+      : swapTexts.preview.thresholdExactIn(slippagePercentDisplay);
 
   const priceDisplay = useMemo(() => {
     if (!quote || !inputToken || !outputToken) return null;
@@ -605,6 +613,10 @@ const SwapForm = () => {
     ? formatNumber(parseFloat(quote.priceImpactPct) * 100, 2)
     : null;
 
+  const priceImpactDisplay = priceImpact
+    ? `${priceImpact}%`
+    : swapTexts.preview.priceImpactMinimal;
+
   const swapRoutes = quote?.routePlan?.map((route) => route.swapInfo.label).join(" → ");
 
   const explorerUrl = useMemo(() => {
@@ -616,9 +628,13 @@ const SwapForm = () => {
     return `${base}?cluster=${network}`;
   }, [network, swapSignature]);
 
+  const formattedRefreshedAt = refreshedAt
+    ? new Date(refreshedAt).toLocaleTimeString()
+    : null;
+
   const handleSwap = useCallback(async () => {
     if (!publicKey || !sendTransaction) {
-      setSwapError("Conecta tu wallet Solflare para continuar.");
+      setSwapError(swapTexts.errors.connectWallet);
       return;
     }
     if (
@@ -628,7 +644,7 @@ const SwapForm = () => {
       !quoteAmount ||
       quoteAmount <= BigInt(0)
     ) {
-      setSwapError("Define un monto válido para cotizar el swap.");
+      setSwapError(swapTexts.errors.invalidAmount);
       return;
     }
 
@@ -678,9 +694,8 @@ const SwapForm = () => {
       await refreshQuote();
     } catch (error) {
       console.error(error);
-      setSwapError(
-        (error as Error).message ?? "No se pudo completar el swap. Inténtalo nuevamente."
-      );
+      const message = (error as Error).message;
+      setSwapError(message && message.trim() ? message : swapTexts.errors.generic);
     } finally {
       setIsSwapping(false);
     }
@@ -695,6 +710,7 @@ const SwapForm = () => {
     refreshBalance,
     refreshQuote,
     network,
+    swapTexts.errors,
   ]);
 
   const disableSwapButton =
@@ -762,13 +778,11 @@ const SwapForm = () => {
       <header className={styles.swapHeader}>
         <div>
           <h1 className={styles.title}>MetaSwap</h1>
-          <p className={styles.subtitle}>
-            Fast. Secure. Swaps made simple.
-          </p>
+          <p className={styles.subtitle}>{swapTexts.subtitle}</p>
         </div>
         <div className={styles.headerActions}>
           <label className={styles.networkSelector}>
-            <span>Red</span>
+            <span>{swapTexts.networkLabel}</span>
             <div className={styles.networkControl}>
               <select
                 className={styles.networkSelect}
@@ -791,7 +805,7 @@ const SwapForm = () => {
       <div className={styles.card}>
         <div className={styles.balanceRow}>
           <div>
-            <span className={styles.balanceLabel}>Saldo disponible</span>
+            <span className={styles.balanceLabel}>{swapTexts.balance.label}</span>
             <strong className={styles.balanceValue}>
               {connected ? (
                 balance ? (
@@ -803,12 +817,12 @@ const SwapForm = () => {
                     </span>
                   </span>
                 ) : isFetchingBalance ? (
-                  "Actualizando…"
+                  swapTexts.balance.updating
                 ) : (
                   "-"
                 )
               ) : (
-                "Conecta tu wallet"
+                swapTexts.balance.connectWallet
               )}
             </strong>
           </div>
@@ -819,7 +833,7 @@ const SwapForm = () => {
               onClick={handleAirdrop}
               disabled={!connected || isAirdropping}
             >
-              {isAirdropping ? "Solicitando…" : "Recibir 1 SOL"}
+              {isAirdropping ? swapTexts.airdrop.requesting : swapTexts.airdrop.request}
             </button>
           ) : null}
         </div>
@@ -827,12 +841,14 @@ const SwapForm = () => {
           <p className={styles.helperText}>{airdropMessage}</p>
         ) : null}
 
-        {tokensError && <p className={styles.errorBanner}>{tokensError}</p>}
+        {tokenListErrorMessage && (
+          <p className={styles.errorBanner}>{tokenListErrorMessage}</p>
+        )}
 
         <div className={styles.selectorsWrapper}>
           <div className={styles.selectorStack}>
             <TokenSelector
-              label="De"
+              label={swapTexts.selectors.fromLabel}
               token={inputToken}
               tokens={tokenOptions}
               onTokenSelect={handleSelectInput}
@@ -873,11 +889,11 @@ const SwapForm = () => {
             <span className={styles.switchIconVertical} aria-hidden>
               ⇅
             </span>
-            <span className={styles.srOnly}>Cambiar tokens</span>
+            <span className={styles.srOnly}>{swapTexts.selectors.switch}</span>
           </button>
 
           <TokenSelector
-            label="Para"
+            label={swapTexts.selectors.toLabel}
             token={outputToken}
             tokens={tokenOptions}
             onTokenSelect={handleSelectOutput}
@@ -889,16 +905,14 @@ const SwapForm = () => {
         </div>
 
         {sameTokenSelected && (
-          <p className={styles.errorBanner}>
-            Selecciona tokens diferentes para obtener una cotización válida.
-          </p>
+          <p className={styles.errorBanner}>{swapTexts.errors.sameTokens}</p>
         )}
 
-        {quoteError && <p className={styles.errorBanner}>{quoteError}</p>}
+        {quoteErrorMessage && <p className={styles.errorBanner}>{quoteErrorMessage}</p>}
 
         <div className={styles.previewPanel}>
           <div className={styles.previewRow}>
-            <span>Recibirás (estimado)</span>
+            <span>{swapTexts.preview.estimatedReceive}</span>
             <strong>
               {outputAmountDisplay
                 ? `${outputAmountDisplay} ${outputToken?.symbol ?? ""}`
@@ -918,21 +932,21 @@ const SwapForm = () => {
             </strong>
           </div>
           <div className={styles.previewRow}>
-            <span>Precio estimado</span>
+            <span>{swapTexts.preview.price}</span>
             <strong>{priceDisplay ?? "-"}</strong>
           </div>
           <div className={styles.previewRow}>
-            <span>Impacto en el precio</span>
-            <strong>{priceImpact ? `${priceImpact}%` : "< 0.01%"}</strong>
+            <span>{swapTexts.preview.priceImpact}</span>
+            <strong>{priceImpactDisplay}</strong>
           </div>
           <div className={styles.previewRow}>
-            <span>Ruta</span>
+            <span>{swapTexts.preview.route}</span>
             <strong>{swapRoutes ?? "Jupiter"}</strong>
           </div>
           <div className={styles.previewFooter}>
             <div className={styles.slippageControl}>
               <div className={styles.slippageHeader}>
-                <span>Slippage máximo</span>
+                <span>{swapTexts.preview.slippageTitle}</span>
                 <div className={styles.slippagePresets}>
                   {SLIPPAGE_PRESETS.map((preset) => {
                     const presetBps = Math.round(preset * 100);
@@ -968,19 +982,16 @@ const SwapForm = () => {
                 <span className={styles.slippageSuffix}>%</span>
               </div>
               <p id="slippage-help" className={styles.slippageHelper}>
-                Ajusta la tolerancia de precio para tus swaps.
+                {swapTexts.preview.slippageHelper}
               </p>
             </div>
             <div className={styles.previewFooterStatus}>
               {quoteLoading ? (
-                <span>Actualizando cotización…</span>
-              ) : refreshedAt ? (
-                <span>
-                  Última actualización: {new Date(refreshedAt).toLocaleTimeString()} (se renueva
-                  automáticamente)
-                </span>
+                <span>{swapTexts.preview.statusUpdating}</span>
+              ) : formattedRefreshedAt ? (
+                <span>{swapTexts.preview.statusLastUpdated(formattedRefreshedAt)}</span>
               ) : (
-                <span>Introduce un monto para obtener una cotización en tiempo real.</span>
+                <span>{swapTexts.preview.statusEnterAmount}</span>
               )}
             </div>
           </div>
@@ -989,9 +1000,9 @@ const SwapForm = () => {
         {swapError && <p className={styles.errorBanner}>{swapError}</p>}
         {swapSignature && explorerUrl && (
           <p className={styles.successBanner}>
-            Swap enviado correctamente. Consulta el estado en el
+            {swapTexts.swapResult.successPrefix} {swapTexts.swapResult.successLinkIntro}{" "}
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
-              &nbsp;Solana Explorer
+              {swapTexts.swapResult.successLinkText}
             </a>
             .
           </p>
@@ -1003,7 +1014,7 @@ const SwapForm = () => {
           onClick={handleSwap}
           disabled={disableSwapButton}
         >
-          {isSwapping ? "Firmando…" : "Confirmar swap"}
+          {isSwapping ? swapTexts.swapButton.loading : swapTexts.swapButton.default}
         </button>
       </div>
     </section>

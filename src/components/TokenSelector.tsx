@@ -1,3 +1,4 @@
+"use client";
 
 /* eslint-disable @next/next/no-img-element */
 import { ChangeEvent, useState } from "react";
@@ -5,6 +6,7 @@ import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import TokenListModal from "./TokenListModal";
 import { NetworkCluster } from "@/context/NetworkContext";
+import { useTranslations } from "@/context/LanguageContext";
 
 interface TokenSelectorProps {
   label: string;
@@ -34,6 +36,8 @@ const TokenSelector = ({
   onAvailableClick,
 }: TokenSelectorProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const translations = useTranslations();
+  const tokenSelectorTexts = translations.tokenSelector;
 
   const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -53,7 +57,7 @@ const TokenSelector = ({
               type="button"
               className={styles.availableBalanceButton}
               onClick={onAvailableClick}
-              title="Usar todo el saldo disponible"
+              title={tokenSelectorTexts.useAllTitle}
             >
               ({availableAmount})
             </button>
@@ -70,19 +74,21 @@ const TokenSelector = ({
           <img
             className={styles.selectorIcon}
             src={token?.logoURI ?? "/placeholder-token.svg"}
-            alt={token?.symbol ?? "Token"}
+            alt={token?.symbol ?? tokenSelectorTexts.defaultSymbol}
             onError={(event) => {
               (event.currentTarget as HTMLImageElement).src = "/placeholder-token.svg";
             }}
           />
           <div className={styles.selectorText}>
             <div className={styles.selectorSymbolRow}>
-              <span className={styles.selectorSymbol}>{token?.symbol ?? "Seleccionar"}</span>
+              <span className={styles.selectorSymbol}>
+                {token?.symbol ?? tokenSelectorTexts.selectToken}
+              </span>
               {token?.verified ? (
                 <span
                   className={styles.verifiedBadge}
-                  aria-label="Contrato verificado"
-                  title="Contrato verificado"
+                  aria-label={tokenSelectorTexts.verifiedBadge}
+                  title={tokenSelectorTexts.verifiedBadge}
                 >
                   <img
                     src="/verified-check.svg"
@@ -94,7 +100,9 @@ const TokenSelector = ({
               ) : null}
             </div>
             <div className={styles.selectorNameRow}>
-              <span className={styles.selectorName}>{token?.name ?? "Elegir token"}</span>
+              <span className={styles.selectorName}>
+                {token?.name ?? tokenSelectorTexts.chooseToken}
+              </span>
             </div>
           </div>
         </button>

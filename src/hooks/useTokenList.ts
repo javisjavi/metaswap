@@ -29,17 +29,19 @@ const SOL_TOKEN: TokenInfo = {
   verified: true,
 };
 
+export type TokenListError = "fetchFailed" | "unexpected";
+
 export interface TokenListState {
   tokens: TokenInfo[];
   loading: boolean;
-  error: string | null;
+  error: TokenListError | null;
   findByMint: (mint: string) => TokenInfo | undefined;
 }
 
 export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): TokenListState => {
   const [tokens, setTokens] = useState<TokenInfo[]>([SOL_TOKEN]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<TokenListError | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -49,7 +51,7 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
         setLoading(true);
         const response = await fetch(TOKEN_LIST_URL, { signal: controller.signal });
         if (!response.ok) {
-          throw new Error("No se pudo obtener la lista de tokens");
+          throw new Error("FETCH_FAILED");
         }
         const payload = (await response.json()) as TokenInfo[];
         const enriched = payload.map((token) => ({ ...token, verified: true }));
@@ -72,7 +74,8 @@ export const useTokenList = (network: "devnet" | "testnet" | "mainnet-beta"): To
         setError(null);
       } catch (err) {
         if (controller.signal.aborted) return;
-        setError((err as Error).message ?? "Error inesperado");
+        const message = (err as Error).message;
+        setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);

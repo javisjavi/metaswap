@@ -2,10 +2,12 @@
 
 import { useState, type ReactNode } from "react";
 
+import LanguageToggle from "@/components/LanguageToggle";
+import { useTranslations } from "@/context/LanguageContext";
+import { type AppTranslation, type SectionKey } from "@/utils/translations";
+
 import styles from "./page.module.css";
 import SwapForm from "@/components/SwapForm";
-
-type SectionKey = "swap" | "overview" | "support";
 
 type IconProps = {
   className?: string;
@@ -218,147 +220,93 @@ const SupportIcon = ({ className }: IconProps) => (
   </svg>
 );
 
-const SECTIONS: SectionDefinition[] = [
-  {
-    key: "swap",
-    label: "Intercambiar",
-    description: "Opera tokens al instante",
-    Icon: SwapIcon,
-  },
-  {
-    key: "overview",
-    label: "Panel",
-    description: "Resumen de actividad",
-    Icon: OverviewIcon,
-  },
-  {
-    key: "support",
-    label: "Soporte",
-    description: "Guías y ayuda",
-    Icon: SupportIcon,
-  },
-];
-
-const OverviewPanel = () => (
+const OverviewPanel = ({ content }: { content: AppTranslation["overview"] }) => (
   <div className={styles.infoSection}>
     <header className={styles.infoHeader}>
-      <h1 className={styles.infoTitle}>Panel general</h1>
-      <p className={styles.infoSubtitle}>
-        Controla tus activos con estadísticas en tiempo real y recomendaciones
-        para optimizar cada swap.
-      </p>
+      <h1 className={styles.infoTitle}>{content.title}</h1>
+      <p className={styles.infoSubtitle}>{content.subtitle}</p>
     </header>
 
     <div className={styles.infoGrid}>
       <article className={styles.infoCard}>
-        <h2 className={styles.infoCardTitle}>Estado de la red</h2>
-        <p className={styles.infoCardText}>
-          Seguimos la salud de Solana y te avisamos cuando conviene operar.
-        </p>
+        <h2 className={styles.infoCardTitle}>{content.cards.network.title}</h2>
+        <p className={styles.infoCardText}>{content.cards.network.description}</p>
         <ul className={styles.infoList}>
-          <li>
-            Latencia promedio <strong>&lt; 0.5s</strong>
-          </li>
-          <li>
-            Éxito de transacciones <strong>99.2%</strong>
-          </li>
-          <li>
-            Congestión <strong>Baja</strong>
-          </li>
+          {content.cards.network.stats.map((stat) => (
+            <li key={stat.label}>
+              {stat.label} <strong>{stat.value}</strong>
+            </li>
+          ))}
         </ul>
       </article>
 
       <article className={styles.infoCard}>
-        <h2 className={styles.infoCardTitle}>Atajos inteligentes</h2>
-        <p className={styles.infoCardText}>
-          Guarda tus combinaciones favoritas y lánzalas con un solo clic.
-        </p>
+        <h2 className={styles.infoCardTitle}>{content.cards.shortcuts.title}</h2>
+        <p className={styles.infoCardText}>{content.cards.shortcuts.description}</p>
         <div className={styles.quickActions}>
-          <button type="button">Comprar SOL con USDC</button>
-          <button type="button">Vender SOL por USDT</button>
-          <button type="button">Enviar a billetera fría</button>
+          {content.cards.shortcuts.actions.map((action) => (
+            <button key={action} type="button">
+              {action}
+            </button>
+          ))}
         </div>
       </article>
 
       <article className={styles.infoCard}>
-        <h2 className={styles.infoCardTitle}>Recordatorios</h2>
-        <p className={styles.infoCardText}>
-          Configura alertas personalizadas para aprovechar el mejor momento.
-        </p>
+        <h2 className={styles.infoCardTitle}>{content.cards.reminders.title}</h2>
+        <p className={styles.infoCardText}>{content.cards.reminders.description}</p>
         <div className={styles.reminders}>
-          <div>
-            <span className={styles.reminderLabel}>Solana &gt; $150</span>
-            <span className={styles.reminderStatus}>Activo</span>
-          </div>
-          <div>
-            <span className={styles.reminderLabel}>USDC disponibilidad</span>
-            <span className={styles.reminderStatus}>Sincronizado</span>
-          </div>
-          <div>
-            <span className={styles.reminderLabel}>Actualizar bots</span>
-            <span className={styles.reminderStatus}>Pendiente</span>
-          </div>
+          {content.cards.reminders.reminders.map((reminder) => (
+            <div key={reminder.label}>
+              <span className={styles.reminderLabel}>{reminder.label}</span>
+              <span className={styles.reminderStatus}>{reminder.status}</span>
+            </div>
+          ))}
         </div>
       </article>
     </div>
   </div>
 );
 
-const SupportPanel = () => (
+const SupportPanel = ({ content }: { content: AppTranslation["support"] }) => (
   <div className={styles.infoSection}>
     <header className={styles.infoHeader}>
-      <h1 className={styles.infoTitle}>Centro de soporte</h1>
-      <p className={styles.infoSubtitle}>
-        Encuentra respuestas rápidas o contacta a nuestro equipo cuando lo
-        necesites.
-      </p>
+      <h1 className={styles.infoTitle}>{content.title}</h1>
+      <p className={styles.infoSubtitle}>{content.subtitle}</p>
     </header>
 
     <div className={styles.infoGrid}>
       <article className={styles.infoCard}>
-        <h2 className={styles.infoCardTitle}>Guías destacadas</h2>
+        <h2 className={styles.infoCardTitle}>{content.guides.title}</h2>
         <ul className={styles.infoList}>
-          <li>Cómo conectar tu wallet de forma segura</li>
-          <li>Configura alertas de precio en menos de 2 minutos</li>
-          <li>Buenas prácticas para swaps de alto volumen</li>
+          {content.guides.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
       </article>
 
       <article className={styles.infoCard}>
-        <h2 className={styles.infoCardTitle}>Canales de ayuda</h2>
+        <h2 className={styles.infoCardTitle}>{content.channels.title}</h2>
         <div className={styles.supportChannels}>
-          <a
-            className={styles.supportChannelLink}
-            href="https://x.com/metaswap_dev"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className={styles.channelLabel}>Twitter</span>
-            <span className={styles.channelDetail}>
-              Síguenos para anuncios al instante y actualizaciones del equipo.
-            </span>
-          </a>
-          <a
-            className={styles.supportChannelLink}
-            href="https://t.me/metaswap"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className={styles.channelLabel}>Telegram</span>
-            <span className={styles.channelDetail}>
-              Únete a la comunidad para soporte directo y noticias exclusivas.
-            </span>
-          </a>
+          {content.channels.options.map((channel) => (
+            <a
+              key={channel.href}
+              className={styles.supportChannelLink}
+              href={channel.href}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className={styles.channelLabel}>{channel.label}</span>
+              <span className={styles.channelDetail}>{channel.detail}</span>
+            </a>
+          ))}
         </div>
       </article>
 
       <article className={styles.infoCard}>
-        <h2 className={styles.infoCardTitle}>Estado del servicio</h2>
-        <p className={styles.infoCardText}>
-          Actualizamos constantemente la estabilidad de la plataforma para que
-          puedas operar sin interrupciones.
-        </p>
-        <div className={styles.statusBadge}>Operativo</div>
+        <h2 className={styles.infoCardTitle}>{content.status.title}</h2>
+        <p className={styles.infoCardText}>{content.status.description}</p>
+        <div className={styles.statusBadge}>{content.status.badge}</div>
       </article>
     </div>
   </div>
@@ -366,14 +314,36 @@ const SupportPanel = () => (
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState<SectionKey>("swap");
+  const translations = useTranslations();
+
+  const sections: SectionDefinition[] = [
+    {
+      key: "swap",
+      label: translations.navigation.sections.swap.label,
+      description: translations.navigation.sections.swap.description,
+      Icon: SwapIcon,
+    },
+    {
+      key: "overview",
+      label: translations.navigation.sections.overview.label,
+      description: translations.navigation.sections.overview.description,
+      Icon: OverviewIcon,
+    },
+    {
+      key: "support",
+      label: translations.navigation.sections.support.label,
+      description: translations.navigation.sections.support.description,
+      Icon: SupportIcon,
+    },
+  ];
 
   let content: ReactNode;
   switch (activeSection) {
     case "overview":
-      content = <OverviewPanel />;
+      content = <OverviewPanel content={translations.overview} />;
       break;
     case "support":
-      content = <SupportPanel />;
+      content = <SupportPanel content={translations.support} />;
       break;
     default:
       content = <SwapForm />;
@@ -384,11 +354,14 @@ export default function Home() {
       <div className={styles.appShell}>
         <nav
           className={styles.menu}
-          aria-label="Navegación principal"
+          aria-label={translations.navigation.ariaLabel}
           role="tablist"
           aria-orientation="vertical"
         >
-          {SECTIONS.map((section) => {
+          <div className={styles.menuHeader}>
+            <LanguageToggle />
+          </div>
+          {sections.map((section) => {
             const isActive = activeSection === section.key;
             const itemClasses = [styles.menuItem];
             if (isActive) {

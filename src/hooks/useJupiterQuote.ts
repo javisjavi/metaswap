@@ -13,10 +13,12 @@ interface UseJupiterQuoteParams {
   swapMode?: "ExactIn" | "ExactOut";
 }
 
+export type QuoteError = "fetchFailed" | "unexpected";
+
 interface UseJupiterQuoteResult {
   quote: QuoteResponse | null;
   loading: boolean;
-  error: string | null;
+  error: QuoteError | null;
   refreshedAt: number | null;
   refresh: () => Promise<void>;
 }
@@ -34,7 +36,7 @@ export const useJupiterQuote = ({
 }: UseJupiterQuoteParams): UseJupiterQuoteResult => {
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<QuoteError | null>(null);
   const [refreshedAt, setRefreshedAt] = useState<number | null>(null);
 
   const params = useMemo(() => {
@@ -73,14 +75,15 @@ export const useJupiterQuote = ({
     try {
       const response = await fetch(`${JUPITER_QUOTE_URL}?${query.toString()}`);
       if (!response.ok) {
-        throw new Error("No se pudo obtener la cotización");
+        throw new Error("FETCH_FAILED");
       }
       const payload = (await response.json()) as QuoteResponse;
       setQuote(payload);
       setRefreshedAt(Date.now());
     } catch (err) {
       setQuote(null);
-      setError((err as Error).message ?? "No se pudo calcular la cotización");
+      const message = (err as Error).message;
+      setError(message === "FETCH_FAILED" ? "fetchFailed" : "unexpected");
     } finally {
       setLoading(false);
     }

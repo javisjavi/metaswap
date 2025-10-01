@@ -8,6 +8,7 @@ import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import { SOL_MINT } from "@/utils/tokenConstants";
 import { NetworkCluster } from "@/context/NetworkContext";
+import { useTranslations } from "@/context/LanguageContext";
 
 interface TokenListModalProps {
   isOpen: boolean;
@@ -95,6 +96,10 @@ const TokenListModal = ({
   network,
 }: TokenListModalProps) => {
   const { connection } = useConnection();
+  const translations = useTranslations();
+  const modalTexts = translations.tokenListModal;
+  const tokenSelectorTexts = translations.tokenSelector;
+  const externalErrorFallback = modalTexts.externalError;
   const [searchTerm, setSearchTerm] = useState("");
   const [externalTokens, setExternalTokens] = useState<TokenInfo[]>([]);
   const [searchingExternal, setSearchingExternal] = useState(false);
@@ -150,7 +155,7 @@ const TokenListModal = ({
       try {
         const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
         if (!response.ok) {
-          throw new Error("No se pudo buscar tokens externos");
+          throw new Error("FETCH_EXTERNAL_FAILED");
         }
 
         const payload = (await response.json()) as DexScreenerSearchResponse;
@@ -221,12 +226,10 @@ const TokenListModal = ({
           setExternalTokens(additionalTokens);
         }
       } catch (error) {
-        console.error("Error al buscar tokens externos", error);
+        console.error("Error fetching external tokens", error);
         if (!cancelled) {
           setExternalTokens([]);
-          setExternalError(
-            (error as Error).message ?? "No pudimos cargar resultados adicionales en este momento."
-          );
+          setExternalError(externalErrorFallback);
         }
       } finally {
         if (!cancelled) {
@@ -239,7 +242,7 @@ const TokenListModal = ({
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [connection, isOpen, network, searchTerm, tokens]);
+  }, [connection, isOpen, network, searchTerm, tokens, externalErrorFallback]);
 
   const combinedTokens = useMemo(() => {
     const map = new Map<string, TokenInfo>();
@@ -296,19 +299,19 @@ const TokenListModal = ({
         onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.modalHeader}>
-          <h2>Selecciona un token</h2>
+          <h2>{modalTexts.title}</h2>
           <button
             type="button"
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={modalTexts.close}
           >
             ×
           </button>
         </div>
         <input
           className={styles.searchInput}
-          placeholder="Buscar por nombre, símbolo o dirección"
+          placeholder={modalTexts.searchPlaceholder}
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
           autoFocus
@@ -347,8 +350,8 @@ const TokenListModal = ({
                       {token.verified ? (
                         <span
                           className={styles.verifiedBadge}
-                          aria-label="Contrato verificado"
-                          title="Contrato verificado"
+                          aria-label={tokenSelectorTexts.verifiedBadge}
+                          title={tokenSelectorTexts.verifiedBadge}
                         >
                           <img
                             src="/verified-check.svg"
@@ -368,7 +371,7 @@ const TokenListModal = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.solscanLink}
-                  aria-label={`Ver ${token.symbol} en Solscan`}
+                  aria-label={modalTexts.viewOnSolscan(token.symbol)}
                 >
                   <img
                     src="/solscan.svg"
@@ -381,10 +384,10 @@ const TokenListModal = ({
             );
           })}
           {filteredTokens.length === 0 && !searchingExternal && !externalError && (
-            <p className={styles.emptyState}>No encontramos tokens que coincidan con tu búsqueda.</p>
+            <p className={styles.emptyState}>{modalTexts.emptyState}</p>
           )}
           {searchingExternal && (
-            <p className={styles.searchStatus}>Buscando nuevos tokens en Pump.fun…</p>
+            <p className={styles.searchStatus}>{modalTexts.searchingExternal}</p>
           )}
           {externalError && <p className={styles.searchError}>{externalError}</p>}
         </div>
