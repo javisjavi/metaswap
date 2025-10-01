@@ -95,9 +95,6 @@ const TokenSelector = ({
             </div>
             <div className={styles.selectorNameRow}>
               <span className={styles.selectorName}>{token?.name ?? "Elegir token"}</span>
-              {amount && amount.trim().length > 0 ? (
-                <span className={styles.selectorAmount}>{amount}</span>
-              ) : null}
             </div>
           </div>
         </button>
