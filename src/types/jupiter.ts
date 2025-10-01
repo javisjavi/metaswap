@@ -22,7 +22,7 @@ export interface QuoteResponse {
   swapMode: "ExactIn" | "ExactOut";
   slippageBps: number;
   priceImpactPct?: string;
-  routePlan: QuoteRoutePlan[];
+  routePlan: QuoteRoutePlan[][];
   swapUsdValue?: string;
 }
 

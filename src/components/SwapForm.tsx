@@ -1,6 +1,8 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+/* eslint-disable @next/next/no-img-element */
+
+import { ChangeEvent, Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
@@ -18,6 +20,7 @@ import { JUPITER_SWAP_URL } from "@/config/jupiter";
 import { TokenInfo } from "@/types/token";
 import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
 import { SwapResponse } from "@/types/jupiter";
+import { buildRouteSummary, DEFAULT_PLATFORM_ICON } from "@/utils/routes";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
 import { getEndpointForNetwork } from "@/utils/solanaEndpoints";
@@ -618,7 +621,20 @@ const SwapForm = () => {
     ? `${priceImpact}%`
     : swapTexts.preview.priceImpactMinimal;
 
-  const swapRoutes = quote?.routePlan?.map((route) => route.swapInfo.label).join(" → ");
+  const swapRouteSummary = useMemo(
+    () => buildRouteSummary(quote?.routePlan),
+    [quote?.routePlan]
+  );
+
+  const formatRoutePercent = (value: number) => {
+    if (value >= 99.5) {
+      return "100";
+    }
+    if (value >= 10) {
+      return formatNumber(value, 0);
+    }
+    return formatNumber(value, 2);
+  };
 
   const explorerUrl = useMemo(() => {
     if (!swapSignature) return null;
@@ -942,7 +958,52 @@ const SwapForm = () => {
           </div>
           <div className={styles.previewRow}>
             <span>{swapTexts.preview.route}</span>
-            <strong>{swapRoutes ?? "Jupiter"}</strong>
+            {swapRouteSummary.length > 0 ? (
+              <div className={styles.routeDisplay}>
+                {swapRouteSummary.map((stage, stageIndex) => (
+                  <div key={`stage-${stageIndex}`} className={styles.routeStage}>
+                    {stage.map((platform, platformIndex) => (
+                      <Fragment key={`${platform.label}-${platformIndex}`}>
+                        <div className={styles.routePlatform}>
+                          <img
+                            src={platform.icon}
+                            alt=""
+                            className={styles.routePlatformIcon}
+                            onError={(event) => {
+                              (event.currentTarget as HTMLImageElement).src =
+                                DEFAULT_PLATFORM_ICON;
+                            }}
+                          />
+                          <span className={styles.routePlatformLabel}>
+                            {platform.label}
+                            {stage.length > 1 ? (
+                              <span className={styles.routePlatformPercent}>
+                                {formatRoutePercent(platform.percent)}%
+                              </span>
+                            ) : null}
+                          </span>
+                        </div>
+                        {platformIndex < stage.length - 1 ? (
+                          <span
+                            className={styles.routeStageSeparator}
+                            aria-hidden="true"
+                          >
+                            +
+                          </span>
+                        ) : null}
+                      </Fragment>
+                    ))}
+                    {stageIndex < swapRouteSummary.length - 1 ? (
+                      <span className={styles.routeArrow} aria-hidden="true">
+                        →
+                      </span>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <strong>Jupiter</strong>
+            )}
           </div>
           <div className={styles.previewFooter}>
             <div className={styles.slippageControl}>

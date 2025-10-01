@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="grad-whirlpool" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="#020617" stroke="#0ea5e9" stroke-width="2" />
+  <path d="M20 32c0-7 6-12 12-12s12 5 12 12-6 12-12 12c-3 0-5-1-7-3" fill="none" stroke="url(#grad-whirlpool)" stroke-width="5" stroke-linecap="round" />
+  <circle cx="26" cy="28" r="3" fill="#f8fafc" />
+</svg>
