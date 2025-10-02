@@ -1,6 +1,13 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   LAMPORTS_PER_SOL,
@@ -14,7 +21,11 @@ import styles from "@/app/page.module.css";
 import { useTokenList } from "@/hooks/useTokenList";
 import { useJupiterQuote } from "@/hooks/useJupiterQuote";
 import { TokenInfo } from "@/types/token";
-import { formatLamports, formatNumber, parseAmountToLamports } from "@/utils/amount";
+import {
+  formatLamports,
+  formatNumber,
+  parseAmountToLamports,
+} from "@/utils/amount";
 import { QuoteRoutePlan, SwapResponse } from "@/types/jupiter";
 import TokenSelector from "./TokenSelector";
 import { useNetwork } from "@/context/NetworkContext";
@@ -23,6 +34,7 @@ import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import TradingViewChart from "./TradingViewChart";
 import { getIntlLocale } from "@/utils/language";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { buildRoutePath, buildRouteSummary } from "@/utils/routes";
 
 const NETWORK_OPTIONS = [
   { value: "mainnet-beta", label: "Mainnet" },
@@ -37,69 +49,6 @@ const AIRDROP_LAMPORTS = LAMPORTS_PER_SOL;
 const SLIPPAGE_PRESETS = [0.1, 0.5, 1, 2] as const;
 const QUICK_AMOUNT_PERCENTAGES = [25, 50, 75, 100] as const;
 const TRADINGVIEW_QUOTE_SYMBOL = "USDT";
-
-const PREVIEW_ROUTE_PLAN: QuoteRoutePlan[][] = [
-  [
-    {
-      swapInfo: {
-        ammKey: "demo-orca",
-        label: "Orca",
-        inputMint: SOL_MINT,
-        outputMint: MSOL_MINT,
-        inAmount: "0",
-        outAmount: "0",
-        feeAmount: "0",
-        feeMint: SOL_MINT,
-      },
-      percent: 55,
-      bps: 0,
-    },
-    {
-      swapInfo: {
-        ammKey: "demo-raydium",
-        label: "Raydium",
-        inputMint: SOL_MINT,
-        outputMint: MSOL_MINT,
-        inAmount: "0",
-        outAmount: "0",
-        feeAmount: "0",
-        feeMint: SOL_MINT,
-      },
-      percent: 45,
-      bps: 0,
-    },
-  ],
-  [
-    {
-      swapInfo: {
-        ammKey: "demo-meteora",
-        label: "Meteora DLMM",
-        inputMint: MSOL_MINT,
-        outputMint: USDC_MINT,
-        inAmount: "0",
-        outAmount: "0",
-        feeAmount: "0",
-        feeMint: MSOL_MINT,
-      },
-      percent: 65,
-      bps: 0,
-    },
-    {
-      swapInfo: {
-        ammKey: "demo-lifinity",
-        label: "Lifinity",
-        inputMint: MSOL_MINT,
-        outputMint: USDC_MINT,
-        inAmount: "0",
-        outAmount: "0",
-        feeAmount: "0",
-        feeMint: MSOL_MINT,
-      },
-      percent: 35,
-      bps: 0,
-    },
-  ],
-];
 
 const DEFAULT_SOL_TOKEN: TokenInfo = {
   address: SOL_MINT,
@@ -489,6 +438,22 @@ const SwapForm = () => {
   const fallbackQuoteMessage = isFallbackQuote
     ? swapTexts.quoteErrors.fallback
     : null;
+
+  const rawRoutePlan = quote?.routePlan as
+    | QuoteRoutePlan[][]
+    | QuoteRoutePlan[]
+    | undefined;
+
+  const routeSummary = useMemo(
+    () => buildRouteSummary(rawRoutePlan),
+    [rawRoutePlan]
+  );
+
+  const routePaths = useMemo(
+    () =>
+      buildRoutePath(rawRoutePlan, (mint) => tokenSymbolLookup.get(mint)),
+    [rawRoutePlan, tokenSymbolLookup]
+  );
 
   useEffect(() => {
     setSwapError(null);
@@ -1066,6 +1031,83 @@ const SwapForm = () => {
           <div className={styles.previewRow}>
             <span>{swapTexts.preview.priceImpact}</span>
             <strong>{priceImpactDisplay}</strong>
+          </div>
+          <div className={styles.routeSection}>
+            <span className={styles.routeSectionTitle}>
+              {swapTexts.preview.routeTitle}
+            </span>
+            {routeSummary.length ? (
+              <ol className={styles.routeStages}>
+                {routeSummary.map((stage, stageIndex) => {
+                  const stagePath = routePaths[stageIndex] ?? [];
+                  return (
+                    <li key={stageIndex} className={styles.routeStage}>
+                      <div className={styles.routeStageHeader}>
+                        <span className={styles.routeStageTitle}>
+                          {swapTexts.preview.routeStage(stageIndex + 1)}
+                        </span>
+                        {stagePath.length ? (
+                          <div className={styles.routePath}>
+                            {stagePath.map((tokenSymbol, tokenIndex) => (
+                              <Fragment
+                                key={`${stageIndex}-${tokenSymbol}-${tokenIndex}`}
+                              >
+                                {tokenIndex > 0 && (
+                                  <span
+                                    className={styles.routeArrow}
+                                    aria-hidden="true"
+                                  >
+                                    →
+                                  </span>
+                                )}
+                                <span className={styles.routePathToken}>
+                                  {tokenSymbol}
+                                </span>
+                              </Fragment>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                      <ul className={styles.routePlatformList}>
+                        {stage.map((platform) => {
+                          const percentDisplay = formatNumber(
+                            platform.percent,
+                            2,
+                            language
+                          );
+                          return (
+                            <li
+                              key={`${stageIndex}-${platform.label}`}
+                              className={styles.routePlatform}
+                            >
+                              <span className={styles.routePlatformInfo}>
+                                <span className={styles.routePlatformIcon}>
+                                  <img
+                                    src={platform.icon}
+                                    alt=""
+                                    width={24}
+                                    height={24}
+                                    loading="lazy"
+                                  />
+                                </span>
+                                <span className={styles.routePlatformLabel}>
+                                  {platform.label}
+                                </span>
+                              </span>
+                              <span className={styles.routePlatformPercent}>
+                                {percentDisplay}%
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : (
+              <p className={styles.routeEmpty}>{swapTexts.preview.routeEmpty}</p>
+            )}
           </div>
           <div className={styles.previewFooter}>
             <div className={styles.slippageControl}>

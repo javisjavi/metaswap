@@ -23,6 +23,14 @@ export type ExplorerTokenAccountInfo = {
   delegate: string | null;
 };
 
+export type ExplorerTokenHolding = {
+  mint: string;
+  tokenAccount: string;
+  amount: string;
+  uiAmountString: string | null;
+  decimals: number;
+};
+
 export type ExplorerAccountResult = {
   kind: "account";
   address: string;
@@ -34,6 +42,7 @@ export type ExplorerAccountResult = {
   accountType: ExplorerAccountType;
   tokenMintInfo: ExplorerTokenMintInfo | null;
   tokenAccountInfo: ExplorerTokenAccountInfo | null;
+  tokenHoldings: ExplorerTokenHolding[];
 };
 
 export type ExplorerTransactionInstruction = {

@@ -9,6 +9,7 @@ import {
   type ExplorerTokenMintInfo,
   type ExplorerTransactionInstruction,
   type ExplorerTransactionResult,
+  type ExplorerTokenHolding,
 } from "@/types/explorer";
 
 export const runtime = "nodejs";
@@ -23,6 +24,72 @@ const connection = new Connection(RPC_ENDPOINT, "confirmed");
 
 const BASE58_REGEX = /^[1-9A-HJ-NP-Za-km-z]+$/;
 const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
+const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
+const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHolding[]> => {
+  try {
+    const accounts = await connection.getParsedTokenAccountsByOwner(
+      owner,
+      { programId: TOKEN_PROGRAM_ID },
+      "confirmed",
+    );
+
+    const holdings = accounts
+      .map(({ pubkey, account }) => {
+        const data = account.data as ParsedAccountData;
+        if (typeof data !== "object" || data === null || data.program !== "spl-token") {
+          return null;
+        }
+
+        const parsed = data.parsed as { type: string; info?: Record<string, unknown> };
+        if (parsed?.type !== "account" || !parsed.info) {
+          return null;
+        }
+
+        const info = parsed.info as {
+          tokenAmount?: {
+            amount?: string;
+            decimals?: number;
+            uiAmountString?: string | null;
+          };
+          mint?: string;
+        };
+
+        const tokenAmount = info.tokenAmount;
+        const mint = typeof info.mint === "string" ? info.mint : null;
+        const amount = tokenAmount?.amount;
+        const decimals = tokenAmount?.decimals;
+
+        if (!mint || !amount || decimals === undefined) {
+          return null;
+        }
+
+        try {
+          if (BigInt(amount) === BigInt(0)) {
+            return null;
+          }
+        } catch {
+          return null;
+        }
+
+        return {
+          mint,
+          tokenAccount: pubkey.toBase58(),
+          amount,
+          uiAmountString: tokenAmount?.uiAmountString ?? null,
+          decimals,
+        } satisfies ExplorerTokenHolding;
+      })
+      .filter((holding): holding is ExplorerTokenHolding => holding !== null);
+
+    return holdings;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Explorer token holdings lookup failed", error.message);
+    }
+    return [];
+  }
+};
 
 const createAccountResult = (
   address: string,
@@ -107,6 +174,7 @@ const createAccountResult = (
     accountType,
     tokenMintInfo,
     tokenAccountInfo,
+    tokenHoldings: [],
   };
 };
 
@@ -218,6 +286,17 @@ export async function POST(request: Request) {
     }
 
     if (accountResult) {
+      if (accountResult.accountType === "wallet") {
+        try {
+          const walletKey = new PublicKey(accountResult.address);
+          const tokenHoldings = await fetchTokenHoldings(walletKey);
+          accountResult = { ...accountResult, tokenHoldings };
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("Explorer wallet holdings enrichment failed", error.message);
+          }
+        }
+      }
       const payload: ExplorerApiResponse = { result: accountResult };
       return NextResponse.json(payload, {
         status: 200,

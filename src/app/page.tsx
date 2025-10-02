@@ -18,10 +18,12 @@ import LanguageToggle from "@/components/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import WalletButton from "@/components/WalletButton";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import { useNetwork } from "@/context/NetworkContext";
 import { type PumpFunProject } from "@/types/pumpfun";
 import { type ExplorerApiResponse, type ExplorerResult } from "@/types/explorer";
 import { type AppTranslation, type SectionKey } from "@/utils/translations";
 import { getIntlLocale } from "@/utils/language";
+import { useTokenList } from "@/hooks/useTokenList";
 
 import styles from "./page.module.css";
 import SwapForm from "@/components/SwapForm";
@@ -837,6 +839,8 @@ const formatTokenAmount = (rawAmount: string, decimals: number) => {
 const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => {
   const { language } = useLanguage();
   const locale = getIntlLocale(language);
+  const { network } = useNetwork();
+  const { findByMint } = useTokenList(network);
 
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<ExplorerStatus>("idle");
@@ -975,7 +979,7 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
   ) => {
     const solBalance = account.lamports / LAMPORTS_PER_SOL;
     const accountTypeLabel =
-      content.account.accountTypes[account.accountType] ?? content.account.badges.generic;
+      content.account.accountTypes[account.accountType] ?? content.account.accountTypes.unknown;
     const badgeKey =
       account.accountType === "wallet"
         ? "wallet"
@@ -986,7 +990,7 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
             : account.accountType === "tokenAccount"
               ? "tokenAccount"
               : "generic";
-    const badgeLabel = content.account.badges[badgeKey];
+    const badgeLabel = content.account.badges[badgeKey] ?? content.account.badges.generic;
 
     const tokenMintSection = account.tokenMintInfo ? (
       <div className={styles.explorerSubSection}>
@@ -1061,6 +1065,77 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
       </div>
     ) : null;
 
+    const sortedHoldings = account.tokenHoldings
+      .slice()
+      .sort((a, b) => {
+        try {
+          const amountA = BigInt(a.amount);
+          const amountB = BigInt(b.amount);
+          if (amountA === amountB) {
+            return a.mint.localeCompare(b.mint);
+          }
+          return amountA < amountB ? 1 : -1;
+        } catch {
+          return 0;
+        }
+      });
+
+    const tokenHoldingsSection = account.accountType === "wallet" ? (
+      <div className={styles.explorerSubSection}>
+        <h3 className={styles.explorerSectionTitle}>{content.account.tokenHoldings.title}</h3>
+        {sortedHoldings.length > 0 ? (
+          <ul className={styles.explorerTokenList}>
+            {sortedHoldings.map((holding) => {
+              const tokenInfo = findByMint(holding.mint);
+              const truncatedMint =
+                holding.mint.length <= 10
+                  ? holding.mint
+                  : `${holding.mint.slice(0, 4)}…${holding.mint.slice(-4)}`;
+              const displaySymbol = tokenInfo?.symbol ?? truncatedMint;
+              const displayName = tokenInfo?.name ?? truncatedMint;
+              const displayAmount =
+                holding.uiAmountString && holding.uiAmountString.length > 0
+                  ? holding.uiAmountString
+                  : formatTokenAmount(holding.amount, holding.decimals);
+              const fallbackInitial = displaySymbol.slice(0, 2).toUpperCase();
+
+              return (
+                <li key={holding.tokenAccount} className={styles.explorerTokenRow}>
+                  <div className={styles.explorerTokenInfo}>
+                    {tokenInfo?.logoURI ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={tokenInfo.logoURI}
+                        alt={`${displaySymbol} logo`}
+                        className={styles.explorerTokenLogo}
+                        onError={(event) => {
+                          event.currentTarget.src = "/placeholder-token.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className={styles.explorerTokenFallback} aria-hidden="true">
+                        {fallbackInitial}
+                      </div>
+                    )}
+                    <div className={styles.explorerTokenMeta}>
+                      <span className={styles.explorerTokenSymbol}>{displaySymbol}</span>
+                      <span className={styles.explorerTokenName}>{displayName}</span>
+                    </div>
+                  </div>
+                  <div className={styles.explorerTokenAmountGroup}>
+                    <span className={styles.explorerTokenAmount}>{displayAmount}</span>
+                    <span className={styles.explorerTokenAmountSymbol}>{displaySymbol}</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className={styles.explorerEmptyState}>{content.account.tokenHoldings.empty}</p>
+        )}
+      </div>
+    ) : null;
+
     return (
       <section className={styles.explorerResultCard} aria-live="polite">
         <header className={styles.explorerResultHeader}>
@@ -1117,6 +1192,7 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
           </div>
         </dl>
 
+        {tokenHoldingsSection}
         {tokenMintSection}
         {tokenAccountSection}
       </section>

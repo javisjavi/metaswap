@@ -160,6 +160,10 @@ type ExplorerTranslations = {
       delegate: string;
       state: string;
     };
+    tokenHoldings: {
+      title: string;
+      empty: string;
+    };
   };
   transaction: {
     sectionTitle: string;
@@ -238,6 +242,9 @@ type SwapFormTranslations = {
     statusUpdating: string;
     statusLastUpdated: (time: string) => string;
     statusEnterAmount: string;
+    routeTitle: string;
+    routeStage: (index: number) => string;
+    routeEmpty: string;
   };
   chart: {
     title: string;
@@ -528,6 +535,10 @@ const BASE_TRANSLATIONS = {
           delegate: "Delegado",
           state: "Estado",
         },
+        tokenHoldings: {
+          title: "Tokens en la cartera",
+          empty: "Esta cartera no tiene tokens SPL con balance positivo.",
+        },
       },
       transaction: {
         sectionTitle: "Detalles de la transacción",
@@ -641,6 +652,9 @@ const BASE_TRANSLATIONS = {
         statusUpdating: "Actualizando cotización…",
         statusLastUpdated: (time) => `Última actualización: ${time} (se renueva automáticamente)`,
         statusEnterAmount: "Introduce un monto para obtener una cotización en tiempo real.",
+        routeTitle: "Ruta del swap",
+        routeStage: (index) => `Tramo ${index}`,
+        routeEmpty: "Cotiza un monto para ver cómo se distribuirá la liquidez.",
       },
       chart: {
         title: "Precio en tiempo real",
@@ -865,6 +879,10 @@ const BASE_TRANSLATIONS = {
           delegate: "Delegate",
           state: "State",
         },
+        tokenHoldings: {
+          title: "Wallet tokens",
+          empty: "This wallet does not hold SPL tokens with a positive balance.",
+        },
       },
       transaction: {
         sectionTitle: "Transaction details",
@@ -978,6 +996,9 @@ const BASE_TRANSLATIONS = {
         statusUpdating: "Updating quote…",
         statusLastUpdated: (time) => `Last updated: ${time} (auto-refreshing)`,
         statusEnterAmount: "Enter an amount to get a live quote.",
+        routeTitle: "Swap route",
+        routeStage: (index) => `Leg ${index}`,
+        routeEmpty: "Quote an amount to see how liquidity will be routed.",
       },
       chart: {
         title: "Live market price",
