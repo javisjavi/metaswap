@@ -612,7 +612,7 @@ const BASE_TRANSLATIONS = {
         fetchFailed: "No pudimos obtener la cotización en este momento.",
         unexpected: "Ocurrió un error inesperado al calcular la cotización.",
         fallback:
-          "No pudimos conectar con Jupiter. Mostramos una cotización estimada, pero no es posible firmar el swap. Revisa tu conexión o configura NEXT_PUBLIC_JUPITER_API_BASE_URL con un mirror disponible.",
+          "No pudimos conectar con Jupiter. Mostramos una cotización estimada, pero no es posible firmar el swap. Revisa tu conexión o reporta el incidente para actualizar el endpoint en la configuración.",
       },
       errors: {
         connectWallet: "Conecta tu wallet Solflare para continuar.",
@@ -946,7 +946,7 @@ const BASE_TRANSLATIONS = {
         fetchFailed: "We couldn't fetch a quote right now.",
         unexpected: "An unexpected error occurred while calculating the quote.",
         fallback:
-          "We couldn't reach Jupiter. This is an estimated quote only and the swap cannot be signed. Check your connection or set NEXT_PUBLIC_JUPITER_API_BASE_URL to an accessible mirror.",
+          "We couldn't reach Jupiter. This is an estimated quote only and the swap cannot be signed. Check your connection or report the issue so the endpoint can be updated in the configuration.",
       },
       errors: {
         connectWallet: "Connect your Solflare wallet to continue.",

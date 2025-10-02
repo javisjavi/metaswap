@@ -46,23 +46,7 @@ Antes de comenzar asegúrate de tener instalado lo siguiente:
 
 ## Variables de entorno
 
-Algunas funcionalidades requieren configurar variables de entorno en un archivo `.env.local` en la raíz del proyecto. Puedes crear el archivo copiando el ejemplo de abajo:
-
-```bash
-cp .env.example .env.local
-```
-
-Si no existe un archivo de ejemplo, crea uno nuevo con el siguiente contenido mínimo:
-
-```dotenv
-NEXT_PUBLIC_JUPITER_API_BASE_URL=https://quote-api.jup.ag
-```
-
-| Variable | Descripción | Valor por defecto |
-|----------|-------------|------------------|
-| `NEXT_PUBLIC_JUPITER_API_BASE_URL` | URL base del API de Jupiter utilizado para obtener cotizaciones. Cambia este valor si necesitas apuntar a un mirror accesible desde tu red. | `https://quote-api.jup.ag` |
-
-Tras modificar el archivo `.env.local`, reinicia el servidor de desarrollo para que los cambios tengan efecto.
+Actualmente la aplicación no requiere variables de entorno obligatorias para funcionar en modo local o producción. En caso de que en el futuro se añadan integraciones externas opcionales, documenta aquí los valores necesarios y crea un archivo `.env.local` en la raíz del proyecto siguiendo el formato `CLAVE=valor`.
 
 ---
 
@@ -100,7 +84,7 @@ pnpm start
    ```
 3. Sube los artefactos a tu plataforma de preproducción (por ejemplo, Vercel, Netlify o un servidor propio). Si usas Vercel:
    ```bash
-   vercel --env NEXT_PUBLIC_JUPITER_API_BASE_URL=https://quote-api.jup.ag
+   vercel
    ```
    - El comando anterior desplegará una vista previa (`Preview Deployment`).
    - Comparte la URL generada con QA o stakeholders para validar la funcionalidad.
@@ -109,7 +93,7 @@ pnpm start
 ### Entorno de producción
 
 1. **Revisión previa:** valida que los despliegues de preview estén aprobados y que las pruebas de regresión se hayan completado.
-2. **Configura las variables:** en el panel de tu proveedor define `NEXT_PUBLIC_JUPITER_API_BASE_URL` apuntando al endpoint que usarás en producción (puede ser el mismo de devnet u otro si migras a mainnet).
+2. **Configura las variables:** si en el futuro necesitas credenciales o endpoints personalizados, agrégalos en el panel de tu proveedor.
 3. **Despliega la rama principal:**
    - En Vercel, haz clic en "Promote to Production" desde el deployment aprobado o ejecuta:
      ```bash
@@ -193,7 +177,7 @@ Esta organización facilita ubicar el código asociado a cada parte de la aplica
 
 - **El comando `pnpm dev` no se ejecuta:** asegúrate de tener Node.js 18 o superior. Puedes usar [nvm](https://github.com/nvm-sh/nvm) para gestionar múltiples versiones.
 - **No puedo conectarme a Solflare:** revisa que la extensión o aplicación de Solflare esté instalada y desbloqueada. Si estás en modo incógnito, habilita las extensiones.
-- **No aparecen cotizaciones:** puede que el endpoint `https://quote-api.jup.ag` esté temporalmente bloqueado en tu red. Cambia la variable de entorno `NEXT_PUBLIC_JUPITER_API_BASE_URL` a otro mirror disponible.
+- **No aparecen cotizaciones:** puede que el endpoint `https://quote-api.jup.ag` esté temporalmente bloqueado en tu red. Si esto sucede, abre un issue y evalúa apuntar el cliente hacia otro mirror directamente en el código de configuración (`src/config/jupiter.ts`).
 - **Errores al instalar dependencias:** elimina la carpeta `node_modules` y el archivo `pnpm-lock.yaml`, luego vuelve a ejecutar `pnpm install`.
 
 ---
