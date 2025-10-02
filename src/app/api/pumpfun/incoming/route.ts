@@ -25,6 +25,15 @@ const parseNullableNumber = (value: unknown): number | null => {
   return null;
 };
 
+const parseNullableString = (value: unknown): string | null => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 const normalizeProgress = (value: number | null): number | null => {
   if (value === null) {
     return null;
@@ -65,14 +74,26 @@ const normalizeProject = (raw: unknown, index: number): PumpFunProject => {
     null;
 
   const nameCandidate =
-    (metadata.name as string | undefined) ?? (record.name as string | undefined) ?? "";
+    parseNullableString(metadata.name) ?? parseNullableString(record.name) ?? "";
   const symbolCandidate =
-    (metadata.symbol as string | undefined) ?? (record.symbol as string | undefined) ?? "";
+    parseNullableString(metadata.symbol) ?? parseNullableString(record.symbol) ?? "";
   const imageCandidate =
-    (metadata.image as string | undefined) ??
-    (metadata.imageUrl as string | undefined) ??
-    (record.image as string | undefined) ??
-    (record.imageUrl as string | undefined) ??
+    parseNullableString(metadata.image) ??
+    parseNullableString(metadata.imageUrl) ??
+    parseNullableString(metadata.imageURI) ??
+    parseNullableString(metadata.imageUri) ??
+    parseNullableString(metadata.image_uri) ??
+    parseNullableString(metadata.image_url) ??
+    parseNullableString(metadata.logo) ??
+    parseNullableString(metadata.icon) ??
+    parseNullableString(record.image) ??
+    parseNullableString(record.imageUrl) ??
+    parseNullableString(record.imageURI) ??
+    parseNullableString(record.imageUri) ??
+    parseNullableString(record.image_uri) ??
+    parseNullableString(record.image_url) ??
+    parseNullableString(record.logo) ??
+    parseNullableString(record.icon) ??
     null;
 
   const price =
