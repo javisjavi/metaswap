@@ -486,6 +486,9 @@ const SwapForm = () => {
     ? swapTexts.tokenListErrors[tokensError]
     : null;
   const quoteErrorMessage = quoteError ? swapTexts.quoteErrors[quoteError] : null;
+  const fallbackQuoteMessage = isFallbackQuote
+    ? swapTexts.quoteErrors.fallback
+    : null;
 
   useEffect(() => {
     setSwapError(null);
@@ -1011,7 +1014,11 @@ const SwapForm = () => {
           <p className={styles.errorBanner}>{swapTexts.errors.sameTokens}</p>
         )}
 
-        {quoteErrorMessage && <p className={styles.errorBanner}>{quoteErrorMessage}</p>}
+        {(quoteErrorMessage || fallbackQuoteMessage) && (
+          <p className={styles.errorBanner}>
+            {quoteErrorMessage ?? fallbackQuoteMessage}
+          </p>
+        )}
 
         <div className={styles.previewPanel}>
           <div className={styles.previewRow}>
