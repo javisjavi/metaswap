@@ -828,6 +828,11 @@ const SwapForm = () => {
     setNetwork(selected);
   };
 
+  const selectedNetwork = useMemo(
+    () => NETWORK_OPTIONS.find((option) => option.value === network),
+    [network]
+  );
+
   const handleSlippageInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const { value } = event.target;
@@ -889,8 +894,22 @@ const SwapForm = () => {
         </div>
         <div className={styles.headerActions}>
           <label className={styles.networkSelector}>
-            <span>{swapTexts.networkLabel}</span>
-            <div className={styles.networkControl}>
+            <span className={styles.networkSelectorLabel}>{swapTexts.networkLabel}</span>
+            <div className={styles.networkMenu}>
+              <span className={styles.networkMenuValue} aria-hidden="true">
+                {selectedNetwork?.label ?? network}
+              </span>
+              <span className={styles.networkMenuIcon} aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M3.5 6L8 10.5L12.5 6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
               <select
                 className={styles.networkSelect}
                 value={network}
@@ -902,15 +921,9 @@ const SwapForm = () => {
                   </option>
                 ))}
               </select>
-              <span aria-hidden className={styles.networkCaret}>▾</span>
             </div>
           </label>
-        </div>
-      </header>
-
-      <div className={styles.card}>
-        <div className={styles.balanceRow}>
-          <div>
+          <div className={styles.headerBalance}>
             <span className={styles.balanceLabel}>{swapTexts.balance.label}</span>
             <strong className={styles.balanceValue}>
               {connected ? (
@@ -932,7 +945,12 @@ const SwapForm = () => {
               )}
             </strong>
           </div>
-          {!airdropUnavailable ? (
+        </div>
+      </header>
+
+      <div className={styles.card}>
+        {!airdropUnavailable ? (
+          <div className={styles.balanceRow}>
             <button
               type="button"
               className={styles.faucetButton}
@@ -941,8 +959,8 @@ const SwapForm = () => {
             >
               {isAirdropping ? swapTexts.airdrop.requesting : swapTexts.airdrop.request}
             </button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
         {!airdropUnavailable && airdropMessage ? (
           <p className={styles.helperText}>{airdropMessage}</p>
         ) : null}

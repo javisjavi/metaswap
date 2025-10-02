@@ -18,16 +18,69 @@
 .menu {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  background: rgba(15, 23, 42, 0.72);
+  gap: 24px;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.92));
   border: 1px solid rgba(148, 163, 184, 0.24);
   border-radius: 28px;
-  padding: 20px 28px;
+  padding: 24px 32px;
   backdrop-filter: blur(18px);
   box-shadow: 0 20px 50px rgba(2, 6, 23, 0.45);
   position: sticky;
   top: 24px;
   z-index: 5;
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.menuBrand {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menuBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(56, 189, 248, 0.95));
+  color: #0f172a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 36px rgba(56, 189, 248, 0.32);
+}
+
+.menuTitle {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f8fafc;
+}
+
+.menuSubtitle {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  max-width: 420px;
+}
+
+.menuDivider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0) 0%, rgba(99, 102, 241, 0.65) 50%, rgba(99, 102, 241, 0) 100%);
+  border: none;
+  opacity: 0.6;
 }
 
 .menuControls {
@@ -1301,71 +1354,106 @@
   gap: 16px;
 }
 
-.networkSelector {
+.headerBalance {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 6px;
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 14px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
+  padding: 8px 16px;
   color: #e2e8f0;
+  text-align: right;
+  min-width: 170px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35);
 }
 
-.networkSelector span {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.networkControl {
-  position: relative;
+.networkSelector {
   display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  border-radius: 14px;
-  padding: 8px 32px 8px 12px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 10px 24px rgba(15, 23, 42, 0.45);
-  overflow: hidden;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
 }
 
-.networkControl:focus-within {
-  border-color: rgba(129, 140, 248, 0.75);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 18px 36px rgba(99, 102, 241, 0.35);
+.networkSelectorLabel {
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.networkMenu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 41, 59, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 16px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+    color 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 28px rgba(2, 6, 23, 0.35);
+}
+
+.networkMenu:hover,
+.networkMenu:focus-within {
+  background: rgba(30, 41, 59, 0.92);
+  border-color: rgba(148, 163, 184, 0.45);
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 36px rgba(2, 6, 23, 0.45);
+}
+
+.networkMenuValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(34, 211, 238, 0.95));
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 12px 22px rgba(79, 70, 229, 0.45);
+  padding: 0 12px;
+}
+
+.networkMenuIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: rgba(226, 232, 240, 0.75);
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.networkMenu:focus-within .networkMenuIcon {
+  color: rgba(226, 232, 240, 0.95);
 }
 
 .networkSelect {
-  background: transparent;
-  border: none;
-  color: inherit;
-  font-weight: 600;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  font-size: 0.95rem;
-  width: 100%;
-  padding-right: 12px;
-  border-radius: 12px;
-}
-
-.networkSelect option {
-  color: #0f172a;
-  background: rgba(226, 232, 240, 0.9);
-  font-weight: 600;
-  border-radius: 12px;
-}
-
-.networkCaret {
   position: absolute;
-  right: 12px;
-  font-size: 0.75rem;
-  pointer-events: none;
-  color: #94a3b8;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.networkSelect:focus-visible {
+  outline: none;
 }
 
 .title {
@@ -1411,9 +1499,17 @@
 
 .balanceRow {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 16px;
+}
+
+.headerBalance .balanceValue {
+  text-align: inherit;
+}
+
+.headerBalance .balanceValueContent {
+  justify-content: flex-end;
 }
 
 .balanceLabel {
@@ -2374,7 +2470,7 @@
 
   .menu {
     top: 16px;
-    padding: 18px 24px;
+    padding: 20px 26px;
   }
 
   .menuItems {
@@ -2433,11 +2529,26 @@
   .menu {
     padding: 16px 18px;
     top: 12px;
-    gap: 16px;
+    gap: 18px;
   }
 
-  .menuBrand {
-    font-size: 1.1rem;
+  .menuHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .menuTitle {
+    font-size: 1.28rem;
+  }
+
+  .menuSubtitle {
+    font-size: 0.9rem;
+    max-width: 100%;
+  }
+
+  .menuBadge {
+    font-size: 0.68rem;
   }
 
   .menuItems {
@@ -2497,6 +2608,18 @@
 }
 
 @media (max-width: 640px) {
+  .menu {
+    padding: 16px;
+  }
+
+  .menuTitle {
+    font-size: 1.2rem;
+  }
+
+  .menuSubtitle {
+    font-size: 0.88rem;
+  }
+
   .swapSection {
     gap: 24px;
   }
@@ -2703,6 +2826,30 @@
   border: 1px solid var(--surface-border);
   box-shadow: var(--surface-shadow);
   backdrop-filter: blur(18px);
+}
+
+:global(.light-theme) .menuBadge {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(129, 140, 248, 0.95));
+  color: #0f172a;
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.22);
+}
+
+:global(.light-theme) .menuTitle {
+  color: #0f172a;
+}
+
+:global(.light-theme) .menuSubtitle {
+  color: rgba(15, 23, 42, 0.62);
+}
+
+:global(.light-theme) .menuDivider {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0) 0%,
+    rgba(59, 130, 246, 0.42) 50%,
+    rgba(59, 130, 246, 0) 100%
+  );
+  opacity: 0.5;
 }
 
 :global(.light-theme) .languageToggle {
@@ -3037,25 +3184,26 @@
   color: rgba(220, 38, 38, 0.8);
 }
 
-:global(.light-theme) .networkSelector {
-  background: var(--surface-primary);
-  border: 1px solid var(--surface-border);
-  color: #0f172a;
-  box-shadow: var(--surface-shadow-soft);
-}
-
-:global(.light-theme) .networkSelector span {
+:global(.light-theme) .networkSelectorLabel {
   color: rgba(15, 23, 42, 0.55);
 }
 
-:global(.light-theme) .networkControl {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.9));
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 32px rgba(15, 23, 42, 0.08);
+:global(.light-theme) .networkMenu {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 18px 32px rgba(15, 23, 42, 0.12);
 }
 
-:global(.light-theme) .networkCaret {
-  color: rgba(15, 23, 42, 0.4);
+:global(.light-theme) .networkMenu:hover,
+:global(.light-theme) .networkMenu:focus-within {
+  background: rgba(248, 250, 252, 0.95);
+  border-color: rgba(15, 23, 42, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 22px 40px rgba(148, 163, 184, 0.16);
+}
+
+:global(.light-theme) .networkMenuIcon {
+  color: rgba(15, 23, 42, 0.6);
 }
 
 :global(.light-theme) .tradingViewWidget {

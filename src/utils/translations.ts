@@ -285,6 +285,9 @@ type AppTranslation = {
   themeToggle: ThemeToggleTranslations;
   navigation: {
     ariaLabel: string;
+    badge: string;
+    title: string;
+    subtitle: string;
     sections: Record<SectionKey, { label: string; description: string }>;
   };
   pumpFun: PumpFunTranslations;
@@ -345,6 +348,9 @@ const BASE_TRANSLATIONS = {
     },
     navigation: {
       ariaLabel: "Navegación principal",
+      badge: "MetaSwap Pro",
+      title: "Centro de control",
+      subtitle: "Gestiona las herramientas clave de MetaSwap desde un hub profesional.",
       sections: {
         swap: { label: "Intercambiar", description: "Opera tokens al instante" },
         overview: { label: "Panel", description: "Resumen de actividad" },
@@ -679,6 +685,9 @@ const BASE_TRANSLATIONS = {
     },
     navigation: {
       ariaLabel: "Main navigation",
+      badge: "MetaSwap Pro",
+      title: "Command center",
+      subtitle: "Navigate MetaSwap's trading tools and analytics from one professional hub.",
       sections: {
         swap: { label: "Swap", description: "Trade tokens instantly" },
         overview: { label: "Overview", description: "Activity summary" },
@@ -1021,6 +1030,9 @@ const FR_TRANSLATION: AppTranslation = {
   navigation: {
     ...EN_TRANSLATION.navigation,
     ariaLabel: "Navigation principale",
+    title: "Centre de contrôle",
+    subtitle:
+      "Accédez aux outils de trading MetaSwap et aux analyses dans un hub professionnel.",
     sections: {
       ...EN_TRANSLATION.navigation.sections,
       swap: { label: "Échanger", description: "Échangez des tokens instantanément" },
@@ -1050,6 +1062,9 @@ const PT_TRANSLATION: AppTranslation = {
   navigation: {
     ...EN_TRANSLATION.navigation,
     ariaLabel: "Navegação principal",
+    title: "Central de controle",
+    subtitle:
+      "Gerencie as ferramentas e análises da MetaSwap em um hub profissional.",
     sections: {
       ...EN_TRANSLATION.navigation.sections,
       swap: { label: "Trocar", description: "Negocie tokens instantaneamente" },
@@ -1079,6 +1094,8 @@ const DE_TRANSLATION: AppTranslation = {
   navigation: {
     ...EN_TRANSLATION.navigation,
     ariaLabel: "Hauptnavigation",
+    title: "Steuerzentrale",
+    subtitle: "Nutze MetaSwap-Tools und Analysen in einem professionellen Hub.",
     sections: {
       ...EN_TRANSLATION.navigation.sections,
       swap: { label: "Tauschen", description: "Tokens sofort handeln" },
@@ -1108,6 +1125,8 @@ const JA_TRANSLATION: AppTranslation = {
   navigation: {
     ...EN_TRANSLATION.navigation,
     ariaLabel: "メインナビゲーション",
+    title: "コマンドセンター",
+    subtitle: "MetaSwapの取引ツールと分析をプロ仕様のハブで操作。",
     sections: {
       ...EN_TRANSLATION.navigation.sections,
       swap: { label: "スワップ", description: "トークンをすぐに交換" },

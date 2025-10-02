@@ -1854,6 +1854,14 @@ export default function Home() {
           role="tablist"
           aria-orientation="horizontal"
         >
+          <div className={styles.menuHeader}>
+            <div className={styles.menuBrand}>
+              <span className={styles.menuBadge}>{translations.navigation.badge}</span>
+              <h2 className={styles.menuTitle}>{translations.navigation.title}</h2>
+              <p className={styles.menuSubtitle}>{translations.navigation.subtitle}</p>
+            </div>
+          </div>
+          <div className={styles.menuDivider} aria-hidden="true" />
           <div className={styles.menuItems}>
             {sections.map((section) => {
               const isActive = activeSection === section.key;
