@@ -1071,21 +1071,21 @@ const SwapForm = () => {
                       </button>
                     );
                   })}
+                  <div className={styles.slippageInputGroup}>
+                    <input
+                      id="slippage-input"
+                      className={styles.slippageInput}
+                      type="text"
+                      inputMode="decimal"
+                      value={slippageInput}
+                      onChange={handleSlippageInputChange}
+                      onBlur={handleSlippageBlur}
+                      placeholder="0.5"
+                      aria-describedby="slippage-help"
+                    />
+                    <span className={styles.slippageSuffix}>%</span>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.slippageInputGroup}>
-                <input
-                  id="slippage-input"
-                  className={styles.slippageInput}
-                  type="text"
-                  inputMode="decimal"
-                  value={slippageInput}
-                  onChange={handleSlippageInputChange}
-                  onBlur={handleSlippageBlur}
-                  placeholder="0.5"
-                  aria-describedby="slippage-help"
-                />
-                <span className={styles.slippageSuffix}>%</span>
               </div>
               <p id="slippage-help" className={styles.slippageHelper}>
                 {swapTexts.preview.slippageHelper}
