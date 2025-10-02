@@ -1,4 +1,10 @@
-export type SectionKey = "swap" | "overview" | "market" | "pumpFun" | "support";
+export type SectionKey =
+  | "swap"
+  | "overview"
+  | "market"
+  | "explorer"
+  | "pumpFun"
+  | "support";
 
 export const SUPPORTED_LANGUAGES = ["es", "en", "fr", "pt", "de", "ja"] as const;
 
@@ -89,6 +95,96 @@ type MarketTranslations = {
     remove: (asset: string) => string;
     connectWallet: string;
     limitReached: string;
+  };
+};
+
+type ExplorerTranslations = {
+  title: string;
+  subtitle: string;
+  searchPlaceholder: string;
+  searchButton: string;
+  status: {
+    initial: string;
+    loading: string;
+    invalid: string;
+    notFound: string;
+    error: string;
+  };
+  hints: string[];
+  copyAction: {
+    copy: string;
+    copied: string;
+  };
+  boolean: {
+    yes: string;
+    no: string;
+  };
+  account: {
+    sectionTitle: string;
+    badges: {
+      wallet: string;
+      program: string;
+      tokenMint: string;
+      tokenAccount: string;
+      generic: string;
+    };
+    accountTypes: {
+      wallet: string;
+      program: string;
+      tokenMint: string;
+      tokenAccount: string;
+      unknown: string;
+    };
+    fields: {
+      address: string;
+      owner: string;
+      lamports: string;
+      solBalance: string;
+      executable: string;
+      rentEpoch: string;
+      dataLength: string;
+      accountType: string;
+    };
+    tokenMintFields: {
+      supply: string;
+      decimals: string;
+      mintAuthority: string;
+      freezeAuthority: string;
+      isInitialized: string;
+    };
+    tokenAccountFields: {
+      mint: string;
+      owner: string;
+      amount: string;
+      decimals: string;
+      delegate: string;
+      state: string;
+    };
+  };
+  transaction: {
+    sectionTitle: string;
+    badges: {
+      transaction: string;
+      success: string;
+      failed: string;
+    };
+    fields: {
+      signature: string;
+      slot: string;
+      blockTime: string;
+      status: string;
+      fee: string;
+      computeUnits: string;
+      instructionCount: string;
+      logMessages: string;
+      signers: string;
+    };
+    instructions: {
+      title: string;
+      program: string;
+      accounts: string;
+      dataLength: string;
+    };
   };
 };
 
@@ -230,6 +326,7 @@ type AppTranslation = {
       badge: string;
     };
   };
+  explorer: ExplorerTranslations;
   market: MarketTranslations;
   swapForm: SwapFormTranslations;
   tokenSelector: TokenSelectorTranslations;
@@ -252,6 +349,10 @@ const BASE_TRANSLATIONS = {
         swap: { label: "Intercambiar", description: "Opera tokens al instante" },
         overview: { label: "Panel", description: "Resumen de actividad" },
         market: { label: "Mercado", description: "Top 10 criptomonedas" },
+        explorer: {
+          label: "Explorador",
+          description: "Consulta tokens y contratos",
+        },
         pumpFun: { label: "Pump.fun", description: "Próximos a la bonding curve" },
         support: { label: "Soporte", description: "Guías y ayuda" },
       },
@@ -353,6 +454,99 @@ const BASE_TRANSLATIONS = {
         description:
           "Actualizamos constantemente la estabilidad de la plataforma para que puedas operar sin interrupciones.",
         badge: "Operativo",
+      },
+    },
+    explorer: {
+      title: "Explorador on-chain",
+      subtitle:
+        "Busca tokens, wallets o transacciones de Solana y obtén un resumen claro de su actividad.",
+      searchPlaceholder: "Ingresa una dirección, mint o firma de transacción",
+      searchButton: "Buscar",
+      status: {
+        initial: "Introduce un token, wallet o transacción para comenzar.",
+        loading: "Consultando la red de Solana...",
+        invalid: "El valor ingresado no parece ser una dirección ni una firma válida.",
+        notFound: "No encontramos información en cadena para esta búsqueda.",
+        error: "Tuvimos un problema consultando la red. Intenta nuevamente.",
+      },
+      hints: [
+        "Acepta direcciones base58 de 32 a 88 caracteres.",
+        "Identifica wallets del sistema, cuentas SPL y transacciones confirmadas.",
+      ],
+      copyAction: {
+        copy: "Copiar",
+        copied: "Copiado",
+      },
+      boolean: {
+        yes: "Sí",
+        no: "No",
+      },
+      account: {
+        sectionTitle: "Detalles de la cuenta",
+        badges: {
+          wallet: "Cuenta nativa",
+          program: "Programa",
+          tokenMint: "Mint SPL",
+          tokenAccount: "Cuenta SPL",
+          generic: "Cuenta",
+        },
+        accountTypes: {
+          wallet: "Cuenta nativa",
+          program: "Programa",
+          tokenMint: "Mint SPL",
+          tokenAccount: "Cuenta SPL",
+          unknown: "Cuenta",
+        },
+        fields: {
+          address: "Dirección",
+          owner: "Programa propietario",
+          lamports: "Lamports",
+          solBalance: "Balance (SOL)",
+          executable: "Es ejecutable",
+          rentEpoch: "Epoch de renta",
+          dataLength: "Tamaño de datos (bytes)",
+          accountType: "Tipo de cuenta",
+        },
+        tokenMintFields: {
+          supply: "Supply total",
+          decimals: "Decimales",
+          mintAuthority: "Autoridad de minteo",
+          freezeAuthority: "Autoridad de congelamiento",
+          isInitialized: "Inicializado",
+        },
+        tokenAccountFields: {
+          mint: "Mint",
+          owner: "Titular",
+          amount: "Cantidad",
+          decimals: "Decimales",
+          delegate: "Delegado",
+          state: "Estado",
+        },
+      },
+      transaction: {
+        sectionTitle: "Detalles de la transacción",
+        badges: {
+          transaction: "Transacción",
+          success: "Éxito",
+          failed: "Fallida",
+        },
+        fields: {
+          signature: "Firma",
+          slot: "Slot",
+          blockTime: "Hora de bloque",
+          status: "Estado",
+          fee: "Comisión (lamports)",
+          computeUnits: "Compute units",
+          instructionCount: "Instrucciones",
+          logMessages: "Logs",
+          signers: "Firmantes",
+        },
+        instructions: {
+          title: "Instrucciones",
+          program: "Programa",
+          accounts: "Cuentas",
+          dataLength: "Datos (bytes)",
+        },
       },
     },
     market: {
@@ -489,6 +683,10 @@ const BASE_TRANSLATIONS = {
         swap: { label: "Swap", description: "Trade tokens instantly" },
         overview: { label: "Overview", description: "Activity summary" },
         market: { label: "Market", description: "Top 10 cryptocurrencies" },
+        explorer: {
+          label: "Explorer",
+          description: "Inspect tokens and contracts",
+        },
         pumpFun: { label: "Pump.fun", description: "Near the bonding curve" },
         support: { label: "Support", description: "Guides and help" },
       },
@@ -590,6 +788,99 @@ const BASE_TRANSLATIONS = {
         description:
           "We continuously monitor platform stability so you can trade without interruptions.",
         badge: "Operational",
+      },
+    },
+    explorer: {
+      title: "On-chain explorer",
+      subtitle:
+        "Search Solana tokens, wallets, or transactions and review the essentials at a glance.",
+      searchPlaceholder: "Enter an address, mint, or transaction signature",
+      searchButton: "Search",
+      status: {
+        initial: "Search for a token, wallet, or transaction to get started.",
+        loading: "Querying the Solana network...",
+        invalid: "The value you entered doesn't look like a valid address or signature.",
+        notFound: "We couldn't find on-chain data for this search.",
+        error: "Something went wrong while fetching on-chain data. Try again.",
+      },
+      hints: [
+        "Accepts base58 addresses between 32 and 88 characters.",
+        "Identifies system wallets, SPL accounts, and confirmed transactions.",
+      ],
+      copyAction: {
+        copy: "Copy",
+        copied: "Copied",
+      },
+      boolean: {
+        yes: "Yes",
+        no: "No",
+      },
+      account: {
+        sectionTitle: "Account details",
+        badges: {
+          wallet: "Native account",
+          program: "Program",
+          tokenMint: "SPL mint",
+          tokenAccount: "SPL account",
+          generic: "Account",
+        },
+        accountTypes: {
+          wallet: "Native account",
+          program: "Program",
+          tokenMint: "SPL mint",
+          tokenAccount: "SPL account",
+          unknown: "Account",
+        },
+        fields: {
+          address: "Address",
+          owner: "Owner program",
+          lamports: "Lamports",
+          solBalance: "Balance (SOL)",
+          executable: "Executable",
+          rentEpoch: "Rent epoch",
+          dataLength: "Data size (bytes)",
+          accountType: "Account type",
+        },
+        tokenMintFields: {
+          supply: "Total supply",
+          decimals: "Decimals",
+          mintAuthority: "Mint authority",
+          freezeAuthority: "Freeze authority",
+          isInitialized: "Initialised",
+        },
+        tokenAccountFields: {
+          mint: "Mint",
+          owner: "Owner",
+          amount: "Amount",
+          decimals: "Decimals",
+          delegate: "Delegate",
+          state: "State",
+        },
+      },
+      transaction: {
+        sectionTitle: "Transaction details",
+        badges: {
+          transaction: "Transaction",
+          success: "Success",
+          failed: "Failed",
+        },
+        fields: {
+          signature: "Signature",
+          slot: "Slot",
+          blockTime: "Block time",
+          status: "Status",
+          fee: "Fee (lamports)",
+          computeUnits: "Compute units",
+          instructionCount: "Instructions",
+          logMessages: "Logs",
+          signers: "Signers",
+        },
+        instructions: {
+          title: "Instructions",
+          program: "Program",
+          accounts: "Accounts",
+          dataLength: "Data (bytes)",
+        },
       },
     },
     market: {
@@ -735,6 +1026,10 @@ const FR_TRANSLATION: AppTranslation = {
       swap: { label: "Échanger", description: "Échangez des tokens instantanément" },
       overview: { label: "Aperçu", description: "Résumé de l'activité" },
       market: { label: "Marché", description: "Top 10 des cryptomonnaies" },
+      explorer: {
+        label: "Explorateur",
+        description: "Consultez tokens et contrats",
+      },
       pumpFun: { label: "Pump.fun", description: "Proches de la bonding curve" },
       support: { label: "Assistance", description: "Guides et aide" },
     },
@@ -760,6 +1055,10 @@ const PT_TRANSLATION: AppTranslation = {
       swap: { label: "Trocar", description: "Negocie tokens instantaneamente" },
       overview: { label: "Visão geral", description: "Resumo de atividades" },
       market: { label: "Mercado", description: "Top 10 criptomoedas" },
+      explorer: {
+        label: "Explorador",
+        description: "Acompanhe tokens e contratos",
+      },
       pumpFun: { label: "Pump.fun", description: "Perto da bonding curve" },
       support: { label: "Suporte", description: "Guias e ajuda" },
     },
@@ -785,6 +1084,10 @@ const DE_TRANSLATION: AppTranslation = {
       swap: { label: "Tauschen", description: "Tokens sofort handeln" },
       overview: { label: "Übersicht", description: "Aktivitätszusammenfassung" },
       market: { label: "Markt", description: "Top 10 Kryptowährungen" },
+      explorer: {
+        label: "Explorer",
+        description: "Tokens und Verträge prüfen",
+      },
       pumpFun: { label: "Pump.fun", description: "Nahe der Bonding-Kurve" },
       support: { label: "Support", description: "Anleitungen und Hilfe" },
     },
@@ -810,6 +1113,10 @@ const JA_TRANSLATION: AppTranslation = {
       swap: { label: "スワップ", description: "トークンをすぐに交換" },
       overview: { label: "概要", description: "アクティビティのサマリー" },
       market: { label: "マーケット", description: "トップ10暗号資産" },
+      explorer: {
+        label: "エクスプローラー",
+        description: "トークンとコントラクトを確認",
+      },
       pumpFun: { label: "Pump.fun", description: "ボンディングカーブ直前" },
       support: { label: "サポート", description: "ガイドとヘルプ" },
     },

@@ -1,6 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 import Image from "next/image";
@@ -10,6 +19,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import WalletButton from "@/components/WalletButton";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import { type PumpFunProject } from "@/types/pumpfun";
+import { type ExplorerApiResponse, type ExplorerResult } from "@/types/explorer";
 import { type AppTranslation, type SectionKey } from "@/utils/translations";
 import { getIntlLocale } from "@/utils/language";
 
@@ -197,6 +207,40 @@ const MarketIcon = ({ className }: IconProps) => (
   </svg>
 );
 
+const ExplorerIcon = ({ className }: IconProps) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    role="presentation"
+    aria-hidden="true"
+  >
+    <circle
+      cx="11"
+      cy="11"
+      r="6"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      opacity="0.9"
+    />
+    <path
+      d="M15.5 15.5l3.1 3.1"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      opacity="0.85"
+    />
+    <path
+      d="M11 8.2a2.8 2.8 0 0 0-2.8 2.8"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      opacity="0.6"
+    />
+    <circle cx="11" cy="11" r="1" fill="currentColor" opacity="0.7" />
+  </svg>
+);
+
 const PumpFunIcon = ({ className }: IconProps) => (
   <svg
     className={className}
@@ -306,6 +350,8 @@ const SupportIcon = ({ className }: IconProps) => (
     />
   </svg>
 );
+
+const LAMPORTS_PER_SOL = 1_000_000_000;
 
 const MARKET_PAGE_SIZE = 100;
 const FAVORITES_LIMIT = 5;
@@ -758,6 +804,499 @@ const MarketPanel = ({
           {content.status.updatedAt(dateTimeFormatter.format(lastUpdated))}
         </p>
       ) : null}
+    </div>
+  );
+};
+
+type ExplorerStatus = "idle" | "loading" | "invalid" | "not-found" | "error" | "success";
+
+const formatTokenAmount = (rawAmount: string, decimals: number) => {
+  try {
+    const base = BigInt(10) ** BigInt(decimals);
+    const value = BigInt(rawAmount);
+    const whole = value / base;
+    const fraction = value % base;
+
+    if (fraction === BigInt(0)) {
+      return whole.toString();
+    }
+
+    const fractionString = fraction
+      .toString()
+      .padStart(decimals, "0")
+      .replace(/0+$/, "");
+
+    return fractionString.length > 0
+      ? `${whole.toString()}.${fractionString}`
+      : whole.toString();
+  } catch {
+    return rawAmount;
+  }
+};
+
+const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => {
+  const { language } = useLanguage();
+  const locale = getIntlLocale(language);
+
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<ExplorerStatus>("idle");
+  const [result, setResult] = useState<ExplorerResult | null>(null);
+  const [copiedValue, setCopiedValue] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const lamportFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const solFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 9,
+        minimumFractionDigits: 0,
+      }),
+    [locale],
+  );
+  const dateTimeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    [locale],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const formatBoolean = useCallback(
+    (value: boolean) => (value ? content.boolean.yes : content.boolean.no),
+    [content.boolean],
+  );
+
+  const handleCopy = useCallback(async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedValue(value);
+
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopiedValue(null);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to copy value", error);
+    }
+  }, []);
+
+  const handleQueryChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setQuery(value);
+
+    if (!value.trim()) {
+      setStatus("idle");
+      setResult(null);
+    }
+  }, []);
+
+  const handleSearch = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const trimmed = query.trim();
+
+      if (!trimmed) {
+        setStatus("invalid");
+        setResult(null);
+        return;
+      }
+
+      setStatus("loading");
+      setResult(null);
+
+      try {
+        const response = await fetch("/api/explorer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: trimmed }),
+        });
+
+        if (response.status === 400) {
+          setStatus("invalid");
+          setResult(null);
+          return;
+        }
+
+        if (response.status === 404) {
+          setStatus("not-found");
+          setResult(null);
+          return;
+        }
+
+        if (!response.ok) {
+          setStatus("error");
+          setResult(null);
+          return;
+        }
+
+        const data = (await response.json()) as ExplorerApiResponse;
+        setResult(data.result);
+        setStatus("success");
+      } catch (error) {
+        console.error("Explorer search failed", error);
+        setStatus("error");
+        setResult(null);
+      }
+    },
+    [query],
+  );
+
+  const statusMessage = useMemo(() => {
+    switch (status) {
+      case "idle":
+        return content.status.initial;
+      case "loading":
+        return content.status.loading;
+      case "invalid":
+        return content.status.invalid;
+      case "not-found":
+        return content.status.notFound;
+      case "error":
+        return content.status.error;
+      default:
+        return null;
+    }
+  }, [content.status, status]);
+
+  const renderAccount = (
+    account: Extract<ExplorerResult, { kind: "account" }>,
+  ) => {
+    const solBalance = account.lamports / LAMPORTS_PER_SOL;
+    const accountTypeLabel =
+      content.account.accountTypes[account.accountType] ?? content.account.badges.generic;
+    const badgeKey =
+      account.accountType === "wallet"
+        ? "wallet"
+        : account.accountType === "program"
+          ? "program"
+          : account.accountType === "tokenMint"
+            ? "tokenMint"
+            : account.accountType === "tokenAccount"
+              ? "tokenAccount"
+              : "generic";
+    const badgeLabel = content.account.badges[badgeKey];
+
+    const tokenMintSection = account.tokenMintInfo ? (
+      <div className={styles.explorerSubSection}>
+        <h3 className={styles.explorerSectionTitle}>{content.account.badges.tokenMint}</h3>
+        <dl className={styles.explorerKeyValueList}>
+          <div>
+            <dt>{content.account.tokenMintFields.supply}</dt>
+            <dd>
+              {formatTokenAmount(
+                account.tokenMintInfo.supply,
+                account.tokenMintInfo.decimals,
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenMintFields.decimals}</dt>
+            <dd>{account.tokenMintInfo.decimals}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenMintFields.mintAuthority}</dt>
+            <dd>{account.tokenMintInfo.mintAuthority ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenMintFields.freezeAuthority}</dt>
+            <dd>{account.tokenMintInfo.freezeAuthority ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenMintFields.isInitialized}</dt>
+            <dd>{formatBoolean(account.tokenMintInfo.isInitialized)}</dd>
+          </div>
+        </dl>
+      </div>
+    ) : null;
+
+    const tokenAccountSection = account.tokenAccountInfo ? (
+      <div className={styles.explorerSubSection}>
+        <h3 className={styles.explorerSectionTitle}>{content.account.badges.tokenAccount}</h3>
+        <dl className={styles.explorerKeyValueList}>
+          <div>
+            <dt>{content.account.tokenAccountFields.mint}</dt>
+            <dd>{account.tokenAccountInfo.mint}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenAccountFields.owner}</dt>
+            <dd>{account.tokenAccountInfo.owner}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenAccountFields.amount}</dt>
+            <dd>
+              {account.tokenAccountInfo.uiAmountString &&
+              account.tokenAccountInfo.uiAmountString.length > 0
+                ? account.tokenAccountInfo.uiAmountString
+                : formatTokenAmount(
+                    account.tokenAccountInfo.amount,
+                    account.tokenAccountInfo.decimals,
+                  )}
+            </dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenAccountFields.decimals}</dt>
+            <dd>{account.tokenAccountInfo.decimals}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenAccountFields.delegate}</dt>
+            <dd>{account.tokenAccountInfo.delegate ?? "—"}</dd>
+          </div>
+          <div>
+            <dt>{content.account.tokenAccountFields.state}</dt>
+            <dd>{account.tokenAccountInfo.state}</dd>
+          </div>
+        </dl>
+      </div>
+    ) : null;
+
+    return (
+      <section className={styles.explorerResultCard} aria-live="polite">
+        <header className={styles.explorerResultHeader}>
+          <div className={styles.explorerResultTitleGroup}>
+            <h2 className={styles.explorerResultTitle}>{content.account.sectionTitle}</h2>
+            <p className={styles.explorerResultValue}>{account.address}</p>
+          </div>
+          <div className={styles.explorerResultActions}>
+            <span className={styles.explorerBadge}>{badgeLabel}</span>
+            <button
+              type="button"
+              className={styles.explorerCopyButton}
+              onClick={() => handleCopy(account.address)}
+            >
+              {copiedValue === account.address
+                ? content.copyAction.copied
+                : content.copyAction.copy}
+            </button>
+          </div>
+        </header>
+
+        <dl className={styles.explorerKeyValueList}>
+          <div>
+            <dt>{content.account.fields.address}</dt>
+            <dd>{account.address}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.owner}</dt>
+            <dd>{account.owner}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.accountType}</dt>
+            <dd>{accountTypeLabel}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.lamports}</dt>
+            <dd>{lamportFormatter.format(account.lamports)}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.solBalance}</dt>
+            <dd>{solFormatter.format(solBalance)}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.executable}</dt>
+            <dd>{formatBoolean(account.executable)}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.rentEpoch}</dt>
+            <dd>{lamportFormatter.format(account.rentEpoch)}</dd>
+          </div>
+          <div>
+            <dt>{content.account.fields.dataLength}</dt>
+            <dd>{account.dataLength !== null ? lamportFormatter.format(account.dataLength) : "—"}</dd>
+          </div>
+        </dl>
+
+        {tokenMintSection}
+        {tokenAccountSection}
+      </section>
+    );
+  };
+
+  const renderTransaction = (
+    transaction: Extract<ExplorerResult, { kind: "transaction" }>,
+  ) => {
+    const blockTime =
+      transaction.blockTime !== null
+        ? dateTimeFormatter.format(new Date(transaction.blockTime * 1000))
+        : "—";
+    const statusLabel = transaction.success
+      ? content.transaction.badges.success
+      : content.transaction.badges.failed;
+    const fee = transaction.fee !== null ? lamportFormatter.format(transaction.fee) : "—";
+    const computeUnits =
+      transaction.computeUnitsConsumed !== null
+        ? lamportFormatter.format(transaction.computeUnitsConsumed)
+        : "—";
+    const instructionCount = lamportFormatter.format(transaction.instructions.length);
+    const signers = transaction.signers.length > 0 ? transaction.signers.join(", ") : "—";
+
+    return (
+      <>
+        <section className={styles.explorerResultCard} aria-live="polite">
+          <header className={styles.explorerResultHeader}>
+            <div className={styles.explorerResultTitleGroup}>
+              <h2 className={styles.explorerResultTitle}>{content.transaction.sectionTitle}</h2>
+              <p className={styles.explorerResultValue}>{transaction.signature}</p>
+            </div>
+            <div className={styles.explorerResultActions}>
+              <span className={styles.explorerBadge}>{content.transaction.badges.transaction}</span>
+              <span
+                className={`${styles.explorerBadge} ${
+                  transaction.success
+                    ? styles.explorerBadgeSuccess
+                    : styles.explorerBadgeError
+                }`}
+              >
+                {statusLabel}
+              </span>
+              <button
+                type="button"
+                className={styles.explorerCopyButton}
+                onClick={() => handleCopy(transaction.signature)}
+              >
+                {copiedValue === transaction.signature
+                  ? content.copyAction.copied
+                  : content.copyAction.copy}
+              </button>
+            </div>
+          </header>
+
+          <dl className={styles.explorerKeyValueList}>
+            <div>
+              <dt>{content.transaction.fields.signature}</dt>
+              <dd>{transaction.signature}</dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.slot}</dt>
+              <dd>{lamportFormatter.format(transaction.slot)}</dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.blockTime}</dt>
+              <dd>{blockTime}</dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.status}</dt>
+              <dd>
+                {statusLabel}
+                {transaction.error ? (
+                  <span className={styles.explorerErrorDetail}>{transaction.error}</span>
+                ) : null}
+              </dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.fee}</dt>
+              <dd>{fee}</dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.computeUnits}</dt>
+              <dd>{computeUnits}</dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.instructionCount}</dt>
+              <dd>{instructionCount}</dd>
+            </div>
+            <div>
+              <dt>{content.transaction.fields.signers}</dt>
+              <dd>{signers}</dd>
+            </div>
+          </dl>
+        </section>
+
+        {transaction.instructions.length > 0 ? (
+          <section className={styles.explorerResultCard}>
+            <h3 className={styles.explorerSectionTitle}>
+              {content.transaction.instructions.title}
+            </h3>
+            <ol className={styles.explorerInstructionList}>
+              {transaction.instructions.map((instruction, index) => (
+                <li key={`${instruction.programId}-${index}`}>
+                  <dl className={styles.explorerKeyValueList}>
+                    <div>
+                      <dt>{content.transaction.instructions.program}</dt>
+                      <dd>{instruction.programId}</dd>
+                    </div>
+                    <div>
+                      <dt>{content.transaction.instructions.accounts}</dt>
+                      <dd>
+                        {instruction.accounts.length > 0
+                          ? instruction.accounts.join(", ")
+                          : "—"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{content.transaction.instructions.dataLength}</dt>
+                      <dd>{lamportFormatter.format(instruction.dataLength)}</dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
+        {transaction.logMessages && transaction.logMessages.length > 0 ? (
+          <section className={styles.explorerResultCard}>
+            <h3 className={styles.explorerSectionTitle}>
+              {content.transaction.fields.logMessages}
+            </h3>
+            <pre className={styles.explorerLogs}>
+              {transaction.logMessages.join("\n")}
+            </pre>
+          </section>
+        ) : null}
+      </>
+    );
+  };
+
+  return (
+    <div className={styles.infoSection}>
+      <header className={styles.infoHeader}>
+        <h1 className={styles.infoTitle}>{content.title}</h1>
+        <p className={styles.infoSubtitle}>{content.subtitle}</p>
+      </header>
+
+      <form className={styles.explorerForm} onSubmit={handleSearch}>
+        <input
+          type="text"
+          className={styles.explorerInput}
+          placeholder={content.searchPlaceholder}
+          aria-label={content.searchPlaceholder}
+          value={query}
+          onChange={handleQueryChange}
+          autoComplete="off"
+        />
+        <button type="submit" className={styles.explorerButton} disabled={status === "loading"}>
+          {content.searchButton}
+        </button>
+      </form>
+
+      {statusMessage ? (
+        <p className={styles.explorerStatus} role="status">
+          {statusMessage}
+        </p>
+      ) : null}
+
+      <ul className={styles.explorerHints}>
+        {content.hints.map((hint) => (
+          <li key={hint}>{hint}</li>
+        ))}
+      </ul>
+
+      <div className={styles.explorerResults}>
+        {result?.kind === "account" ? renderAccount(result) : null}
+        {result?.kind === "transaction" ? renderTransaction(result) : null}
+      </div>
     </div>
   );
 };
@@ -1250,6 +1789,12 @@ export default function Home() {
       Icon: MarketIcon,
     },
     {
+      key: "explorer",
+      label: translations.navigation.sections.explorer.label,
+      description: translations.navigation.sections.explorer.description,
+      Icon: ExplorerIcon,
+    },
+    {
       key: "pumpFun",
       label: translations.navigation.sections.pumpFun.label,
       description: translations.navigation.sections.pumpFun.description,
@@ -1277,6 +1822,9 @@ export default function Home() {
           onToggleFavorite={handleToggleFavorite}
         />
       );
+      break;
+    case "explorer":
+      content = <ExplorerPanel content={translations.explorer} />;
       break;
     case "pumpFun":
       content = <PumpFunPanel content={translations.pumpFun} />;

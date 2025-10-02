@@ -467,6 +467,253 @@
   box-shadow: 0 12px 32px rgba(59, 130, 246, 0.25);
 }
 
+.explorerForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.explorerInput {
+  flex: 1 1 320px;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.explorerInput::placeholder {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.explorerInput:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.65);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.explorerButton {
+  padding: 12px 24px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(14, 165, 233, 0.95));
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 16px 36px rgba(14, 165, 233, 0.35);
+}
+
+.explorerButton:disabled {
+  cursor: wait;
+  opacity: 0.8;
+  box-shadow: none;
+}
+
+.explorerButton:not(:disabled):hover,
+.explorerButton:not(:disabled):focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 44px rgba(14, 165, 233, 0.45);
+  outline: none;
+}
+
+.explorerStatus {
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 0.95rem;
+}
+
+.explorerHints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.85rem;
+}
+
+.explorerHints li {
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+.explorerResults {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.explorerResultCard {
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 16px 38px rgba(2, 6, 23, 0.45);
+}
+
+.explorerResultHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.explorerResultTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.explorerResultTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.explorerResultValue {
+  color: rgba(226, 232, 240, 0.75);
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.explorerResultActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.explorerBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  color: #c7d2fe;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.explorerBadgeSuccess {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #bbf7d0;
+}
+
+.explorerBadgeError {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fecaca;
+}
+
+.explorerCopyButton {
+  padding: 8px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(30, 41, 59, 0.8);
+  color: rgba(226, 232, 240, 0.9);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.explorerCopyButton:hover,
+.explorerCopyButton:focus-visible {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(148, 163, 184, 0.5);
+  outline: none;
+}
+
+.explorerKeyValueList {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin: 0;
+}
+
+.explorerKeyValueList div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.explorerKeyValueList dt {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.explorerKeyValueList dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #f8fafc;
+  word-break: break-word;
+}
+
+.explorerSubSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.explorerSectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.explorerInstructionList {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.explorerInstructionList li {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.explorerLogs {
+  margin: 0;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.52);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  font-family: var(--font-mono, "SFMono-Regular", ui-monospace, "SFMono", "Menlo", "Consolas", "Liberation Mono", "Courier New", monospace);
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.explorerErrorDetail {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: rgba(248, 113, 113, 0.85);
+  word-break: break-word;
+}
+
 .marketTableWrapper {
   margin-top: 8px;
   background: rgba(15, 23, 42, 0.52);
@@ -2610,6 +2857,91 @@
   border-color: rgba(59, 130, 246, 0.24);
   color: var(--accent-strong);
   box-shadow: 0 16px 32px rgba(59, 130, 246, 0.14);
+}
+
+:global(.light-theme) .explorerInput {
+  background: var(--surface-primary);
+  border: 1px solid var(--surface-border);
+  color: #0f172a;
+}
+
+:global(.light-theme) .explorerInput::placeholder {
+  color: rgba(15, 23, 42, 0.4);
+}
+
+:global(.light-theme) .explorerButton {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.92), rgba(14, 165, 233, 0.92));
+  color: #0f172a;
+  box-shadow: 0 18px 32px rgba(14, 165, 233, 0.18);
+}
+
+:global(.light-theme) .explorerStatus {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .explorerHints {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(.light-theme) .explorerHints li {
+  background: rgba(191, 219, 254, 0.45);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: rgba(15, 23, 42, 0.7);
+}
+
+:global(.light-theme) .explorerResultCard,
+:global(.light-theme) .explorerInstructionList li,
+:global(.light-theme) .explorerLogs {
+  background: #ffffff;
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow-soft);
+  color: #1e293b;
+}
+
+:global(.light-theme) .explorerResultValue {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .explorerBadge {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.28);
+  color: rgba(37, 99, 235, 0.9);
+}
+
+:global(.light-theme) .explorerBadgeSuccess {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.32);
+  color: rgba(21, 128, 61, 0.9);
+}
+
+:global(.light-theme) .explorerBadgeError {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(239, 68, 68, 0.32);
+  color: rgba(185, 28, 28, 0.9);
+}
+
+:global(.light-theme) .explorerCopyButton {
+  background: var(--surface-muted);
+  border-color: var(--surface-border);
+  color: #1f2937;
+}
+
+:global(.light-theme) .explorerCopyButton:hover,
+:global(.light-theme) .explorerCopyButton:focus-visible {
+  background: #dbeafe;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+:global(.light-theme) .explorerKeyValueList dt {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .explorerKeyValueList dd {
+  color: #1e293b;
+}
+
+:global(.light-theme) .explorerErrorDetail {
+  color: rgba(220, 38, 38, 0.8);
 }
 
 :global(.light-theme) .networkSelector {
