@@ -21,9 +21,9 @@
   --surface-border: rgba(15, 23, 42, 0.08);
   --surface-shadow: 0 32px 70px rgba(15, 23, 42, 0.12);
   --surface-shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.08);
-  --accent: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.14);
+  --accent: #60a5fa;
+  --accent-strong: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.18);
 }
 
 * {
