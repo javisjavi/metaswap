@@ -7,7 +7,8 @@ import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
-import { NetworkCluster, useNetwork } from "@/context/NetworkContext";
+import { useNetwork } from "@/context/NetworkContext";
+import type { NetworkCluster } from "@/types/network";
 import {
   getEndpointForNetwork,
   isDefaultMainnetEndpoint,

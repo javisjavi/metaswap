@@ -1,6 +1,6 @@
 import { clusterApiUrl } from "@solana/web3.js";
 
-import { NetworkCluster } from "@/context/NetworkContext";
+import type { NetworkCluster } from "@/types/network";
 
 export const HELIUS_MAINNET_ENDPOINT =
   "https://mainnet.helius-rpc.com/?api-key=06c5f6f8-30b3-4326-beff-c27807297023";

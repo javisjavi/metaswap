@@ -2774,6 +2774,965 @@
   box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
 }
 
+.cbcSection {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.cbcHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cbcHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cbcBackButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.65);
+  color: rgba(226, 232, 240, 0.88);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
+}
+
+.cbcBackButton::after {
+  content: "\2190";
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.cbcBackButton:hover,
+.cbcBackButton:focus-visible {
+  color: #f8fafc;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.45);
+  transform: translateY(-1px);
+}
+
+.cbcBackButton:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.6);
+  outline-offset: 2px;
+}
+
+.cbcCatalog {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cbcCatalogHeading {
+  margin: 0;
+  font-size: 1.22rem;
+  font-weight: 600;
+  color: rgba(241, 245, 249, 0.9);
+}
+
+.cbcCatalogGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+}
+
+.cbcCatalogTile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 26px;
+  border-radius: 26px;
+  border: 1px solid rgba(94, 234, 212, 0.24);
+  background: linear-gradient(165deg, rgba(15, 118, 110, 0.65), rgba(30, 64, 175, 0.78));
+  box-shadow: 0 26px 60px rgba(15, 118, 110, 0.38);
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  line-height: 1.55;
+  transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.cbcCatalogTile:hover,
+.cbcCatalogTile:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: 0 32px 70px rgba(14, 165, 233, 0.3);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.cbcCatalogTile:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.65);
+  outline-offset: 3px;
+}
+
+.cbcCatalogToken {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.cbcCatalogLogoWrapper {
+  width: 52px;
+  height: 52px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 28px rgba(59, 130, 246, 0.35);
+}
+
+.cbcCatalogTokenMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cbcCatalogSymbol {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fef3c7;
+}
+
+.cbcCatalogName {
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.cbcCatalogStatusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cbcCatalogStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.16);
+  color: rgba(241, 245, 249, 0.92);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cbcCatalogRound {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.cbcCatalogMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cbcCatalogMetricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.cbcCatalogMetricValue {
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.92);
+  font-variant-numeric: tabular-nums;
+}
+
+.cbcCatalogFuse,
+.cbcCatalogRaise {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cbcCatalogFuse {
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: rgba(15, 23, 42, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cbcCatalogFuseFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(252, 165, 165, 0.2) 0%,
+    rgba(251, 191, 36, 0.6) 48%,
+    rgba(248, 113, 113, 0.95) 100%
+  );
+  box-shadow: 0 0 18px rgba(248, 113, 113, 0.4);
+  transition: width 0.6s ease;
+}
+
+.cbcCatalogRaise {
+  border: 1px solid rgba(45, 212, 191, 0.38);
+  background: rgba(15, 23, 42, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cbcCatalogRaiseFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.4), rgba(125, 211, 252, 0.9));
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.4);
+  transition: width 0.6s ease;
+}
+
+.cbcCatalogTarget {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.cbcCatalogPrice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.cbcCatalogPriceValue {
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.95);
+}
+
+.cbcCatalogEnter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #fef3c7;
+  letter-spacing: 0.04em;
+}
+
+.cbcCatalogEnter::after {
+  content: "\2192";
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+.cbcBadge {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.9), rgba(250, 204, 21, 0.9));
+  color: #0f172a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 16px 36px rgba(236, 72, 153, 0.35);
+}
+
+.cbcTitle {
+  margin: 0;
+  font-size: 2.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #f8fafc;
+}
+
+.cbcSubtitle {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 720px;
+}
+
+.cbcGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcCard {
+  position: relative;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 28px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.45);
+  overflow: hidden;
+}
+
+.cbcPrimaryCard {
+  background: linear-gradient(160deg, rgba(15, 118, 110, 0.62), rgba(7, 89, 133, 0.86));
+  border-color: rgba(45, 212, 191, 0.42);
+  box-shadow: 0 28px 64px rgba(13, 148, 136, 0.38);
+}
+
+.cbcPrimaryCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(45, 212, 191, 0.24), transparent 55%),
+    radial-gradient(circle at 88% 22%, rgba(244, 114, 182, 0.22), transparent 60%);
+}
+
+.cbcCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcCardKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.cbcCardTitle {
+  margin: 4px 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+
+.cbcTokenIdentity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cbcTokenLogoWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.2), rgba(14, 165, 233, 0.75));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 12px 30px rgba(14, 165, 233, 0.4);
+}
+
+.cbcTokenLogo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.4));
+}
+
+.cbcPrimaryBody {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcPrimaryStats {
+  flex: 1 1 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cbcParticipation {
+  flex: 1 1 52%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cbcParticipationHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cbcParticipationHeader h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.cbcParticipationHeader p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.cbcContributionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cbcContributionLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.72);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.cbcContributionInputGroup {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cbcContributionInputGroup:focus-within {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+}
+
+.cbcContributionInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f8fafc;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cbcContributionInput::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.cbcContributionInput:disabled {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.cbcContributionSymbol {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.cbcContributionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.cbcContributionError {
+  color: rgba(248, 113, 113, 0.92);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cbcContributionUpdated {
+  color: rgba(226, 232, 240, 0.72);
+  font-weight: 500;
+}
+
+.cbcContributionButton {
+  align-self: flex-start;
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(99, 102, 241, 0.95));
+  color: #0f172a;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.45);
+}
+
+.cbcContributionButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(56, 189, 248, 0.5);
+}
+
+.cbcContributionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cbcContributionHistory {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.cbcContributionHistoryHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cbcContributionHistoryHeader h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.cbcContributionHistoryHeader span {
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.cbcContributionList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cbcContributionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.cbcContributionItem time {
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.85);
+  white-space: nowrap;
+}
+
+.cbcContributionAmount {
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.cbcContributionStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(45, 212, 191, 0.9);
+}
+
+.cbcContributionEmpty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.75);
+  padding: 12px 0;
+}
+
+.cbcPriceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.cbcPriceLabel {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.cbcPriceValue {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fdf2f8;
+  font-variant-numeric: tabular-nums;
+}
+
+.cbcTimerBlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcTimerLabel {
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.cbcTimerValue {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.cbcFuseMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.7);
+  position: relative;
+  z-index: 1;
+}
+
+.cbcFuseTrack {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cbcFuseFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(252, 165, 165, 0.2) 0%,
+    rgba(251, 191, 36, 0.6) 48%,
+    rgba(248, 113, 113, 0.95) 100%
+  );
+  box-shadow: 0 0 22px rgba(248, 113, 113, 0.45);
+  transition: width 0.6s ease;
+}
+
+.cbcRaiseHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcRaiseLabel {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.cbcRaiseAmount {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.86);
+}
+
+.cbcRaisePercent {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fef3c7;
+  font-variant-numeric: tabular-nums;
+}
+
+.cbcRaiseTrack {
+  position: relative;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(45, 212, 191, 0.42);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cbcRaiseFill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.45), rgba(34, 211, 238, 0.82));
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+  transition: width 0.6s ease;
+}
+
+.cbcRaiseScale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.6);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcRaiseMeta {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.cbcRaiseUpdate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.cbcRaiseError {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(248, 113, 113, 0.9);
+  font-weight: 500;
+}
+
+.cbcWalletBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.cbcWalletStatus {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.cbcWalletHint {
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.cbcTokenDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  padding: 20px 22px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.cbcTokenDetailsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cbcTokenDetailsHeader h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.cbcTokenBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.9);
+  background: linear-gradient(135deg, rgba(129, 230, 217, 0.95), rgba(59, 130, 246, 0.9));
+  box-shadow: 0 10px 24px rgba(13, 148, 136, 0.45);
+}
+
+.cbcTokenList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+}
+
+.cbcTokenList > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cbcTokenList dt {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.65);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cbcTokenList dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.cbcInstructions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cbcInstructions li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.cbcStepIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.92), rgba(99, 102, 241, 0.92));
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.cbcInstructions li span:last-child {
+  color: rgba(226, 232, 240, 0.86);
+  line-height: 1.45;
+}
+
+.cbcRounds {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cbcRoundsTitle {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.cbcRoundsSubtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.75);
+  max-width: 720px;
+}
+
+.cbcTableWrapper {
+  overflow-x: auto;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 22px;
+  padding: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.cbcTable {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+.cbcTable th {
+  text-align: left;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.65);
+  padding-bottom: 12px;
+}
+
+.cbcTable td {
+  padding: 12px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 0.95rem;
+  color: rgba(248, 250, 252, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.cbcTable tbody tr:first-of-type td {
+  border-top: none;
+}
+
+.cbcRoundsFootnote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
 @media (min-width: 1081px) {
   .card {
     padding: 40px 44px;
@@ -2798,6 +3757,12 @@
   }
 }
 
+@media (min-width: 1280px) {
+  .cbcCatalogGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1080px) {
   .appShell {
     gap: 24px;
@@ -2818,6 +3783,18 @@
 
   .pumpPanel {
     padding: 28px;
+  }
+
+  .cbcGrid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .cbcCatalogGrid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .cbcCard {
+    padding: 26px;
   }
 }
 
@@ -2857,6 +3834,33 @@
 
   .pumpTable {
     min-width: 620px;
+  }
+
+  .cbcCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cbcPriceBlock {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .cbcPrimaryBody {
+    flex-direction: column;
+  }
+
+  .cbcParticipation {
+    padding: 20px;
+  }
+
+  .cbcCatalogGrid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .cbcCatalogTile {
+    padding: 24px;
   }
 }
 
@@ -2940,6 +3944,66 @@
   .pumpTable {
     min-width: 560px;
   }
+
+  .cbcTitle {
+    font-size: 1.8rem;
+  }
+
+  .cbcSubtitle {
+    font-size: 0.95rem;
+  }
+
+  .cbcGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .cbcCard {
+    padding: 24px;
+  }
+
+  .cbcHeaderRow {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .cbcBackButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cbcCatalogGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cbcCatalogTile {
+    padding: 22px;
+  }
+
+  .cbcCatalogStatusRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .cbcContributionItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cbcContributionItem time {
+    align-self: flex-start;
+  }
+
+  .cbcContributionButton {
+    width: 100%;
+    text-align: center;
+  }
+
+  .cbcTable {
+    min-width: 520px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2971,6 +4035,20 @@
   .card {
     padding: 24px;
     border-radius: 20px;
+  }
+
+  .cbcCatalogTile {
+    padding: 20px;
+  }
+
+  .cbcCatalogMetricHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .cbcCatalogToken {
+    align-items: flex-start;
   }
 
   .title {
@@ -3019,6 +4097,30 @@
 
   .pumpTable {
     min-width: 520px;
+  }
+
+  .cbcCard {
+    padding: 20px;
+  }
+
+  .cbcTimerBlock {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .cbcRaiseHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .cbcRaisePercent {
+    align-self: flex-start;
+  }
+
+  .cbcTable {
+    min-width: 440px;
   }
 
   .pumpStatus {
@@ -3147,6 +4249,39 @@
   .pumpTable {
     min-width: 480px;
   }
+
+  .cbcBadge {
+    font-size: 0.62rem;
+  }
+
+  .cbcTitle {
+    font-size: 1.6rem;
+  }
+
+  .cbcTimerValue {
+    font-size: 1.05rem;
+  }
+
+  .cbcBackButton {
+    font-size: 0.78rem;
+    padding: 7px 14px;
+  }
+
+  .cbcCatalogHeading {
+    font-size: 1.08rem;
+  }
+
+  .cbcCatalogSymbol {
+    font-size: 1.2rem;
+  }
+
+  .cbcCatalogStatus {
+    font-size: 0.72rem;
+  }
+
+  .cbcTable {
+    min-width: 380px;
+  }
 }
 
 :global(.light-theme) .main {
@@ -3176,6 +4311,260 @@
 :global(.light-theme) .menuSubtitle {
   color: rgba(15, 23, 42, 0.62);
 }
+
+:global(.light-theme) .cbcBadge {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.95), rgba(236, 72, 153, 0.9));
+  color: #0f172a;
+  box-shadow: 0 14px 28px rgba(236, 72, 153, 0.2);
+}
+
+:global(.light-theme) .cbcTitle {
+  color: #0f172a;
+}
+
+:global(.light-theme) .cbcSubtitle {
+  color: rgba(15, 23, 42, 0.62);
+}
+
+:global(.light-theme) .cbcCard {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: var(--surface-shadow-soft);
+}
+
+:global(.light-theme) .cbcBackButton {
+  background: rgba(226, 232, 240, 0.8);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: rgba(15, 23, 42, 0.7);
+}
+
+:global(.light-theme) .cbcBackButton:hover,
+:global(.light-theme) .cbcBackButton:focus-visible {
+  color: #0f172a;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+}
+
+:global(.light-theme) .cbcCatalogTile {
+  background: linear-gradient(160deg, rgba(191, 219, 254, 0.9), rgba(224, 231, 255, 0.95));
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 24px 52px rgba(59, 130, 246, 0.2);
+}
+
+:global(.light-theme) .cbcCatalogTile:hover,
+:global(.light-theme) .cbcCatalogTile:focus-visible {
+  box-shadow: 0 28px 64px rgba(59, 130, 246, 0.28);
+  border-color: rgba(59, 130, 246, 0.42);
+}
+
+:global(.light-theme) .cbcCatalogSymbol {
+  color: #0f172a;
+}
+
+:global(.light-theme) .cbcCatalogName {
+  color: rgba(30, 41, 59, 0.75);
+}
+
+:global(.light-theme) .cbcCatalogStatus {
+  background: rgba(59, 130, 246, 0.12);
+  color: rgba(30, 41, 59, 0.78);
+}
+
+:global(.light-theme) .cbcCatalogRound {
+  color: rgba(30, 41, 59, 0.7);
+}
+
+:global(.light-theme) .cbcCatalogMetricHeader {
+  color: rgba(30, 41, 59, 0.65);
+}
+
+:global(.light-theme) .cbcCatalogMetricValue {
+  color: rgba(15, 23, 42, 0.85);
+}
+
+:global(.light-theme) .cbcCatalogFuse {
+  background: rgba(226, 232, 240, 0.85);
+  border-color: rgba(252, 165, 165, 0.45);
+}
+
+:global(.light-theme) .cbcCatalogFuseFill {
+  background: linear-gradient(90deg, rgba(252, 165, 165, 0.55), rgba(251, 191, 36, 0.75), rgba(248, 113, 113, 0.95));
+}
+
+:global(.light-theme) .cbcCatalogRaise {
+  background: rgba(226, 232, 240, 0.9);
+  border-color: rgba(37, 99, 235, 0.32);
+}
+
+:global(.light-theme) .cbcCatalogRaiseFill {
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.55), rgba(59, 130, 246, 0.75));
+}
+
+:global(.light-theme) .cbcCatalogTarget {
+  color: rgba(51, 65, 85, 0.75);
+}
+
+:global(.light-theme) .cbcCatalogPrice {
+  color: rgba(30, 41, 59, 0.65);
+}
+
+:global(.light-theme) .cbcCatalogPriceValue {
+  color: rgba(15, 23, 42, 0.82);
+}
+
+:global(.light-theme) .cbcCatalogEnter {
+  color: #0f172a;
+}
+
+:global(.light-theme) .cbcPrimaryCard {
+  background: linear-gradient(160deg, rgba(165, 243, 252, 0.75), rgba(191, 219, 254, 0.95));
+  border-color: rgba(14, 165, 233, 0.4);
+}
+
+:global(.light-theme) .cbcTimerBlock {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:global(.light-theme) .cbcFuseTrack {
+  background: rgba(226, 232, 240, 0.85);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+:global(.light-theme) .cbcFuseFill {
+  background: linear-gradient(90deg, rgba(252, 165, 165, 0.45), rgba(251, 191, 36, 0.75), rgba(248, 113, 113, 0.95));
+}
+
+:global(.light-theme) .cbcRaiseTrack {
+  background: rgba(226, 232, 240, 0.9);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+:global(.light-theme) .cbcRaiseFill {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.65), rgba(59, 130, 246, 0.75));
+}
+
+:global(.light-theme) .cbcWalletStatus {
+  color: rgba(15, 23, 42, 0.75);
+}
+
+:global(.light-theme) .cbcWalletHint {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .cbcTokenDetails {
+  background: rgba(248, 250, 252, 0.94);
+  border-color: rgba(148, 163, 184, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+:global(.light-theme) .cbcTokenDetailsHeader h3 {
+  color: rgba(15, 23, 42, 0.9);
+}
+
+:global(.light-theme) .cbcTokenBadge {
+  color: rgba(15, 23, 42, 0.95);
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.9), rgba(37, 99, 235, 0.85));
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
+}
+
+:global(.light-theme) .cbcParticipation {
+  background: rgba(248, 250, 252, 0.92);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+:global(.light-theme) .cbcParticipationHeader p {
+  color: rgba(71, 85, 105, 0.85);
+}
+
+:global(.light-theme) .cbcContributionInputGroup {
+  background: rgba(241, 245, 249, 0.92);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+:global(.light-theme) .cbcContributionInput {
+  color: rgba(15, 23, 42, 0.85);
+}
+
+:global(.light-theme) .cbcContributionSymbol {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(.light-theme) .cbcContributionMeta {
+  color: rgba(71, 85, 105, 0.8);
+}
+
+:global(.light-theme) .cbcContributionError {
+  color: rgba(220, 38, 38, 0.85);
+}
+
+:global(.light-theme) .cbcContributionHistory {
+  border-top-color: rgba(148, 163, 184, 0.3);
+}
+
+:global(.light-theme) .cbcContributionItem {
+  background: rgba(241, 245, 249, 0.92);
+  border-color: rgba(148, 163, 184, 0.32);
+}
+
+:global(.light-theme) .cbcContributionItem time {
+  color: rgba(71, 85, 105, 0.7);
+}
+
+:global(.light-theme) .cbcContributionAmount {
+  color: rgba(15, 23, 42, 0.85);
+}
+
+:global(.light-theme) .cbcContributionStatus {
+  color: rgba(14, 165, 233, 0.8);
+}
+
+:global(.light-theme) .cbcContributionEmpty {
+  color: rgba(71, 85, 105, 0.75);
+}
+
+:global(.light-theme) .cbcTokenList dt {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(.light-theme) .cbcTokenList dd {
+  color: #0f172a;
+}
+
+:global(.light-theme) .cbcInstructions li {
+  background: rgba(248, 250, 252, 0.94);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:global(.light-theme) .cbcInstructions li span:last-child {
+  color: rgba(15, 23, 42, 0.72);
+}
+
+:global(.light-theme) .cbcRoundsTitle {
+  color: #0f172a;
+}
+
+:global(.light-theme) .cbcRoundsSubtitle {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:global(.light-theme) .cbcTableWrapper {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:global(.light-theme) .cbcTable th {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .cbcTable td {
+  color: rgba(15, 23, 42, 0.75);
+  border-top-color: rgba(15, 23, 42, 0.1);
+}
+
+:global(.light-theme) .cbcRoundsFootnote {
+  color: rgba(15, 23, 42, 0.55);
+}
+
 
 :global(.light-theme) .menuDivider {
   background: linear-gradient(

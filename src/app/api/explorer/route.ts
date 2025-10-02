@@ -1,4 +1,9 @@
-import { Connection, PublicKey, type ParsedAccountData } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  type ParsedAccountData,
+  type Message,
+} from "@solana/web3.js";
 import { NextResponse } from "next/server";
 
 import {
@@ -146,6 +151,36 @@ const fetchTokenMetadata = async (
   return metadata;
 };
 
+const hasLegacyMessageShape = (
+  message: unknown,
+): message is {
+  accountKeys: PublicKey[];
+  instructions: { programIdIndex: number; accounts: number[]; data: string }[];
+  header: { numRequiredSignatures: number };
+} => {
+  if (typeof message !== "object" || message === null) {
+    return false;
+  }
+
+  const candidate = message as Record<string, unknown>;
+  const accountKeys = candidate.accountKeys;
+  const instructions = candidate.instructions;
+  const header = candidate.header as { numRequiredSignatures?: unknown } | undefined;
+
+  return (
+    Array.isArray(accountKeys) &&
+    Array.isArray(instructions) &&
+    typeof header?.numRequiredSignatures === "number"
+  );
+};
+
+const canDecompileToLegacyMessage = (
+  message: unknown,
+): message is { decompileToLegacyMessage: () => Message } =>
+  typeof message === "object" &&
+  message !== null &&
+  typeof (message as { decompileToLegacyMessage?: unknown }).decompileToLegacyMessage === "function";
+
 const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHolding[]> => {
   try {
     const programResults = await Promise.allSettled(
@@ -167,6 +202,13 @@ const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHoldin
     });
 
     const holdings = accounts
+    const accountsResponse = await connection.getParsedTokenAccountsByOwner(
+      owner,
+      { programId: TOKEN_PROGRAM_ID },
+      "confirmed",
+    );
+
+    const holdings = accountsResponse.value
       .map(({ pubkey, account }) => {
         const data = account.data as ParsedAccountData;
         if (typeof data !== "object" || data === null || data.program !== "spl-token") {
@@ -346,18 +388,30 @@ const createTransactionResult = (
   const computeUnitsConsumed = data?.meta?.computeUnitsConsumed ?? null;
   const logMessages = data?.meta?.logMessages ?? null;
 
-  const accountKeys = data?.transaction.message.accountKeys.map((key) =>
-    key.toBase58(),
-  );
+  const transactionMessage = data?.transaction.message;
+  let legacyMessage: Message | null = null;
 
-  const instructions = accountKeys
-    ? data?.transaction.message.instructions.map((instruction) =>
-        buildInstruction(accountKeys, instruction),
-      ) ?? []
+  if (hasLegacyMessageShape(transactionMessage)) {
+    legacyMessage = transactionMessage as Message;
+  } else if (canDecompileToLegacyMessage(transactionMessage)) {
+    try {
+      legacyMessage = transactionMessage.decompileToLegacyMessage();
+    } catch (messageError) {
+      console.error("Explorer legacy message conversion failed", messageError);
+      legacyMessage = null;
+    }
+  }
+
+  const accountKeys = legacyMessage
+    ? legacyMessage.accountKeys.map((key) => key.toBase58())
     : [];
 
-  const signers = accountKeys
-    ? accountKeys.slice(0, data?.transaction.message.header.numRequiredSignatures ?? 0)
+  const instructions = legacyMessage
+    ? legacyMessage.instructions.map((instruction) => buildInstruction(accountKeys, instruction))
+    : [];
+
+  const signers = legacyMessage
+    ? accountKeys.slice(0, legacyMessage.header.numRequiredSignatures)
     : [];
 
   return {
@@ -408,7 +462,7 @@ export async function POST(request: Request) {
         const owner = parsedInfo.value.owner.toBase58();
         const lamports = parsedInfo.value.lamports;
         const executable = parsedInfo.value.executable;
-        const rentEpoch = parsedInfo.value.rentEpoch;
+        const rentEpoch = parsedInfo.value.rentEpoch ?? 0;
         const accountData = parsedInfo.value.data as ParsedAccountData | Buffer;
 
         accountResult = createAccountResult(

@@ -7,7 +7,7 @@ import { Connection, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import { SOL_MINT } from "@/utils/tokenConstants";
-import { NetworkCluster } from "@/context/NetworkContext";
+import type { NetworkCluster } from "@/types/network";
 import { useTranslations } from "@/context/LanguageContext";
 
 interface TokenListModalProps {

@@ -4,6 +4,7 @@ export type SectionKey =
   | "market"
   | "explorer"
   | "pumpFun"
+  | "cbc"
   | "support";
 
 export const SUPPORTED_LANGUAGES = ["es", "en", "fr", "pt", "de", "ja"] as const;
@@ -291,6 +292,85 @@ type ThemeToggleTranslations = {
   switchToDark: string;
 };
 
+type CbcTranslations = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  catalog: {
+    heading: string;
+    description: string;
+    statusLabel: string;
+    enterLabel: string;
+    backLabel: string;
+    tileAria: (token: string) => string;
+  };
+  sale: {
+    heading: string;
+    roundLabel: (current: number, total: number) => string;
+    timeLabel: string;
+    timeEndedLabel: string;
+    fuseLabel: string;
+    priceLabel: string;
+    raiseLabel: string;
+    raiseTarget: (raised: string, target: string) => string;
+    walletRequirement: string;
+    connectedAs: (address: string) => string;
+    connectedUnknown: string;
+    walletHint: string;
+    raiseFetching: string;
+    raiseUpdatedAt: (time: string) => string;
+    raiseError: (reason?: string) => string;
+    participation: {
+      title: string;
+      description: string;
+      inputLabel: string;
+      inputPlaceholder: string;
+      balanceLabel: (balance: string) => string;
+      balanceFetching: string;
+      balanceError: (reason?: string) => string;
+      balanceUpdatedAt: (time: string) => string;
+      submitLabel: string;
+      submittingLabel: string;
+      disconnected: string;
+      errors: {
+        invalidAmount: string;
+        insufficientBalance: string;
+        minimumAmount: string;
+      };
+      historyTitle: string;
+      historyEmpty: string;
+      historyHint: string;
+      status: {
+        simulated: string;
+      };
+    };
+  };
+  token: {
+    heading: string;
+    symbolLabel: string;
+    networkLabel: string;
+    supplyLabel: string;
+    tickerLabel: string;
+    distributionLabel: string;
+  };
+  instructions: {
+    title: string;
+    steps: string[];
+  };
+  rounds: {
+    heading: string;
+    description: string;
+    columns: {
+      round: string;
+      price: string;
+      allocation: string;
+      raise: string;
+      multiplier: string;
+    };
+    footnote: string;
+  };
+};
+
 type AppTranslation = {
   languageToggleLabel: string;
   themeToggle: ThemeToggleTranslations;
@@ -304,6 +384,7 @@ type AppTranslation = {
   walletMenu: {
     openExplorer: string;
   };
+  cbc: CbcTranslations;
   pumpFun: PumpFunTranslations;
   overview: {
     title: string;
@@ -374,11 +455,107 @@ const BASE_TRANSLATIONS = {
           description: "Consulta tokens y contratos",
         },
         pumpFun: { label: "Pump.fun", description: "Próximos a la bonding curve" },
+        cbc: { label: "CBC", description: "Preventa exclusiva" },
         support: { label: "Soporte", description: "Guías y ayuda" },
       },
     },
     walletMenu: {
       openExplorer: "Consultar tokens y wallets",
+    cbc: {
+      badge: "Crowdfunding",
+      title: "CBC — Crowdfunding Bonding Curve",
+      subtitle:
+        "Asegura tu posición temprana en SWP antes de que la curva se active en Pump.fun.",
+      catalog: {
+        heading: "Proyectos en crowdfunding",
+        description:
+          "Explora las preventas activas y selecciona el token que quieres analizar a fondo.",
+        statusLabel: "Preventa activa",
+        enterLabel: "Ver preventa",
+        backLabel: "Volver al mosaico",
+        tileAria: (token) => `Abrir preventa de ${token}`,
+      },
+      sale: {
+        heading: "Estado de la ronda",
+        roundLabel: (current, total) => `Ronda ${current} de ${total}`,
+        timeLabel: "Tiempo restante",
+        timeEndedLabel: "Todas las rondas completadas",
+        fuseLabel: "Mecha de la ronda",
+        priceLabel: "Precio actual",
+        raiseLabel: "Progreso de recaudación",
+        raiseTarget: (raised, target) => `${raised} de ${target} SOL recaudados`,
+        walletRequirement:
+          "Conecta tu wallet desde el botón superior para unirte a la preventa y firmar la transferencia.",
+        connectedAs: (address) => `Conectado como ${address}`,
+        connectedUnknown: "Wallet conectada",
+        walletHint:
+          "Usa el botón \"Conectar wallet\" en la esquina superior derecha para autenticarte.",
+        raiseFetching: "Sincronizando balance de la tesorería…",
+        raiseUpdatedAt: (time) => `Actualizado a las ${time}`,
+        raiseError: (reason) =>
+          reason
+            ? `No se pudo actualizar (${reason}). Reintentamos automáticamente.`
+            : "No se pudo actualizar. Reintentamos automáticamente.",
+        participation: {
+          title: "Reserva tu cupo",
+          description:
+            "Define cuántos SOL quieres aportar desde tu balance disponible. Registraremos tu intención hasta habilitar el envío on-chain.",
+          inputLabel: "Cantidad a aportar",
+          inputPlaceholder: "1.00",
+          balanceLabel: (balance) => `Disponible: ${balance} SOL`,
+          balanceFetching: "Obteniendo balance…",
+          balanceError: (reason) =>
+            reason
+              ? `No se pudo leer tu balance (${reason}).`
+              : "No se pudo leer tu balance.",
+          balanceUpdatedAt: (time) => `Actualizado ${time}`,
+          submitLabel: "Reservar aportación",
+          submittingLabel: "Registrando…",
+          disconnected: "Conecta tu wallet para participar",
+          errors: {
+            invalidAmount: "Ingresa una cantidad válida en SOL.",
+            insufficientBalance: "No tienes suficiente SOL disponible.",
+            minimumAmount: "La aportación mínima es de 0.1 SOL.",
+          },
+          historyTitle: "Tus movimientos",
+          historyEmpty: "Aún no registras aportaciones para esta wallet.",
+          historyHint:
+            "Guardamos tus reservas localmente. Cuando habilitemos la tesorería podrás completarlas en cadena.",
+          status: {
+            simulated: "Reserva registrada",
+          },
+        },
+      },
+      token: {
+        heading: "Detalles del token",
+        symbolLabel: "Token",
+        networkLabel: "Red",
+        supplyLabel: "Suministro inicial",
+        tickerLabel: "Ticker",
+        distributionLabel: "Asignación comunitaria",
+      },
+      instructions: {
+        title: "Cómo participar",
+        steps: [
+          "Conecta tu wallet compatible con Solana (Solflare, Phantom, Backpack) usando el botón \"Conectar wallet\" de la cabecera.",
+          "Confirma que estás en la ronda activa y revisa el precio de SWP.",
+          "Reserva tu aportación indicando los SOL que destinarás a la ronda y confirma cuando habilitemos el envío on-chain.",
+        ],
+      },
+      rounds: {
+        heading: "Plan de rondas",
+        description:
+          "Cada ronda dura 10 minutos y aumenta progresivamente el precio. Los importes se acumulan hasta alcanzar la meta de 100 SOL.",
+        columns: {
+          round: "Ronda",
+          price: "Precio (SOL)",
+          allocation: "Asignación SWP",
+          raise: "Meta SOL",
+          multiplier: "x respecto a R1",
+        },
+        footnote:
+          "Los SWP se distribuirán al finalizar cada ronda según los aportes confirmados cuando se habilite la tesorería.",
+      },
     },
     pumpFun: {
       title: "Radar Pump.fun",
@@ -725,11 +902,105 @@ const BASE_TRANSLATIONS = {
           description: "Inspect tokens and contracts",
         },
         pumpFun: { label: "Pump.fun", description: "Near the bonding curve" },
+        cbc: { label: "CBC", description: "Pre-sale bonding curve" },
         support: { label: "Support", description: "Guides and help" },
       },
     },
     walletMenu: {
       openExplorer: "View token & wallet explorer",
+    cbc: {
+      badge: "Launch",
+      title: "CBC — Crowdfunding Bonding Curve",
+      subtitle:
+        "Secure your SWP allocation before the bonding curve goes live on Pump.fun.",
+      catalog: {
+        heading: "Crowdfunding lineup",
+        description:
+          "Preview the bonding-curve launches in progress and choose which sale to explore in depth.",
+        statusLabel: "Sale live",
+        enterLabel: "Enter sale",
+        backLabel: "Back to mosaic",
+        tileAria: (token) => `Open ${token} pre-sale`,
+      },
+      sale: {
+        heading: "Round status",
+        roundLabel: (current, total) => `Round ${current} of ${total}`,
+        timeLabel: "Time remaining",
+        timeEndedLabel: "All rounds completed",
+        fuseLabel: "Round fuse",
+        priceLabel: "Current price",
+        raiseLabel: "Treasury progress",
+        raiseTarget: (raised, target) => `${raised} of ${target} SOL raised`,
+        walletRequirement:
+          "Connect your wallet from the top-right button to join the pre-sale and sign the transfer.",
+        connectedAs: (address) => `Connected as ${address}`,
+        connectedUnknown: "Wallet connected",
+        walletHint:
+          "Use the global \"Connect wallet\" button in the header to sign in.",
+        raiseFetching: "Syncing treasury balance…",
+        raiseUpdatedAt: (time) => `Updated at ${time}`,
+        raiseError: (reason) =>
+          reason
+            ? `Update failed (${reason}). Retrying automatically.`
+            : "Update failed. Retrying automatically.",
+        participation: {
+          title: "Lock your allocation",
+          description:
+            "Choose how many SOL you want to commit from your available balance. We will register the intent until on-chain sending is enabled.",
+          inputLabel: "Amount to commit",
+          inputPlaceholder: "1.00",
+          balanceLabel: (balance) => `Available: ${balance} SOL`,
+          balanceFetching: "Fetching balance…",
+          balanceError: (reason) =>
+            reason ? `We could not read your balance (${reason}).` : "We could not read your balance.",
+          balanceUpdatedAt: (time) => `Updated ${time}`,
+          submitLabel: "Reserve contribution",
+          submittingLabel: "Recording…",
+          disconnected: "Connect your wallet to participate",
+          errors: {
+            invalidAmount: "Enter a valid SOL amount.",
+            insufficientBalance: "You do not have enough SOL available.",
+            minimumAmount: "Minimum contribution is 0.1 SOL.",
+          },
+          historyTitle: "Your activity",
+          historyEmpty: "No contributions registered for this wallet yet.",
+          historyHint:
+            "We store your reservations locally. Once the treasury goes live you'll be able to complete them on-chain.",
+          status: {
+            simulated: "Reservation stored",
+          },
+        },
+      },
+      token: {
+        heading: "Token overview",
+        symbolLabel: "Token",
+        networkLabel: "Network",
+        supplyLabel: "Initial supply",
+        tickerLabel: "Ticker",
+        distributionLabel: "Community allocation",
+      },
+      instructions: {
+        title: "How to participate",
+        steps: [
+          "Connect your Solana wallet (Solflare, Phantom, Backpack) using the \"Connect wallet\" button in the header.",
+          "Review the live round information and current SWP price.",
+          "Reserve your contribution by choosing how much SOL you'll commit and finalize once on-chain settlement opens.",
+        ],
+      },
+      rounds: {
+        heading: "Round schedule",
+        description:
+          "Each round lasts 10 minutes with a progressive price increase. Contributions accumulate toward the 100 SOL target.",
+        columns: {
+          round: "Round",
+          price: "Price (SOL)",
+          allocation: "SWP allocation",
+          raise: "Target SOL",
+          multiplier: "x vs R1",
+        },
+        footnote:
+          "SWP will be distributed after every round based on the confirmed amount once the treasury goes live.",
+      },
     },
     pumpFun: {
       title: "Pump.fun Watchlist",

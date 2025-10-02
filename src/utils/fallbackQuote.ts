@@ -295,20 +295,22 @@ export const buildFallbackQuote = async (
     slippageBps: params.slippageBps,
     priceImpactPct: "0",
     routePlan: [
-      {
-        swapInfo: {
-          ammKey: "fallback",
-          label: "Fallback",
-          inputMint: params.inputMint,
-          outputMint: params.outputMint,
-          inAmount: inAmount.toString(),
-          outAmount: outAmount.toString(),
-          feeAmount: "0",
-          feeMint: params.inputMint,
+      [
+        {
+          swapInfo: {
+            ammKey: "fallback",
+            label: "Fallback",
+            inputMint: params.inputMint,
+            outputMint: params.outputMint,
+            inAmount: inAmount.toString(),
+            outAmount: outAmount.toString(),
+            feeAmount: "0",
+            feeMint: params.inputMint,
+          },
+          percent: 100,
+          bps: 0,
         },
-        percent: 100,
-        bps: 0,
-      },
+      ],
     ],
     swapUsdValue: formatMicroUsd(valueMicroUsd),
   };

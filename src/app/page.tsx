@@ -8,9 +8,11 @@ import {
   useState,
   type ChangeEvent,
   type FormEvent,
+  type ReactElement,
   type ReactNode,
 } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey } from "@solana/web3.js";
 
 import Image from "next/image";
 
@@ -18,12 +20,14 @@ import LanguageToggle from "@/components/LanguageToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 import WalletButton from "@/components/WalletButton";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useNetwork } from "@/context/NetworkContext";
 import { type PumpFunProject } from "@/types/pumpfun";
 import { type ExplorerApiResponse, type ExplorerResult } from "@/types/explorer";
 import { type AppTranslation, type SectionKey } from "@/utils/translations";
 import { getIntlLocale } from "@/utils/language";
 import { useTokenList } from "@/hooks/useTokenList";
+import { resolveMainnetEndpoint } from "@/utils/solanaEndpoints";
 
 import styles from "./page.module.css";
 import SwapForm from "@/components/SwapForm";
@@ -36,7 +40,7 @@ type SectionDefinition = {
   key: SectionKey;
   label: string;
   description: string;
-  Icon: (props: IconProps) => JSX.Element;
+  Icon: (props: IconProps) => ReactElement;
 };
 
 const SwapIcon = ({ className }: IconProps) => (
@@ -270,6 +274,33 @@ const PumpFunIcon = ({ className }: IconProps) => (
   </svg>
 );
 
+const CbcIcon = ({ className }: IconProps) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    role="presentation"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 3c-2.9 2.1-4.8 4.6-4.8 7.6 0 2.8 1.7 4.9 4.8 7.1 3.1-2.2 4.8-4.3 4.8-7.1 0-3-1.9-5.5-4.8-7.6z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+      opacity="0.85"
+    />
+    <path
+      d="M9.2 14.8l-1 3.4 2.9-1.1L12 21l0.9-3.9 2.9 1.1-1.1-3.4"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity="0.75"
+    />
+    <circle cx="12" cy="10.4" r="1.9" fill="currentColor" opacity="0.78" />
+  </svg>
+);
+
 const SupportIcon = ({ className }: IconProps) => (
   <svg
     className={className}
@@ -354,6 +385,46 @@ const SupportIcon = ({ className }: IconProps) => (
 );
 
 const LAMPORTS_PER_SOL = 1_000_000_000;
+
+const CBC_ROUND_DURATION_MS = 10 * 60 * 1000;
+const CBC_BALANCE_REFRESH_MS = 20 * 1000;
+const CBC_ROUNDS = [
+  { round: 1, price: 0.0000028, raiseTarget: 4 },
+  { round: 2, price: 0.0000034, raiseTarget: 5 },
+  { round: 3, price: 0.0000041, raiseTarget: 6 },
+  { round: 4, price: 0.0000049, raiseTarget: 7 },
+  { round: 5, price: 0.0000058, raiseTarget: 8 },
+  { round: 6, price: 0.0000068, raiseTarget: 9 },
+  { round: 7, price: 0.0000079, raiseTarget: 10 },
+  { round: 8, price: 0.0000092, raiseTarget: 11 },
+  { round: 9, price: 0.0000106, raiseTarget: 12 },
+  { round: 10, price: 0.0000122, raiseTarget: 13 },
+  { round: 11, price: 0.000014, raiseTarget: 7 },
+  { round: 12, price: 0.0000158, raiseTarget: 8 },
+] as const satisfies ReadonlyArray<{
+  round: number;
+  price: number;
+  raiseTarget: number;
+}>;
+
+const CBC_TOTAL_TARGET_SOL = CBC_ROUNDS.reduce(
+  (total, round) => total + round.raiseTarget,
+  0,
+);
+
+const CBC_TOTAL_SUPPLY = CBC_ROUNDS.reduce(
+  (total, round) => total + round.raiseTarget / round.price,
+  0,
+);
+
+const CBC_FIRST_PRICE = CBC_ROUNDS[0].price;
+const CBC_TREASURY_WALLET = "7Ykwoofrft7u2D9Kx1ytrx47t3M4wz31kdc8nzC3y1hR";
+const CBC_TOKEN_SYMBOL = "SWP";
+const CBC_TOKEN_NAME = "MetaSwap Pioneer";
+const CBC_NETWORK_NAME = "Solana Mainnet-Beta";
+const CBC_MINIMUM_CONTRIBUTION_SOL = 0.1;
+const CBC_CONTRIBUTION_STORAGE_PREFIX = "cbc:contributions:";
+const CBC_TOKEN_LOGO_PATH = "/cbc-swp-logo.svg";
 
 const MARKET_PAGE_SIZE = 100;
 const FAVORITES_LIMIT = 5;
@@ -1504,6 +1575,891 @@ type PumpFunApiResponse = {
 
 const PUMP_FUN_LIMIT = 20;
 
+type CbcContribution = {
+  id: string;
+  amount: number;
+  createdAt: number;
+  status: "simulated";
+};
+
+const CbcPanel = ({ content }: { content: AppTranslation["cbc"] }) => {
+  const { connected, publicKey } = useWallet();
+  const { language } = useLanguage();
+  const { theme, setTheme } = useTheme();
+  const [viewMode, setViewMode] = useState<"catalog" | "detail">("catalog");
+  const [now, setNow] = useState(() => Date.now());
+  const startTimeRef = useRef<number>(Date.now());
+  const initialThemeRef = useRef<typeof theme | null>(null);
+  const [treasuryBalance, setTreasuryBalance] = useState<number | null>(null);
+  const [balanceUpdatedAt, setBalanceUpdatedAt] = useState<number | null>(null);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [walletBalanceUpdatedAt, setWalletBalanceUpdatedAt] = useState<number | null>(null);
+  const [walletBalanceError, setWalletBalanceError] = useState<string | null>(null);
+  const [contributionInput, setContributionInput] = useState("1.00");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmittingContribution, setIsSubmittingContribution] = useState(false);
+  const [contributions, setContributions] = useState<CbcContribution[]>([]);
+  const balanceIntervalRef = useRef<number | null>(null);
+  const walletBalanceIntervalRef = useRef<number | null>(null);
+  const connectionRef = useRef<Connection | null>(null);
+
+  useEffect(() => {
+    if (initialThemeRef.current === null) {
+      initialThemeRef.current = theme;
+    }
+
+    if (theme !== "dark") {
+      setTheme("dark");
+    }
+  }, [theme, setTheme]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (balanceIntervalRef.current !== null) {
+        window.clearInterval(balanceIntervalRef.current);
+        balanceIntervalRef.current = null;
+      }
+      if (walletBalanceIntervalRef.current !== null) {
+        window.clearInterval(walletBalanceIntervalRef.current);
+        walletBalanceIntervalRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (initialThemeRef.current && initialThemeRef.current !== "dark") {
+        setTheme(initialThemeRef.current);
+      }
+    };
+  }, [setTheme]);
+
+  const locale = useMemo(() => getIntlLocale(language), [language]);
+
+  const treasuryPublicKey = useMemo(() => new PublicKey(CBC_TREASURY_WALLET), []);
+  const endpoint = useMemo(() => resolveMainnetEndpoint(), []);
+  const contributionsStorageKey = useMemo(() => {
+    if (!publicKey) {
+      return null;
+    }
+
+    return `${CBC_CONTRIBUTION_STORAGE_PREFIX}${publicKey.toBase58()}`;
+  }, [publicKey]);
+
+  const fetchTreasuryBalance = useCallback(async () => {
+    try {
+      if (connectionRef.current === null) {
+        connectionRef.current = new Connection(endpoint, "confirmed");
+      }
+
+      const lamports = await connectionRef.current.getBalance(treasuryPublicKey);
+      setTreasuryBalance(lamports / LAMPORTS_PER_SOL);
+      setBalanceUpdatedAt(Date.now());
+      setBalanceError(null);
+    } catch (error) {
+      console.error("Failed to fetch treasury balance", error);
+      setBalanceError(
+        error instanceof Error ? error.message : "Unknown balance fetch error",
+      );
+    }
+  }, [endpoint, treasuryPublicKey]);
+
+  const fetchWalletBalance = useCallback(async () => {
+    if (!publicKey) {
+      setWalletBalance(null);
+      setWalletBalanceUpdatedAt(null);
+      setWalletBalanceError(null);
+      return;
+    }
+
+    try {
+      if (connectionRef.current === null) {
+        connectionRef.current = new Connection(endpoint, "confirmed");
+      }
+
+      const lamports = await connectionRef.current.getBalance(publicKey);
+      setWalletBalance(lamports / LAMPORTS_PER_SOL);
+      setWalletBalanceUpdatedAt(Date.now());
+      setWalletBalanceError(null);
+    } catch (error) {
+      console.error("Failed to fetch wallet balance", error);
+      setWalletBalanceError(
+        error instanceof Error ? error.message : "Unknown wallet balance error",
+      );
+    }
+  }, [endpoint, publicKey]);
+
+  const persistContributions = useCallback(
+    (items: CbcContribution[]) => {
+      if (!contributionsStorageKey || typeof window === "undefined") {
+        return;
+      }
+
+      try {
+        window.localStorage.setItem(
+          contributionsStorageKey,
+          JSON.stringify(items),
+        );
+      } catch (error) {
+        console.error("Failed to persist CBC contributions", error);
+      }
+    },
+    [contributionsStorageKey],
+  );
+
+  const handleOpenDetail = useCallback(() => {
+    setViewMode("detail");
+  }, []);
+
+  const handleBackToCatalog = useCallback(() => {
+    setViewMode("catalog");
+  }, []);
+
+  useEffect(() => {
+    void fetchTreasuryBalance();
+
+    balanceIntervalRef.current = window.setInterval(() => {
+      void fetchTreasuryBalance();
+    }, CBC_BALANCE_REFRESH_MS);
+
+    return () => {
+      if (balanceIntervalRef.current !== null) {
+        window.clearInterval(balanceIntervalRef.current);
+        balanceIntervalRef.current = null;
+      }
+    };
+  }, [fetchTreasuryBalance]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!contributionsStorageKey) {
+      setContributions([]);
+      return;
+    }
+
+    try {
+      const storedValue = window.localStorage.getItem(contributionsStorageKey);
+
+      if (!storedValue) {
+        setContributions([]);
+        return;
+      }
+
+      const parsed = JSON.parse(storedValue) as unknown;
+
+      if (!Array.isArray(parsed)) {
+        setContributions([]);
+        return;
+      }
+
+      const normalized = parsed
+        .map((entry) => ({
+          id: typeof entry.id === "string" ? entry.id : `${Date.now()}-${Math.random()}`,
+          amount: Number(entry.amount) || 0,
+          createdAt: Number(entry.createdAt) || Date.now(),
+          status: "simulated" as const,
+        }))
+        .filter((entry) => entry.amount > 0)
+        .sort((a, b) => b.createdAt - a.createdAt);
+
+      setContributions(normalized);
+    } catch (error) {
+      console.error("Failed to load CBC contributions", error);
+      setContributions([]);
+    }
+  }, [contributionsStorageKey]);
+
+  useEffect(() => {
+    if (!publicKey) {
+      if (walletBalanceIntervalRef.current !== null) {
+        window.clearInterval(walletBalanceIntervalRef.current);
+        walletBalanceIntervalRef.current = null;
+      }
+      setWalletBalance(null);
+      setWalletBalanceUpdatedAt(null);
+      setWalletBalanceError(null);
+      return;
+    }
+
+    void fetchWalletBalance();
+
+    if (walletBalanceIntervalRef.current !== null) {
+      window.clearInterval(walletBalanceIntervalRef.current);
+    }
+
+    walletBalanceIntervalRef.current = window.setInterval(() => {
+      void fetchWalletBalance();
+    }, CBC_BALANCE_REFRESH_MS);
+
+    return () => {
+      if (walletBalanceIntervalRef.current !== null) {
+        window.clearInterval(walletBalanceIntervalRef.current);
+        walletBalanceIntervalRef.current = null;
+      }
+    };
+  }, [fetchWalletBalance, publicKey]);
+
+  const priceFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 6,
+        maximumFractionDigits: 6,
+      }),
+    [locale],
+  );
+
+  const timeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    [locale],
+  );
+
+  const solFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+    [locale],
+  );
+
+  const timestampFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }),
+    [locale],
+  );
+
+  const allocationFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        notation: "compact",
+        maximumFractionDigits: 2,
+      }),
+    [locale],
+  );
+
+  const elapsedMs = Math.max(0, now - startTimeRef.current);
+  const totalDuration = CBC_ROUND_DURATION_MS * CBC_ROUNDS.length;
+  const saleCompleted = elapsedMs >= totalDuration;
+
+  const currentRoundIndex = saleCompleted
+    ? CBC_ROUNDS.length - 1
+    : Math.floor(elapsedMs / CBC_ROUND_DURATION_MS);
+  const currentRound = currentRoundIndex + 1;
+  const currentRoundData = CBC_ROUNDS[currentRoundIndex];
+
+  const roundElapsedMs = saleCompleted
+    ? CBC_ROUND_DURATION_MS
+    : elapsedMs % CBC_ROUND_DURATION_MS;
+  const roundProgress = saleCompleted
+    ? 1
+    : Math.min(1, roundElapsedMs / CBC_ROUND_DURATION_MS);
+  const timeRemainingMs = saleCompleted
+    ? 0
+    : CBC_ROUND_DURATION_MS - roundElapsedMs;
+
+  const minutesRemaining = Math.floor(timeRemainingMs / 60_000);
+  const secondsRemaining = Math.floor((timeRemainingMs % 60_000) / 1_000);
+  const timeRemainingDisplay = saleCompleted
+    ? content.sale.timeEndedLabel
+    : `${minutesRemaining.toString().padStart(2, "0")}:${secondsRemaining
+        .toString()
+        .padStart(2, "0")}`;
+
+  const completedRoundsCount = Math.min(
+    CBC_ROUNDS.length,
+    Math.floor(elapsedMs / CBC_ROUND_DURATION_MS),
+  );
+  const raisedBefore = CBC_ROUNDS.slice(0, completedRoundsCount).reduce(
+    (sum, round) => sum + round.raiseTarget,
+    0,
+  );
+  const activeRound =
+    saleCompleted || completedRoundsCount >= CBC_ROUNDS.length
+      ? undefined
+      : CBC_ROUNDS[completedRoundsCount];
+
+  const activeContribution = !activeRound
+    ? 0
+    : activeRound.raiseTarget * roundProgress;
+
+  const simulatedRaisedSol = saleCompleted
+    ? CBC_TOTAL_TARGET_SOL
+    : Math.min(CBC_TOTAL_TARGET_SOL, raisedBefore + activeContribution);
+
+  const totalRaisedSol = Math.min(
+    CBC_TOTAL_TARGET_SOL,
+    treasuryBalance ?? simulatedRaisedSol,
+  );
+
+  const raisePercent = Math.min(
+    100,
+    (totalRaisedSol / CBC_TOTAL_TARGET_SOL) * 100,
+  );
+
+  const balanceUpdatedDisplay = useMemo(() => {
+    if (!balanceUpdatedAt) {
+      return null;
+    }
+
+    return timeFormatter.format(new Date(balanceUpdatedAt));
+  }, [balanceUpdatedAt, timeFormatter]);
+
+  const walletBalanceDisplay = useMemo(() => {
+    if (walletBalance === null) {
+      return null;
+    }
+
+    return solFormatter.format(walletBalance);
+  }, [solFormatter, walletBalance]);
+
+  const walletUpdatedDisplay = useMemo(() => {
+    if (!walletBalanceUpdatedAt) {
+      return null;
+    }
+
+    return timestampFormatter.format(new Date(walletBalanceUpdatedAt));
+  }, [timestampFormatter, walletBalanceUpdatedAt]);
+
+  const shortAddress = useMemo(() => {
+    if (!publicKey) {
+      return null;
+    }
+
+    const address = publicKey.toBase58();
+    return `${address.slice(0, 4)}…${address.slice(-4)}`;
+  }, [publicKey]);
+
+  const isCatalogView = viewMode === "catalog";
+  const headerDescription = isCatalogView
+    ? content.catalog.description
+    : content.subtitle;
+
+  const handleContributionChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setContributionInput(event.target.value);
+      setFormError(null);
+    },
+    [],
+  );
+
+  const handleContributionSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      if (!connected || !publicKey) {
+        setFormError(content.sale.participation.disconnected);
+        return;
+      }
+
+      const normalizedValue = contributionInput.replace(/,/g, ".").trim();
+      const parsedAmount = Number.parseFloat(normalizedValue);
+
+      if (!Number.isFinite(parsedAmount)) {
+        setFormError(content.sale.participation.errors.invalidAmount);
+        return;
+      }
+
+      if (parsedAmount < CBC_MINIMUM_CONTRIBUTION_SOL) {
+        setFormError(content.sale.participation.errors.minimumAmount);
+        return;
+      }
+
+      if (
+        walletBalance !== null &&
+        parsedAmount > walletBalance + 0.000_001
+      ) {
+        setFormError(content.sale.participation.errors.insufficientBalance);
+        return;
+      }
+
+      setIsSubmittingContribution(true);
+      setFormError(null);
+
+      const entry: CbcContribution = {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        amount: parsedAmount,
+        createdAt: Date.now(),
+        status: "simulated",
+      };
+
+      setContributions((previous) => {
+        const next = [entry, ...previous].sort((a, b) => b.createdAt - a.createdAt);
+        persistContributions(next);
+        return next;
+      });
+
+      setContributionInput(parsedAmount.toFixed(2));
+      setIsSubmittingContribution(false);
+    },
+    [
+      connected,
+      contributionInput,
+      content.sale.participation.disconnected,
+      content.sale.participation.errors.insufficientBalance,
+      content.sale.participation.errors.invalidAmount,
+      content.sale.participation.errors.minimumAmount,
+      persistContributions,
+      publicKey,
+      walletBalance,
+    ],
+  );
+
+  const isContributionDisabled = !connected || !publicKey || isSubmittingContribution;
+
+  const distributionValue =
+    language === "es"
+      ? "68% comunidad · 20% liquidez · 12% equipo"
+      : "68% community · 20% liquidity · 12% contributors";
+
+  return (
+    <div className={styles.cbcSection}>
+      <header className={styles.cbcHeader}>
+        <div className={styles.cbcHeaderRow}>
+          <span className={styles.cbcBadge}>{content.badge}</span>
+          {!isCatalogView ? (
+            <button
+              type="button"
+              className={styles.cbcBackButton}
+              onClick={handleBackToCatalog}
+            >
+              {content.catalog.backLabel}
+            </button>
+          ) : null}
+        </div>
+        <h1 className={styles.cbcTitle}>{content.title}</h1>
+        <p className={styles.cbcSubtitle}>{headerDescription}</p>
+      </header>
+      {isCatalogView ? (
+        <section className={styles.cbcCatalog}>
+          <h2 className={styles.cbcCatalogHeading}>{content.catalog.heading}</h2>
+          <div className={styles.cbcCatalogGrid}>
+            <button
+              type="button"
+              className={styles.cbcCatalogTile}
+              onClick={handleOpenDetail}
+              aria-label={content.catalog.tileAria(CBC_TOKEN_SYMBOL)}
+            >
+              <div className={styles.cbcCatalogToken}>
+                <div
+                  className={`${styles.cbcTokenLogoWrapper} ${styles.cbcCatalogLogoWrapper}`}
+                >
+                  <Image
+                    src={CBC_TOKEN_LOGO_PATH}
+                    alt={`${CBC_TOKEN_SYMBOL} logo`}
+                    width={48}
+                    height={48}
+                    className={styles.cbcTokenLogo}
+                    priority
+                  />
+                </div>
+                <div className={styles.cbcCatalogTokenMeta}>
+                  <span className={styles.cbcCatalogSymbol}>{CBC_TOKEN_SYMBOL}</span>
+                  <span className={styles.cbcCatalogName}>{CBC_TOKEN_NAME}</span>
+                </div>
+              </div>
+              <div className={styles.cbcCatalogStatusRow}>
+                <span className={styles.cbcCatalogStatus}>{content.catalog.statusLabel}</span>
+                <span className={styles.cbcCatalogRound}>
+                  {content.sale.roundLabel(currentRound, CBC_ROUNDS.length)}
+                </span>
+              </div>
+              <div className={styles.cbcCatalogMetric}>
+                <div className={styles.cbcCatalogMetricHeader}>
+                  <span>{content.sale.timeLabel}</span>
+                  <span className={styles.cbcCatalogMetricValue}>{timeRemainingDisplay}</span>
+                </div>
+                <div
+                  className={styles.cbcCatalogFuse}
+                  role="progressbar"
+                  aria-label={content.sale.timeLabel}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(roundProgress * 100)}
+                >
+                  <div
+                    className={styles.cbcCatalogFuseFill}
+                    style={{ width: `${roundProgress * 100}%` }}
+                  />
+                </div>
+              </div>
+              <div className={styles.cbcCatalogMetric}>
+                <div className={styles.cbcCatalogMetricHeader}>
+                  <span>{content.sale.raiseLabel}</span>
+                  <span className={styles.cbcCatalogMetricValue}>
+                    {raisePercent.toFixed(1)}%
+                  </span>
+                </div>
+                <div
+                  className={styles.cbcCatalogRaise}
+                  role="progressbar"
+                  aria-label={content.sale.raiseLabel}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(raisePercent)}
+                >
+                  <div
+                    className={styles.cbcCatalogRaiseFill}
+                    style={{ width: `${raisePercent}%` }}
+                  />
+                </div>
+                <span className={styles.cbcCatalogTarget}>
+                  {content.sale.raiseTarget(
+                    solFormatter.format(totalRaisedSol),
+                    solFormatter.format(CBC_TOTAL_TARGET_SOL),
+                  )}
+                </span>
+              </div>
+              <div className={styles.cbcCatalogPrice}>
+                <span>{content.sale.priceLabel}</span>
+                <span className={styles.cbcCatalogPriceValue}>
+                  {priceFormatter.format(currentRoundData.price)} SOL
+                </span>
+              </div>
+              <span className={styles.cbcCatalogEnter}>{content.catalog.enterLabel}</span>
+            </button>
+          </div>
+        </section>
+      ) : (
+        <>
+          <div className={styles.cbcGrid}>
+        <article className={`${styles.cbcCard} ${styles.cbcPrimaryCard}`}>
+          <header className={styles.cbcCardHeader}>
+            <div className={styles.cbcTokenIdentity}>
+              <div className={styles.cbcTokenLogoWrapper}>
+                <Image
+                  src={CBC_TOKEN_LOGO_PATH}
+                  alt={`${CBC_TOKEN_SYMBOL} logo`}
+                  width={56}
+                  height={56}
+                  className={styles.cbcTokenLogo}
+                  priority
+                />
+              </div>
+              <div>
+                <span className={styles.cbcCardKicker}>{content.sale.heading}</span>
+                <h2 className={styles.cbcCardTitle}>
+                  {content.sale.roundLabel(currentRound, CBC_ROUNDS.length)}
+                </h2>
+              </div>
+            </div>
+            <div className={styles.cbcPriceBlock}>
+              <span className={styles.cbcPriceLabel}>{content.sale.priceLabel}</span>
+              <span className={styles.cbcPriceValue}>
+                {priceFormatter.format(currentRoundData.price)} SOL
+              </span>
+            </div>
+          </header>
+
+          <div className={styles.cbcPrimaryBody}>
+            <div className={styles.cbcPrimaryStats}>
+              <div className={styles.cbcTimerBlock} aria-live="polite">
+                <span className={styles.cbcTimerLabel}>{content.sale.timeLabel}</span>
+                <span className={styles.cbcTimerValue}>{timeRemainingDisplay}</span>
+              </div>
+
+              <div className={styles.cbcFuseMeta}>
+                <span>{content.sale.fuseLabel}</span>
+                <span>{Math.round(roundProgress * 100)}%</span>
+              </div>
+              <div
+                className={styles.cbcFuseTrack}
+                role="progressbar"
+                aria-label={content.sale.fuseLabel}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(roundProgress * 100)}
+              >
+                <div
+                  className={styles.cbcFuseFill}
+                  style={{ width: `${roundProgress * 100}%` }}
+                />
+              </div>
+
+              <div className={styles.cbcRaiseHeader}>
+                <div>
+                  <span className={styles.cbcRaiseLabel}>{content.sale.raiseLabel}</span>
+                  <span className={styles.cbcRaiseAmount}>
+                    {content.sale.raiseTarget(
+                      solFormatter.format(totalRaisedSol),
+                      solFormatter.format(CBC_TOTAL_TARGET_SOL),
+                    )}
+                  </span>
+                </div>
+                <span className={styles.cbcRaisePercent}>{raisePercent.toFixed(1)}%</span>
+              </div>
+              <div
+                className={styles.cbcRaiseTrack}
+                role="progressbar"
+                aria-label={content.sale.raiseLabel}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(raisePercent)}
+              >
+                <div
+                  className={styles.cbcRaiseFill}
+                  style={{ width: `${raisePercent}%` }}
+                />
+              </div>
+              <div className={styles.cbcRaiseScale}>
+                <span>0 SOL</span>
+                <span>100 SOL</span>
+              </div>
+              <div className={styles.cbcRaiseMeta}>
+                <span className={styles.cbcRaiseUpdate} role="status">
+                  {balanceUpdatedDisplay
+                    ? content.sale.raiseUpdatedAt(balanceUpdatedDisplay)
+                    : content.sale.raiseFetching}
+                </span>
+                {balanceError ? (
+                  <span className={styles.cbcRaiseError} role="alert">
+                    {content.sale.raiseError(balanceError)}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className={styles.cbcWalletBlock}>
+                <p className={styles.cbcWalletStatus} aria-live="polite">
+                  {connected
+                    ? content.sale.connectedAs(
+                        shortAddress ?? content.sale.connectedUnknown,
+                      )
+                    : content.sale.walletRequirement}
+                </p>
+                {!connected ? (
+                  <span className={styles.cbcWalletHint}>{content.sale.walletHint}</span>
+                ) : null}
+              </div>
+
+              <section
+                className={styles.cbcTokenDetails}
+                aria-labelledby="cbc-token-details-heading"
+              >
+                <div className={styles.cbcTokenDetailsHeader}>
+                  <h3 id="cbc-token-details-heading">
+                    {content.token.heading}
+                  </h3>
+                  <span className={styles.cbcTokenBadge}>{CBC_TOKEN_SYMBOL}</span>
+                </div>
+                <dl className={styles.cbcTokenList}>
+                  <div>
+                    <dt>{content.token.symbolLabel}</dt>
+                    <dd>{CBC_TOKEN_NAME}</dd>
+                  </div>
+                  <div>
+                    <dt>{content.token.tickerLabel}</dt>
+                    <dd>{CBC_TOKEN_SYMBOL}</dd>
+                  </div>
+                  <div>
+                    <dt>{content.token.networkLabel}</dt>
+                    <dd>{CBC_NETWORK_NAME}</dd>
+                  </div>
+                  <div>
+                    <dt>{content.token.supplyLabel}</dt>
+                    <dd>
+                      {allocationFormatter.format(CBC_TOTAL_SUPPLY)} {CBC_TOKEN_SYMBOL}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{content.token.distributionLabel}</dt>
+                    <dd>{distributionValue}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+
+            <section
+              className={styles.cbcParticipation}
+              aria-labelledby="cbc-participation-heading"
+            >
+              <div className={styles.cbcParticipationHeader}>
+                <h3 id="cbc-participation-heading">
+                  {content.sale.participation.title}
+                </h3>
+                <p>{content.sale.participation.description}</p>
+              </div>
+              <form
+                className={styles.cbcContributionForm}
+                onSubmit={handleContributionSubmit}
+              >
+                <label
+                  className={styles.cbcContributionLabel}
+                  htmlFor="cbc-contribution-input"
+                >
+                  <span>{content.sale.participation.inputLabel}</span>
+                  <div className={styles.cbcContributionInputGroup}>
+                    <input
+                      id="cbc-contribution-input"
+                      name="contribution"
+                      type="number"
+                      min={CBC_MINIMUM_CONTRIBUTION_SOL}
+                      step="0.01"
+                      inputMode="decimal"
+                      value={contributionInput}
+                      onChange={handleContributionChange}
+                      className={styles.cbcContributionInput}
+                      placeholder={content.sale.participation.inputPlaceholder}
+                      disabled={isContributionDisabled}
+                    />
+                    <span className={styles.cbcContributionSymbol}>SOL</span>
+                  </div>
+                </label>
+                <div className={styles.cbcContributionMeta} role="status">
+                  {connected ? (
+                    walletBalanceDisplay ? (
+                      <span>
+                        {content.sale.participation.balanceLabel(walletBalanceDisplay)}
+                      </span>
+                    ) : walletBalanceError ? (
+                      <span className={styles.cbcContributionError}>
+                        {content.sale.participation.balanceError(walletBalanceError)}
+                      </span>
+                    ) : (
+                      <span>{content.sale.participation.balanceFetching}</span>
+                    )
+                  ) : (
+                    <span>{content.sale.participation.disconnected}</span>
+                  )}
+                  {walletUpdatedDisplay ? (
+                    <span className={styles.cbcContributionUpdated}>
+                      {content.sale.participation.balanceUpdatedAt(
+                        walletUpdatedDisplay,
+                      )}
+                    </span>
+                  ) : null}
+                </div>
+                {formError ? (
+                  <p className={styles.cbcContributionError} role="alert">
+                    {formError}
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  className={styles.cbcContributionButton}
+                  disabled={isContributionDisabled}
+                >
+                  {connected
+                    ? isSubmittingContribution
+                      ? content.sale.participation.submittingLabel
+                      : content.sale.participation.submitLabel
+                    : content.sale.participation.disconnected}
+                </button>
+              </form>
+              <div className={styles.cbcContributionHistory}>
+                <div className={styles.cbcContributionHistoryHeader}>
+                  <h4>{content.sale.participation.historyTitle}</h4>
+                  <span>{content.sale.participation.historyHint}</span>
+                </div>
+                {contributions.length ? (
+                  <ul className={styles.cbcContributionList}>
+                    {contributions.map((entry) => (
+                      <li key={entry.id} className={styles.cbcContributionItem}>
+                        <div>
+                          <span className={styles.cbcContributionAmount}>
+                            {solFormatter.format(entry.amount)} SOL
+                          </span>
+                          <span className={styles.cbcContributionStatus}>
+                            {content.sale.participation.status.simulated}
+                          </span>
+                        </div>
+                        <time dateTime={new Date(entry.createdAt).toISOString()}>
+                          {timestampFormatter.format(new Date(entry.createdAt))}
+                        </time>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={styles.cbcContributionEmpty}>
+                    {content.sale.participation.historyEmpty}
+                  </p>
+                )}
+              </div>
+            </section>
+          </div>
+        </article>
+
+        <article className={styles.cbcCard}>
+          <h2 className={styles.cbcCardTitle}>{content.instructions.title}</h2>
+          <ol className={styles.cbcInstructions}>
+            {content.instructions.steps.map((step, index) => (
+              <li key={step}>
+                <span className={styles.cbcStepIndex}>{index + 1}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </article>
+      </div>
+
+          <div className={styles.cbcRounds}>
+            <h2 className={styles.cbcRoundsTitle}>{content.rounds.heading}</h2>
+            <p className={styles.cbcRoundsSubtitle}>{content.rounds.description}</p>
+            <div className={styles.cbcTableWrapper}>
+              <table className={styles.cbcTable}>
+                <thead>
+                  <tr>
+                    <th scope="col">{content.rounds.columns.round}</th>
+                    <th scope="col">{content.rounds.columns.price}</th>
+                    <th scope="col">{content.rounds.columns.allocation}</th>
+                    <th scope="col">{content.rounds.columns.raise}</th>
+                    <th scope="col">{content.rounds.columns.multiplier}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CBC_ROUNDS.map((round) => {
+                    const allocation = round.raiseTarget / round.price;
+                    const multiplier = round.price / CBC_FIRST_PRICE;
+
+                    return (
+                      <tr key={round.round}>
+                        <td data-label={content.rounds.columns.round}>{round.round}</td>
+                        <td data-label={content.rounds.columns.price}>
+                          {priceFormatter.format(round.price)}
+                        </td>
+                        <td data-label={content.rounds.columns.allocation}>
+                          {allocationFormatter.format(allocation)} {CBC_TOKEN_SYMBOL}
+                        </td>
+                        <td data-label={content.rounds.columns.raise}>
+                          {solFormatter.format(round.raiseTarget)}
+                        </td>
+                        <td data-label={content.rounds.columns.multiplier}>
+                          {multiplier.toFixed(2)}×
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className={styles.cbcRoundsFootnote}>{content.rounds.footnote}</p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const PumpFunPanel = ({ content }: { content: AppTranslation["pumpFun"] }) => {
   const { language } = useLanguage();
   const [projects, setProjects] = useState<PumpFunProject[]>([]);
@@ -1955,6 +2911,12 @@ export default function Home() {
       Icon: ExplorerIcon,
     },
     {
+      key: "cbc",
+      label: translations.navigation.sections.cbc.label,
+      description: translations.navigation.sections.cbc.description,
+      Icon: CbcIcon,
+    },
+    {
       key: "pumpFun",
       label: translations.navigation.sections.pumpFun.label,
       description: translations.navigation.sections.pumpFun.description,
@@ -1985,6 +2947,9 @@ export default function Home() {
       break;
     case "explorer":
       content = <ExplorerPanel content={translations.explorer} />;
+      break;
+    case "cbc":
+      content = <CbcPanel content={translations.cbc} />;
       break;
     case "pumpFun":
       content = <PumpFunPanel content={translations.pumpFun} />;

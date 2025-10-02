@@ -5,7 +5,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import TokenListModal from "./TokenListModal";
-import { NetworkCluster } from "@/context/NetworkContext";
+import type { NetworkCluster } from "@/types/network";
 import { useLanguage, useTranslations } from "@/context/LanguageContext";
 import { getCachedTokenPriceUsd } from "@/utils/priceFeed";
 import { getFallbackTokenConfig } from "@/utils/fallbackTokens";

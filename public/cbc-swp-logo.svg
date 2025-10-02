@@ -1,0 +1,16 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="swpGradient" x1="20" y1="12" x2="100" y2="108" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="0.5" stop-color="#818CF8"/>
+      <stop offset="1" stop-color="#F472B6"/>
+    </linearGradient>
+    <linearGradient id="swpHighlight" x1="38" y1="24" x2="92" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FAFC" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#F8FAFC" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="56" fill="url(#swpGradient)"/>
+  <circle cx="60" cy="60" r="52" fill="url(#swpHighlight)" opacity="0.28"/>
+  <path d="M86 48.5C86 42.701 82.252 38 77.333 38H63.667L71.5 26H59.667L44 48.5H57.667L49.833 62H38L53.667 88H65.5L57.667 74H71.333C76.252 74 80 69.299 80 63.5C80 58.946 77.377 55.044 73.713 53.525C78.078 52.159 81.333 49.237 81.333 44.667C81.333 43.756 81.213 42.885 81 42.071L86 48.5Z" fill="#0F172A" fill-opacity="0.9"/>
+</svg>
