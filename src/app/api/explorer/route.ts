@@ -24,15 +24,30 @@ const connection = new Connection(RPC_ENDPOINT, "confirmed");
 
 const BASE58_REGEX = /^[1-9A-HJ-NP-Za-km-z]+$/;
 const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
-const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const TOKEN_PROGRAM_IDS = [
+  new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+  new PublicKey("TokenzQdBNbLqJX7dpUz3W11afV53EREMAtZ7ED6SmY"),
+] as const;
 
 const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHolding[]> => {
   try {
-    const accounts = await connection.getParsedTokenAccountsByOwner(
-      owner,
-      { programId: TOKEN_PROGRAM_ID },
-      "confirmed",
+    const programResults = await Promise.allSettled(
+      TOKEN_PROGRAM_IDS.map((programId) =>
+        connection.getParsedTokenAccountsByOwner(owner, { programId }, "confirmed"),
+      ),
     );
+
+    const accounts = programResults.flatMap((result) => {
+      if (result.status === "fulfilled") {
+        return result.value.value ?? [];
+      }
+
+      console.error(
+        "Explorer token holdings lookup failed for program",
+        result.reason instanceof Error ? result.reason.message : result.reason,
+      );
+      return [];
+    });
 
     const holdings = accounts
       .map(({ pubkey, account }) => {

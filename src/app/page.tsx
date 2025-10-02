@@ -1776,6 +1776,19 @@ const SupportPanel = ({ content }: { content: AppTranslation["support"] }) => (
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState<SectionKey>("swap");
+
+  const handleOpenExplorer = useCallback(() => {
+    setActiveSection("explorer");
+    setTimeout(() => {
+      const explorerTab = document.getElementById("tab-explorer");
+      if (explorerTab instanceof HTMLElement) {
+        explorerTab.focus();
+      }
+
+      const explorerPanel = document.getElementById("panel-explorer");
+      explorerPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }, []);
   const translations = useTranslations();
   const { publicKey } = useWallet();
   const walletAddress = useMemo(() => publicKey?.toBase58() ?? null, [publicKey]);
@@ -1921,7 +1934,7 @@ export default function Home() {
             <LanguageToggle />
           </div>
           <div className={styles.menuControlsRight}>
-            <WalletButton />
+            <WalletButton onExplorerNavigate={handleOpenExplorer} />
           </div>
         </div>
         <nav

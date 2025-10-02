@@ -297,6 +297,9 @@ type AppTranslation = {
     subtitle: string;
     sections: Record<SectionKey, { label: string; description: string }>;
   };
+  walletMenu: {
+    openExplorer: string;
+  };
   pumpFun: PumpFunTranslations;
   overview: {
     title: string;
@@ -369,6 +372,9 @@ const BASE_TRANSLATIONS = {
         pumpFun: { label: "Pump.fun", description: "Próximos a la bonding curve" },
         support: { label: "Soporte", description: "Guías y ayuda" },
       },
+    },
+    walletMenu: {
+      openExplorer: "Consultar tokens y wallets",
     },
     pumpFun: {
       title: "Radar Pump.fun",
@@ -714,6 +720,9 @@ const BASE_TRANSLATIONS = {
         support: { label: "Support", description: "Guides and help" },
       },
     },
+    walletMenu: {
+      openExplorer: "View token & wallet explorer",
+    },
     pumpFun: {
       title: "Pump.fun Watchlist",
       subtitle:
@@ -1048,6 +1057,9 @@ const FR_TRANSLATION: AppTranslation = {
     switchToLight: "Passer en mode clair",
     switchToDark: "Passer en mode sombre",
   },
+  walletMenu: {
+    openExplorer: "Ouvrir l’explorateur de tokens et wallets",
+  },
   navigation: {
     ...EN_TRANSLATION.navigation,
     ariaLabel: "Navigation principale",
@@ -1079,6 +1091,9 @@ const PT_TRANSLATION: AppTranslation = {
     dark: "Escuro",
     switchToLight: "Ativar modo claro",
     switchToDark: "Ativar modo escuro",
+  },
+  walletMenu: {
+    openExplorer: "Abrir explorador de tokens e wallets",
   },
   navigation: {
     ...EN_TRANSLATION.navigation,
@@ -1112,6 +1127,9 @@ const DE_TRANSLATION: AppTranslation = {
     switchToLight: "Zum hellen Modus wechseln",
     switchToDark: "Zum dunklen Modus wechseln",
   },
+  walletMenu: {
+    openExplorer: "Explorer für Tokens und Wallets öffnen",
+  },
   navigation: {
     ...EN_TRANSLATION.navigation,
     ariaLabel: "Hauptnavigation",
@@ -1142,6 +1160,9 @@ const JA_TRANSLATION: AppTranslation = {
     dark: "ダーク",
     switchToLight: "ライトモードに切り替え",
     switchToDark: "ダークモードに切り替え",
+  },
+  walletMenu: {
+    openExplorer: "トークンとウォレットのエクスプローラーを開く",
   },
   navigation: {
     ...EN_TRANSLATION.navigation,

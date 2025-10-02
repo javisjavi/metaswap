@@ -1484,6 +1484,9 @@
 
 .networkMenu {
   position: relative;
+}
+
+.networkMenuTrigger {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1501,8 +1504,8 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 28px rgba(2, 6, 23, 0.35);
 }
 
-.networkMenu:hover,
-.networkMenu:focus-within {
+.networkMenuTrigger:hover,
+.networkMenuTrigger:focus-visible {
   background: rgba(30, 41, 59, 0.92);
   border-color: rgba(148, 163, 184, 0.45);
   outline: none;
@@ -1534,25 +1537,96 @@
   transition: transform 0.25s ease, color 0.25s ease;
 }
 
-.networkMenu:focus-within .networkMenuIcon {
+.networkMenuTrigger[aria-expanded="true"] .networkMenuIcon {
+  transform: rotate(-180deg);
   color: rgba(226, 232, 240, 0.95);
 }
 
-.networkSelect {
+.networkMenuList {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 200px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  padding: 10px;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  pointer-events: none;
   opacity: 0;
-  cursor: pointer;
-  border: none;
-  background: none;
-  appearance: none;
-  -webkit-appearance: none;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 22px 44px rgba(2, 6, 23, 0.6);
+  z-index: 10;
 }
 
-.networkSelect:focus-visible {
-  outline: none;
+.networkMenuListOpen {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.networkMenuOption {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: rgba(203, 213, 225, 0.92);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.networkMenuOption:focus-visible {
+  outline: 2px solid rgba(148, 163, 184, 0.45);
+  outline-offset: 2px;
+}
+
+.networkMenuOption:hover,
+.networkMenuOption:focus-visible {
+  background: rgba(99, 102, 241, 0.12);
+  color: #e2e8f0;
+}
+
+.networkMenuOptionActive {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(34, 211, 238, 0.85));
+  color: #0f172a;
+  box-shadow: 0 14px 28px rgba(99, 102, 241, 0.38);
+}
+
+.networkMenuOptionActive .networkMenuOptionBadge {
+  background: rgba(15, 23, 42, 0.85);
+  color: rgba(226, 232, 240, 0.96);
+}
+
+.networkMenuOptionName {
+  flex: 1;
+  text-align: left;
+}
+
+.networkMenuOptionBadge {
+  min-width: 32px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.9);
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 10px;
 }
 
 .title {
@@ -3497,15 +3571,15 @@
   color: rgba(15, 23, 42, 0.55);
 }
 
-:global(.light-theme) .networkMenu {
+:global(.light-theme) .networkMenuTrigger {
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(15, 23, 42, 0.12);
   color: #0f172a;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 18px 32px rgba(15, 23, 42, 0.12);
 }
 
-:global(.light-theme) .networkMenu:hover,
-:global(.light-theme) .networkMenu:focus-within {
+:global(.light-theme) .networkMenuTrigger:hover,
+:global(.light-theme) .networkMenuTrigger:focus-visible {
   background: rgba(248, 250, 252, 0.95);
   border-color: rgba(15, 23, 42, 0.18);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 22px 40px rgba(148, 163, 184, 0.16);
@@ -3513,6 +3587,27 @@
 
 :global(.light-theme) .networkMenuIcon {
   color: rgba(15, 23, 42, 0.6);
+}
+
+:global(.light-theme) .networkMenuList {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 22px 44px rgba(148, 163, 184, 0.18);
+}
+
+:global(.light-theme) .networkMenuOption {
+  color: rgba(15, 23, 42, 0.72);
+}
+
+:global(
+    .light-theme
+  )
+  .networkMenuOption:not(.networkMenuOptionActive):hover,
+:global(
+    .light-theme
+  )
+  .networkMenuOption:not(.networkMenuOptionActive):focus-visible {
+  color: var(--accent-strong);
 }
 
 :global(.light-theme) .tradingViewWidget {

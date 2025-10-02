@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -37,9 +38,9 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { buildRoutePath, buildRouteSummary } from "@/utils/routes";
 
 const NETWORK_OPTIONS = [
-  { value: "mainnet-beta", label: "Mainnet" },
-  { value: "devnet", label: "Devnet" },
-  { value: "testnet", label: "Testnet" },
+  { value: "mainnet-beta", label: "Mainnet", badge: "MAIN" },
+  { value: "devnet", label: "Devnet", badge: "DEV" },
+  { value: "testnet", label: "Testnet", badge: "TEST" },
 ] as const;
 
 const SOL_MINT = "So11111111111111111111111111111111111111112";
@@ -107,6 +108,65 @@ const SwapForm = () => {
   const [outputAmountDisplay, setOutputAmountDisplay] = useState("");
   const [slippageBps, setSlippageBps] = useState(50);
   const [slippageInput, setSlippageInput] = useState("0.5");
+  const [isNetworkMenuOpen, setIsNetworkMenuOpen] = useState(false);
+  const networkMenuRef = useRef<HTMLDivElement>(null);
+  const networkTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const closeNetworkMenu = useCallback((focusTrigger = false) => {
+    setIsNetworkMenuOpen(false);
+    if (focusTrigger) {
+      requestAnimationFrame(() => {
+        networkTriggerRef.current?.focus();
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isNetworkMenuOpen) {
+      return;
+    }
+
+    const handleClick = (event: MouseEvent) => {
+      if (!networkMenuRef.current?.contains(event.target as Node)) {
+        closeNetworkMenu();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeNetworkMenu(true);
+      }
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      if (!networkMenuRef.current?.contains(event.target as Node)) {
+        closeNetworkMenu();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("focusin", handleFocusIn);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("focusin", handleFocusIn);
+    };
+  }, [closeNetworkMenu, isNetworkMenuOpen]);
+
+  const handleNetworkOptionSelect = useCallback(
+    (optionValue: (typeof NETWORK_OPTIONS)[number]["value"]) => {
+      setNetwork(optionValue);
+      closeNetworkMenu(true);
+    },
+    [closeNetworkMenu, setNetwork],
+  );
+
+  useEffect(() => {
+    closeNetworkMenu();
+  }, [closeNetworkMenu, network]);
 
   const confettiPieces = [
     styles.confettiPiece1,
@@ -788,15 +848,18 @@ const SwapForm = () => {
     tokensLoading ||
     !quote;
 
-  const handleNetworkChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selected = event.target.value as (typeof NETWORK_OPTIONS)[number]["value"];
-    setNetwork(selected);
-  };
-
   const selectedNetwork = useMemo(
     () => NETWORK_OPTIONS.find((option) => option.value === network),
     [network]
   );
+
+  const networkMenuListClasses = useMemo(() => {
+    const classes = [styles.networkMenuList];
+    if (isNetworkMenuOpen) {
+      classes.push(styles.networkMenuListOpen);
+    }
+    return classes;
+  }, [isNetworkMenuOpen]);
 
   const handleSlippageInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -860,32 +923,63 @@ const SwapForm = () => {
         <div className={styles.headerActions}>
           <label className={styles.networkSelector}>
             <span className={styles.networkSelectorLabel}>{swapTexts.networkLabel}</span>
-            <div className={styles.networkMenu}>
-              <span className={styles.networkMenuValue} aria-hidden="true">
-                {selectedNetwork?.label ?? network}
-              </span>
-              <span className={styles.networkMenuIcon} aria-hidden="true">
-                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M3.5 6L8 10.5L12.5 6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <select
-                className={styles.networkSelect}
-                value={network}
-                onChange={handleNetworkChange}
+            <div className={styles.networkMenu} ref={networkMenuRef}>
+              <button
+                type="button"
+                ref={networkTriggerRef}
+                className={styles.networkMenuTrigger}
+                aria-haspopup="listbox"
+                aria-expanded={isNetworkMenuOpen}
+                onClick={() => setIsNetworkMenuOpen((prev) => !prev)}
               >
-                {NETWORK_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <span className={styles.networkMenuValue} aria-hidden="true">
+                  {selectedNetwork?.label ?? network}
+                </span>
+                <span className={styles.networkMenuIcon} aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M3.5 6L8 10.5L12.5 6"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </button>
+              <ul
+                className={networkMenuListClasses.join(" ")}
+                role="listbox"
+                aria-label={swapTexts.networkLabel}
+              >
+                {NETWORK_OPTIONS.map((option) => {
+                  const isActive = option.value === network;
+                  const optionClasses = [styles.networkMenuOption];
+                  if (isActive) {
+                    optionClasses.push(styles.networkMenuOptionActive);
+                  }
+
+                  return (
+                    <li key={option.value} role="none">
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={isActive}
+                        className={optionClasses.join(" ")}
+                        onClick={() => handleNetworkOptionSelect(option.value)}
+                      >
+                        <span className={styles.networkMenuOptionName}>{option.label}</span>
+                        <span
+                          className={styles.networkMenuOptionBadge}
+                          aria-hidden="true"
+                        >
+                          {option.badge}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </label>
           <div className={styles.headerBalance}>
