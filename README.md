@@ -177,7 +177,7 @@ Esta organización facilita ubicar el código asociado a cada parte de la aplica
 
 - **El comando `pnpm dev` no se ejecuta:** asegúrate de tener Node.js 18 o superior. Puedes usar [nvm](https://github.com/nvm-sh/nvm) para gestionar múltiples versiones.
 - **No puedo conectarme a Solflare:** revisa que la extensión o aplicación de Solflare esté instalada y desbloqueada. Si estás en modo incógnito, habilita las extensiones.
-- **No aparecen cotizaciones:** puede que el endpoint `https://quote-api.jup.ag` esté temporalmente bloqueado en tu red. Si esto sucede, abre un issue y evalúa apuntar el cliente hacia otro mirror directamente en el código de configuración (`src/config/jupiter.ts`).
+- **No aparecen cotizaciones:** puede que el endpoint `https://lite-api.jup.ag/swap/v1/quote` esté temporalmente bloqueado en tu red. Si esto sucede, abre un issue y evalúa apuntar el cliente hacia otro mirror directamente en el código de configuración (`src/config/jupiter.ts`).
 - **Errores al instalar dependencias:** elimina la carpeta `node_modules` y el archivo `pnpm-lock.yaml`, luego vuelve a ejecutar `pnpm install`.
 
 ---
