@@ -163,6 +163,10 @@ type ExplorerTranslations = {
     tokenHoldings: {
       title: string;
       empty: string;
+      mintLabel: string;
+      tokenAccountLabel: string;
+      decimalsLabel: string;
+      websiteLabel: string;
     };
   };
   transaction: {
@@ -544,6 +548,10 @@ const BASE_TRANSLATIONS = {
         tokenHoldings: {
           title: "Tokens en la cartera",
           empty: "Esta cartera no tiene tokens SPL con balance positivo.",
+          mintLabel: "Mint",
+          tokenAccountLabel: "Cuenta SPL",
+          decimalsLabel: "Decimales",
+          websiteLabel: "Sitio web",
         },
       },
       transaction: {
@@ -891,6 +899,10 @@ const BASE_TRANSLATIONS = {
         tokenHoldings: {
           title: "Wallet tokens",
           empty: "This wallet does not hold SPL tokens with a positive balance.",
+          mintLabel: "Mint",
+          tokenAccountLabel: "Token account",
+          decimalsLabel: "Decimals",
+          websiteLabel: "Website",
         },
       },
       transaction: {

@@ -1087,25 +1087,68 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
           <ul className={styles.explorerTokenList}>
             {sortedHoldings.map((holding) => {
               const tokenInfo = findByMint(holding.mint);
+              const metadata = holding.metadata;
               const truncatedMint =
                 holding.mint.length <= 10
                   ? holding.mint
                   : `${holding.mint.slice(0, 4)}…${holding.mint.slice(-4)}`;
-              const displaySymbol = tokenInfo?.symbol ?? truncatedMint;
-              const displayName = tokenInfo?.name ?? truncatedMint;
+              const truncatedTokenAccount =
+                holding.tokenAccount.length <= 10
+                  ? holding.tokenAccount
+                  : `${holding.tokenAccount.slice(0, 4)}…${holding.tokenAccount.slice(-4)}`;
+              const displaySymbol =
+                metadata?.symbol ?? tokenInfo?.symbol ?? truncatedMint;
+              const displayName = metadata?.name ?? tokenInfo?.name ?? truncatedMint;
+              const logoURI = metadata?.logoURI ?? tokenInfo?.logoURI ?? null;
               const displayAmount =
                 holding.uiAmountString && holding.uiAmountString.length > 0
                   ? holding.uiAmountString
                   : formatTokenAmount(holding.amount, holding.decimals);
               const fallbackInitial = displaySymbol.slice(0, 2).toUpperCase();
+              let websiteLabel: string | null = null;
+
+              if (metadata?.website) {
+                try {
+                  const url = new URL(metadata.website);
+                  websiteLabel = url.hostname.replace(/^www\./, "");
+                } catch {
+                  websiteLabel = metadata.website;
+                }
+              }
+
+              const detailItems = [
+                {
+                  label: content.account.tokenHoldings.mintLabel,
+                  value: truncatedMint,
+                  fullValue: holding.mint,
+                },
+                {
+                  label: content.account.tokenHoldings.tokenAccountLabel,
+                  value: truncatedTokenAccount,
+                  fullValue: holding.tokenAccount,
+                },
+                {
+                  label: content.account.tokenHoldings.decimalsLabel,
+                  value: holding.decimals.toString(),
+                },
+              ];
+
+              if (metadata?.website && websiteLabel) {
+                detailItems.push({
+                  label: content.account.tokenHoldings.websiteLabel,
+                  value: websiteLabel,
+                  fullValue: metadata.website,
+                  href: metadata.website,
+                });
+              }
 
               return (
                 <li key={holding.tokenAccount} className={styles.explorerTokenRow}>
                   <div className={styles.explorerTokenInfo}>
-                    {tokenInfo?.logoURI ? (
+                    {logoURI ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={tokenInfo.logoURI}
+                        src={logoURI}
                         alt={`${displaySymbol} logo`}
                         className={styles.explorerTokenLogo}
                         onError={(event) => {
@@ -1120,6 +1163,34 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
                     <div className={styles.explorerTokenMeta}>
                       <span className={styles.explorerTokenSymbol}>{displaySymbol}</span>
                       <span className={styles.explorerTokenName}>{displayName}</span>
+                      <div className={styles.explorerTokenDetails}>
+                        {detailItems.map((detail) => (
+                          <span
+                            key={`${holding.tokenAccount}-${detail.label}`}
+                            className={styles.explorerTokenDetail}
+                          >
+                            <span className={styles.explorerTokenDetailLabel}>{detail.label}</span>
+                            {detail.href ? (
+                              <a
+                                href={detail.href}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.explorerTokenDetailValue}
+                                title={detail.fullValue ?? detail.value}
+                              >
+                                {detail.value}
+                              </a>
+                            ) : (
+                              <span
+                                className={styles.explorerTokenDetailValue}
+                                title={detail.fullValue ?? detail.value}
+                              >
+                                {detail.value}
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className={styles.explorerTokenAmountGroup}>

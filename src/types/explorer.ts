@@ -23,12 +23,21 @@ export type ExplorerTokenAccountInfo = {
   delegate: string | null;
 };
 
+export type ExplorerTokenMetadata = {
+  symbol: string | null;
+  name: string | null;
+  description: string | null;
+  logoURI: string | null;
+  website: string | null;
+};
+
 export type ExplorerTokenHolding = {
   mint: string;
   tokenAccount: string;
   amount: string;
   uiAmountString: string | null;
   decimals: number;
+  metadata: ExplorerTokenMetadata | null;
 };
 
 export type ExplorerAccountResult = {

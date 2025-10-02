@@ -804,6 +804,37 @@
   white-space: nowrap;
 }
 
+.explorerTokenDetails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 6px;
+}
+
+.explorerTokenDetail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.64);
+}
+
+.explorerTokenDetailLabel {
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.explorerTokenDetailValue {
+  color: rgba(148, 163, 184, 0.92);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.explorerTokenDetailValue:hover,
+.explorerTokenDetailValue:focus-visible {
+  text-decoration: underline;
+}
+
 .explorerTokenAmountGroup {
   display: flex;
   flex-direction: column;
@@ -3553,6 +3584,22 @@
 
 :global(.light-theme) .explorerTokenName {
   color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .explorerTokenDetails {
+  gap: 4px 12px;
+}
+
+:global(.light-theme) .explorerTokenDetail {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(.light-theme) .explorerTokenDetailLabel {
+  color: rgba(15, 23, 42, 0.72);
+}
+
+:global(.light-theme) .explorerTokenDetailValue {
+  color: rgba(30, 41, 59, 0.78);
 }
 
 :global(.light-theme) .explorerTokenAmount {

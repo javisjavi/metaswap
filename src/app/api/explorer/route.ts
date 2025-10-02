@@ -10,7 +10,9 @@ import {
   type ExplorerTransactionInstruction,
   type ExplorerTransactionResult,
   type ExplorerTokenHolding,
+  type ExplorerTokenMetadata,
 } from "@/types/explorer";
+import { HELIUS_MAINNET_ENDPOINT } from "@/utils/solanaEndpoints";
 
 export const runtime = "nodejs";
 
@@ -28,6 +30,121 @@ const TOKEN_PROGRAM_IDS = [
   new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
   new PublicKey("TokenzQdBNbLqJX7dpUz3W11afV53EREMAtZ7ED6SmY"),
 ] as const;
+
+const HELIUS_ASSETS_ENDPOINT = HELIUS_MAINNET_ENDPOINT;
+const HELIUS_ASSET_BATCH_SIZE = 100;
+
+type HeliusAsset = {
+  id: string;
+  content?: {
+    metadata?: {
+      name?: string;
+      symbol?: string;
+      description?: string;
+    } | null;
+    links?: {
+      image?: string;
+      external?: string;
+      external_url?: string;
+      website?: string;
+    } | null;
+  } | null;
+  token_info?: {
+    symbol?: string;
+  } | null;
+} | null;
+
+const chunkArray = <T,>(items: T[], size: number): T[][] => {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+};
+
+const mapAssetToMetadata = (asset: HeliusAsset): ExplorerTokenMetadata | null => {
+  if (!asset || !asset.id) {
+    return null;
+  }
+
+  const symbol = asset.token_info?.symbol ?? asset.content?.metadata?.symbol ?? null;
+  const name = asset.content?.metadata?.name ?? null;
+  const description = asset.content?.metadata?.description ?? null;
+  const logoURI = asset.content?.links?.image ?? null;
+  const website =
+    asset.content?.links?.website ??
+    asset.content?.links?.external_url ??
+    asset.content?.links?.external ??
+    null;
+
+  if (!symbol && !name && !logoURI && !description && !website) {
+    return null;
+  }
+
+  return {
+    symbol,
+    name,
+    description,
+    logoURI,
+    website,
+  } satisfies ExplorerTokenMetadata;
+};
+
+const fetchTokenMetadata = async (
+  mints: string[],
+): Promise<Map<string, ExplorerTokenMetadata>> => {
+  const metadata = new Map<string, ExplorerTokenMetadata>();
+
+  if (!mints.length || !HELIUS_ASSETS_ENDPOINT) {
+    return metadata;
+  }
+
+  const uniqueMints = Array.from(new Set(mints));
+
+  for (const batch of chunkArray(uniqueMints, HELIUS_ASSET_BATCH_SIZE)) {
+    try {
+      const response = await fetch(HELIUS_ASSETS_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0" as const,
+          id: `explorer-token-${Date.now()}`,
+          method: "getAssets" as const,
+          params: {
+            ids: batch,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Helius responded with status ${response.status}`);
+      }
+
+      const payload = (await response.json()) as {
+        result?: HeliusAsset[] | null;
+        error?: { message?: string } | null;
+      };
+
+      if (payload.error?.message) {
+        throw new Error(payload.error.message);
+      }
+
+      for (const asset of payload.result ?? []) {
+        const mapped = mapAssetToMetadata(asset);
+        if (asset?.id && mapped) {
+          metadata.set(asset.id, mapped);
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Explorer token metadata lookup failed",
+        error instanceof Error ? error.message : error,
+      );
+    }
+  }
+
+  return metadata;
+};
 
 const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHolding[]> => {
   try {
@@ -93,11 +210,21 @@ const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHoldin
           amount,
           uiAmountString: tokenAmount?.uiAmountString ?? null,
           decimals,
+          metadata: null,
         } satisfies ExplorerTokenHolding;
       })
       .filter((holding): holding is ExplorerTokenHolding => holding !== null);
 
-    return holdings;
+    if (!holdings.length) {
+      return holdings;
+    }
+
+    const metadataMap = await fetchTokenMetadata(holdings.map((holding) => holding.mint));
+
+    return holdings.map((holding) => ({
+      ...holding,
+      metadata: metadataMap.get(holding.mint) ?? null,
+    }));
   } catch (error) {
     if (error instanceof Error) {
       console.error("Explorer token holdings lookup failed", error.message);
