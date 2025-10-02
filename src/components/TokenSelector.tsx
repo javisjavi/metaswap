@@ -109,6 +109,17 @@ const TokenSelector = ({
     }
   };
 
+  const availableUsdLabel = availableUsd ? `≈ $${availableUsd}` : "≈ —";
+  const availableTokenLabel =
+    typeof availableAmount === "string" && availableAmount.trim() !== ""
+      ? token?.symbol
+        ? `${availableAmount} ${token.symbol}`
+        : availableAmount
+      : null;
+  const availableButtonLabel = availableTokenLabel
+    ? `${availableUsdLabel} • ${availableTokenLabel}`
+    : availableUsdLabel;
+
   return (
     <div className={styles.selectorWrapper}>
       <div className={styles.selectorHeader}>
@@ -121,7 +132,7 @@ const TokenSelector = ({
               onClick={onAvailableClick}
               title={tokenSelectorTexts.useAllTitle}
             >
-              {availableUsd ? `≈ $${availableUsd}` : "≈ —"}
+              {availableButtonLabel}
             </button>
           ) : null}
         </div>
