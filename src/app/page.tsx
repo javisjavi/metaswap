@@ -1187,7 +1187,12 @@ const ExplorerPanel = ({ content }: { content: AppTranslation["explorer"] }) => 
                 }
               }
 
-              const detailItems = [
+              const detailItems: Array<{
+                label: string;
+                value: string;
+                fullValue?: string;
+                href?: string;
+              }> = [
                 {
                   label: content.account.tokenHoldings.mintLabel,
                   value: truncatedMint,

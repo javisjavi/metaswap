@@ -201,61 +201,54 @@ const fetchTokenHoldings = async (owner: PublicKey): Promise<ExplorerTokenHoldin
       return [];
     });
 
-    const holdings = accounts
-    const accountsResponse = await connection.getParsedTokenAccountsByOwner(
-      owner,
-      { programId: TOKEN_PROGRAM_ID },
-      "confirmed",
-    );
+    const holdings = accounts.reduce<ExplorerTokenHolding[]>((acc, { pubkey, account }) => {
+      const data = account.data as ParsedAccountData;
+      if (typeof data !== "object" || data === null || data.program !== "spl-token") {
+        return acc;
+      }
 
-    const holdings = accountsResponse.value
-      .map(({ pubkey, account }) => {
-        const data = account.data as ParsedAccountData;
-        if (typeof data !== "object" || data === null || data.program !== "spl-token") {
-          return null;
-        }
+      const parsed = data.parsed as { type: string; info?: Record<string, unknown> };
+      if (parsed?.type !== "account" || !parsed.info) {
+        return acc;
+      }
 
-        const parsed = data.parsed as { type: string; info?: Record<string, unknown> };
-        if (parsed?.type !== "account" || !parsed.info) {
-          return null;
-        }
-
-        const info = parsed.info as {
-          tokenAmount?: {
-            amount?: string;
-            decimals?: number;
-            uiAmountString?: string | null;
-          };
-          mint?: string;
+      const info = parsed.info as {
+        tokenAmount?: {
+          amount?: string;
+          decimals?: number;
+          uiAmountString?: string | null;
         };
+        mint?: string;
+      };
 
-        const tokenAmount = info.tokenAmount;
-        const mint = typeof info.mint === "string" ? info.mint : null;
-        const amount = tokenAmount?.amount;
-        const decimals = tokenAmount?.decimals;
+      const tokenAmount = info.tokenAmount;
+      const mint = typeof info.mint === "string" ? info.mint : null;
+      const amount = tokenAmount?.amount;
+      const decimals = tokenAmount?.decimals;
 
-        if (!mint || !amount || decimals === undefined) {
-          return null;
+      if (!mint || !amount || decimals === undefined) {
+        return acc;
+      }
+
+      try {
+        if (BigInt(amount) === BigInt(0)) {
+          return acc;
         }
+      } catch {
+        return acc;
+      }
 
-        try {
-          if (BigInt(amount) === BigInt(0)) {
-            return null;
-          }
-        } catch {
-          return null;
-        }
+      acc.push({
+        mint,
+        tokenAccount: pubkey.toBase58(),
+        amount,
+        uiAmountString: tokenAmount?.uiAmountString ?? null,
+        decimals,
+        metadata: null,
+      });
 
-        return {
-          mint,
-          tokenAccount: pubkey.toBase58(),
-          amount,
-          uiAmountString: tokenAmount?.uiAmountString ?? null,
-          decimals,
-          metadata: null,
-        } satisfies ExplorerTokenHolding;
-      })
-      .filter((holding): holding is ExplorerTokenHolding => holding !== null);
+      return acc;
+    }, []);
 
     if (!holdings.length) {
       return holdings;

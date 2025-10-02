@@ -431,7 +431,7 @@ type AppTranslation = {
   tokenListModal: TokenListModalTranslations;
 };
 
-const BASE_TRANSLATIONS = {
+const BASE_TRANSLATIONS: Record<"es" | "en", AppTranslation> = {
   es: {
     languageToggleLabel: "Cambiar idioma",
     themeToggle: {
@@ -461,6 +461,7 @@ const BASE_TRANSLATIONS = {
     },
     walletMenu: {
       openExplorer: "Consultar tokens y wallets",
+    },
     cbc: {
       badge: "Crowdfunding",
       title: "CBC — Crowdfunding Bonding Curve",
@@ -908,6 +909,7 @@ const BASE_TRANSLATIONS = {
     },
     walletMenu: {
       openExplorer: "View token & wallet explorer",
+    },
     cbc: {
       badge: "Launch",
       title: "CBC — Crowdfunding Bonding Curve",
@@ -1324,7 +1326,7 @@ const BASE_TRANSLATIONS = {
       viewOnSolscan: (symbol) => `View ${symbol} on Solscan`,
     },
   },
-} as const satisfies Record<"es" | "en", AppTranslation>;
+};
 
 const ES_TRANSLATION = BASE_TRANSLATIONS.es;
 const EN_TRANSLATION = BASE_TRANSLATIONS.en;
