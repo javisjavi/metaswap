@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState, ReactNode } from "react";
-
-export type NetworkCluster = "devnet" | "testnet" | "mainnet-beta";
+import { NetworkCluster } from "@/types/network";
 
 interface NetworkContextValue {
   network: NetworkCluster;

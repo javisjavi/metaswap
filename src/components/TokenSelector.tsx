@@ -1,12 +1,15 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import TokenListModal from "./TokenListModal";
 import { NetworkCluster } from "@/context/NetworkContext";
-import { useTranslations } from "@/context/LanguageContext";
+import { useLanguage, useTranslations } from "@/context/LanguageContext";
+import { getCachedTokenPriceUsd } from "@/utils/priceFeed";
+import { getFallbackTokenConfig } from "@/utils/fallbackTokens";
+import { formatNumber } from "@/utils/amount";
 
 interface TokenSelectorProps {
   label: string;
@@ -38,6 +41,65 @@ const TokenSelector = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const translations = useTranslations();
   const tokenSelectorTexts = translations.tokenSelector;
+  const { language } = useLanguage();
+  const [availableUsd, setAvailableUsd] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const computeUsdValue = async () => {
+      if (!token || availableAmount === undefined) {
+        setAvailableUsd(null);
+        return;
+      }
+
+      const parsedAmount = Number(availableAmount);
+      if (!Number.isFinite(parsedAmount)) {
+        setAvailableUsd(null);
+        return;
+      }
+
+      if (parsedAmount === 0) {
+        setAvailableUsd(formatNumber(0, 2, language));
+        return;
+      }
+
+      const fallbackToken = getFallbackTokenConfig(network, token.address);
+      const priceIds = fallbackToken?.priceIds?.length
+        ? fallbackToken.priceIds
+        : [token.address];
+
+      let priceUsd: number | null = null;
+      for (const id of priceIds) {
+        priceUsd = await getCachedTokenPriceUsd(id);
+        if (typeof priceUsd === "number" && Number.isFinite(priceUsd) && priceUsd > 0) {
+          break;
+        }
+      }
+
+      if (!priceUsd && fallbackToken) {
+        priceUsd = fallbackToken.priceUsd;
+      }
+
+      if (!priceUsd || !Number.isFinite(priceUsd) || priceUsd <= 0) {
+        setAvailableUsd(null);
+        return;
+      }
+
+      const usdValue = parsedAmount * priceUsd;
+      const fractionDigits = usdValue >= 1 ? 2 : 4;
+      const formatted = formatNumber(usdValue, fractionDigits, language);
+      if (!cancelled) {
+        setAvailableUsd(formatted);
+      }
+    };
+
+    void computeUsdValue();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, availableAmount, network, language]);
 
   const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -59,7 +121,7 @@ const TokenSelector = ({
               onClick={onAvailableClick}
               title={tokenSelectorTexts.useAllTitle}
             >
-              ({availableAmount})
+              {availableUsd ? `≈ $${availableUsd}` : "≈ —"}
             </button>
           ) : null}
         </div>
