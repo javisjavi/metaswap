@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import styles from "@/app/page.module.css";
 import { TokenInfo } from "@/types/token";
 import TokenListModal from "./TokenListModal";
@@ -43,6 +43,43 @@ const TokenSelector = ({
   const tokenSelectorTexts = translations.tokenSelector;
   const { language } = useLanguage();
   const [availableUsd, setAvailableUsd] = useState<string | null>(null);
+  const [currentToken, setCurrentToken] = useState<TokenInfo | null>(token);
+  const [outgoingToken, setOutgoingToken] = useState<TokenInfo | null>(null);
+  const [isIconAnimating, setIsIconAnimating] = useState(false);
+  const iconAnimationTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setCurrentToken((previousToken) => {
+      const previousKey = previousToken?.address ?? previousToken?.symbol ?? null;
+      const nextKey = token?.address ?? token?.symbol ?? null;
+
+      if (previousKey === nextKey) {
+        return previousToken;
+      }
+
+      if (iconAnimationTimeoutRef.current) {
+        window.clearTimeout(iconAnimationTimeoutRef.current);
+        iconAnimationTimeoutRef.current = null;
+      }
+
+      setOutgoingToken(previousToken);
+      setIsIconAnimating(true);
+
+      iconAnimationTimeoutRef.current = window.setTimeout(() => {
+        setOutgoingToken(null);
+        setIsIconAnimating(false);
+        iconAnimationTimeoutRef.current = null;
+      }, 260);
+
+      return token;
+    });
+  }, [token]);
+
+  useEffect(() => () => {
+    if (iconAnimationTimeoutRef.current) {
+      window.clearTimeout(iconAnimationTimeoutRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,14 +181,31 @@ const TokenSelector = ({
           className={styles.tokenButton}
           onClick={() => setIsModalOpen(true)}
         >
-          <img
-            className={styles.selectorIcon}
-            src={token?.logoURI ?? "/placeholder-token.svg"}
-            alt={token?.symbol ?? tokenSelectorTexts.defaultSymbol}
-            onError={(event) => {
-              (event.currentTarget as HTMLImageElement).src = "/placeholder-token.svg";
-            }}
-          />
+          <div className={styles.selectorIconWrapper}>
+            {outgoingToken ? (
+              <img
+                key={outgoingToken.address ?? "placeholder-outgoing"}
+                className={`${styles.selectorIcon} ${styles.selectorIconOutgoing}`}
+                src={outgoingToken.logoURI ?? "/placeholder-token.svg"}
+                alt=""
+                aria-hidden="true"
+                onError={(event) => {
+                  (event.currentTarget as HTMLImageElement).src = "/placeholder-token.svg";
+                }}
+              />
+            ) : null}
+            <img
+              key={currentToken?.address ?? "placeholder-current"}
+              className={`${styles.selectorIcon} ${
+                isIconAnimating ? styles.selectorIconIncoming : styles.selectorIconStable
+              }`}
+              src={currentToken?.logoURI ?? "/placeholder-token.svg"}
+              alt={currentToken?.symbol ?? tokenSelectorTexts.defaultSymbol}
+              onError={(event) => {
+                (event.currentTarget as HTMLImageElement).src = "/placeholder-token.svg";
+              }}
+            />
+          </div>
           <div className={styles.selectorText}>
             <div className={styles.selectorSymbolRow}>
               <span className={styles.selectorSymbol}>

@@ -1973,6 +1973,60 @@
   background: rgba(15, 23, 42, 0.6);
 }
 
+.selectorIconWrapper {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.selectorIconStable {
+  position: relative;
+}
+
+.selectorIconIncoming,
+.selectorIconOutgoing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+.selectorIconIncoming {
+  animation: selectorIconSlideIn 0.26s ease forwards;
+}
+
+.selectorIconOutgoing {
+  animation: selectorIconSlideOut 0.26s ease forwards;
+}
+
+@keyframes selectorIconSlideIn {
+  from {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes selectorIconSlideOut {
+  from {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
 .selectorText {
   display: flex;
   flex-direction: column;
