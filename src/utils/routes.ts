@@ -23,6 +23,10 @@ const PLATFORM_ICON_MAP: Record<string, string> = {
   OpenBook: "/platform-icons/openbook.svg",
   Phoenix: "/platform-icons/phoenix.svg",
   Whirlpool: "/platform-icons/orca-whirlpool.svg",
+  TesseraV: "/platform-icons/tesserav.svg",
+  HumidiFi: "/platform-icons/humidifi.svg",
+  PancakeSwap: "/platform-icons/pancakeswap.svg",
+  Aquifer: "/platform-icons/aquifer.svg",
 };
 
 const PLATFORM_ALIAS_MAP: Record<string, string> = {
@@ -35,6 +39,12 @@ const PLATFORM_ALIAS_MAP: Record<string, string> = {
   "Orca AMM": "Orca",
   "Meteora (DLMM)": "Meteora DLMM",
   "Open Book": "OpenBook",
+  "Pancake Swap": "PancakeSwap",
+  "PancakeSwap V3": "PancakeSwap",
+  "PancakeSwap AMM": "PancakeSwap",
+  "Aquifer AMM": "Aquifer",
+  "Tessera V": "TesseraV",
+  "Humidifi": "HumidiFi",
 };
 
 const normalizeRoutePlan = (
