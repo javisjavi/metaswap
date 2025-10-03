@@ -1913,9 +1913,17 @@ const CbcPanel = ({ content }: { content: AppTranslation["cbc"] }) => {
     ? CBC_TOTAL_TARGET_SOL
     : Math.min(CBC_TOTAL_TARGET_SOL, raisedBefore + activeContribution);
 
+  const totalReservedSol = useMemo(
+    () =>
+      contributions.reduce((sum, entry) => {
+        return sum + entry.amount;
+      }, 0),
+    [contributions],
+  );
+
   const totalRaisedSol = Math.min(
     CBC_TOTAL_TARGET_SOL,
-    treasuryBalance ?? simulatedRaisedSol,
+    (treasuryBalance ?? simulatedRaisedSol) + totalReservedSol,
   );
 
   const raisePercent = Math.min(

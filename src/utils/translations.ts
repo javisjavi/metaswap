@@ -233,6 +233,7 @@ type SwapFormTranslations = {
     network: string;
     generic: string;
     sameTokens: string;
+    insufficientBalance: string;
   };
   helperText: string;
   preview: {
@@ -830,6 +831,7 @@ const BASE_TRANSLATIONS: Record<"es" | "en", AppTranslation> = {
           "No pudimos conectar con el servicio de swaps. Revisa tu conexión e inténtalo nuevamente.",
         generic: "No se pudo completar el swap. Inténtalo nuevamente.",
         sameTokens: "Selecciona tokens diferentes para obtener una cotización válida.",
+        insufficientBalance: "No tienes suficiente saldo disponible para este swap.",
       },
       helperText: "Ajusta la tolerancia de precio para tus swaps.",
       preview: {
@@ -1276,6 +1278,7 @@ const BASE_TRANSLATIONS: Record<"es" | "en", AppTranslation> = {
           "We couldn't reach the swap service. Check your connection and try again.",
         generic: "We couldn't complete the swap. Please try again.",
         sameTokens: "Select different tokens to request a valid quote.",
+        insufficientBalance: "You do not have enough balance available for this swap.",
       },
       helperText: "Adjust your price tolerance for swaps.",
       preview: {

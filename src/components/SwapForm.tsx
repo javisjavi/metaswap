@@ -96,8 +96,11 @@ const SwapForm = () => {
   const [inputAmount, setInputAmount] = useState<string>("");
   const [outputAmount, setOutputAmount] = useState<string>("");
   const [balance, setBalance] = useState<string | null>(null);
+  const [balanceLamports, setBalanceLamports] = useState<bigint | null>(null);
   const [isFetchingBalance, setIsFetchingBalance] = useState(false);
   const [inputTokenBalance, setInputTokenBalance] = useState<string | null>(null);
+  const [inputTokenBalanceLamports, setInputTokenBalanceLamports] =
+    useState<bigint | null>(null);
   const [isAirdropping, setIsAirdropping] = useState(false);
   const [airdropMessage, setAirdropMessage] = useState<string | null>(null);
   const [swapError, setSwapError] = useState<string | null>(null);
@@ -363,12 +366,15 @@ const SwapForm = () => {
   const refreshBalance = useCallback(async () => {
     if (!publicKey) {
       setBalance(null);
+      setBalanceLamports(null);
       return;
     }
     try {
       setIsFetchingBalance(true);
       const lamports = await balanceConnection.getBalance(publicKey, "confirmed");
-      setBalance(formatLamports(BigInt(lamports), 9, 4));
+      const lamportsBigInt = BigInt(lamports);
+      setBalanceLamports(lamportsBigInt);
+      setBalance(formatLamports(lamportsBigInt, 9, 4));
     } catch (error) {
       console.error("Error al leer el saldo", error);
     } finally {
@@ -381,17 +387,20 @@ const SwapForm = () => {
       refreshBalance();
     } else {
       setBalance(null);
+      setBalanceLamports(null);
     }
   }, [connected, refreshBalance]);
 
   useEffect(() => {
     if (!inputToken || !publicKey) {
       setInputTokenBalance(null);
+      setInputTokenBalanceLamports(null);
       return;
     }
 
     if (inputToken.address === SOL_MINT) {
       setInputTokenBalance(balance);
+      setInputTokenBalanceLamports(balanceLamports);
       return;
     }
 
@@ -422,6 +431,7 @@ const SwapForm = () => {
         }, BigInt(0));
 
         if (!cancelled) {
+          setInputTokenBalanceLamports(total);
           setInputTokenBalance(
             formatLamports(total, inputToken.decimals, Math.min(6, inputToken.decimals))
           );
@@ -430,17 +440,19 @@ const SwapForm = () => {
         console.error("Error al leer el saldo del token", error);
         if (!cancelled) {
           setInputTokenBalance(null);
+          setInputTokenBalanceLamports(null);
         }
       }
     };
 
     setInputTokenBalance(null);
+    setInputTokenBalanceLamports(null);
     fetchTokenBalance();
 
     return () => {
       cancelled = true;
     };
-  }, [inputToken, publicKey, balanceConnection, balance]);
+  }, [inputToken, publicKey, balanceConnection, balance, balanceLamports]);
 
   const parsedInputAmount = useMemo(
     () =>
@@ -490,6 +502,47 @@ const SwapForm = () => {
     cluster: network,
     swapMode: amountMode === "in" ? "ExactIn" : "ExactOut",
   });
+
+  const requiredInputLamports = useMemo(() => {
+    if (!inputToken) {
+      return null;
+    }
+    if (amountMode === "in") {
+      return parsedInputAmount;
+    }
+    if (!quote) {
+      return null;
+    }
+    try {
+      return BigInt(quote.inAmount);
+    } catch {
+      return null;
+    }
+  }, [amountMode, inputToken, parsedInputAmount, quote]);
+
+  const insufficientBalance = useMemo(() => {
+    if (!connected) {
+      return false;
+    }
+    if (!inputToken) {
+      return false;
+    }
+    if (inputTokenBalanceLamports === null) {
+      return false;
+    }
+    if (requiredInputLamports === null) {
+      return false;
+    }
+    if (requiredInputLamports <= BigInt(0)) {
+      return false;
+    }
+    return requiredInputLamports > inputTokenBalanceLamports;
+  }, [
+    connected,
+    inputToken,
+    inputTokenBalanceLamports,
+    requiredInputLamports,
+  ]);
 
   const tokenListErrorMessage = tokensError
     ? swapTexts.tokenListErrors[tokensError]
@@ -846,7 +899,8 @@ const SwapForm = () => {
     quoteLoading ||
     isSwapping ||
     tokensLoading ||
-    !quote;
+    !quote ||
+    insufficientBalance;
 
   const selectedNetwork = useMemo(
     () => NETWORK_OPTIONS.find((option) => option.value === network),
@@ -1094,6 +1148,12 @@ const SwapForm = () => {
         {(quoteErrorMessage || fallbackQuoteMessage) && (
           <p className={styles.errorBanner}>
             {quoteErrorMessage ?? fallbackQuoteMessage}
+          </p>
+        )}
+
+        {insufficientBalance && (
+          <p className={styles.errorBanner}>
+            {swapTexts.errors.insufficientBalance}
           </p>
         )}
 
