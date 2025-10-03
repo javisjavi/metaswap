@@ -2149,7 +2149,18 @@ const CbcPanel = ({ content }: { content: AppTranslation["cbc"] }) => {
       ) : (
         <>
           <div className={styles.cbcGrid}>
-        <article className={`${styles.cbcCard} ${styles.cbcPrimaryCard}`}>
+            <article className={`${styles.cbcCard} ${styles.cbcInstructionsCard}`}>
+              <h2 className={styles.cbcCardTitle}>{content.instructions.title}</h2>
+              <ol className={styles.cbcInstructions}>
+                {content.instructions.steps.map((step, index) => (
+                  <li key={step}>
+                    <span className={styles.cbcStepIndex}>{index + 1}</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </article>
+            <article className={`${styles.cbcCard} ${styles.cbcPrimaryCard}`}>
           <header className={styles.cbcCardHeader}>
             <div className={styles.cbcTokenIdentity}>
               <div className={styles.cbcTokenLogoWrapper}>
@@ -2402,19 +2413,7 @@ const CbcPanel = ({ content }: { content: AppTranslation["cbc"] }) => {
               </div>
             </section>
           </div>
-        </article>
-
-        <article className={styles.cbcCard}>
-          <h2 className={styles.cbcCardTitle}>{content.instructions.title}</h2>
-          <ol className={styles.cbcInstructions}>
-            {content.instructions.steps.map((step, index) => (
-              <li key={step}>
-                <span className={styles.cbcStepIndex}>{index + 1}</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </article>
+            </article>
       </div>
 
           <div className={styles.cbcRounds}>
